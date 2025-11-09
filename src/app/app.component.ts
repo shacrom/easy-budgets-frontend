@@ -2,10 +2,16 @@ import { Component, signal } from '@angular/core';
 import { BudgetTextBlocksComponent } from './features/budgets/components/budget-text-blocks.component';
 import { MaterialsTableComponent } from './features/materials/components/materials-table.component';
 import { BudgetSummaryComponent } from './features/summary/components/budget-summary.component';
+import { GeneralConditionsComponent } from './features/conditions/components/general-conditions.component';
 
 @Component({
   selector: 'app-root',
-  imports: [BudgetTextBlocksComponent, MaterialsTableComponent, BudgetSummaryComponent],
+  imports: [
+    BudgetTextBlocksComponent,
+    MaterialsTableComponent,
+    BudgetSummaryComponent,
+    GeneralConditionsComponent
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

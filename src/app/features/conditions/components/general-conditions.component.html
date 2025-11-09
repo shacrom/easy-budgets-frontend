@@ -1,0 +1,114 @@
+<div class="general-conditions-container">
+  <div class="header">
+    <h2 class="text-2xl font-bold text-gray-900">{{ titulo() }}</h2>
+    <div class="header-actions">
+      <button
+        (click)="toggleEditMode()"
+        class="btn-toggle-edit"
+        type="button">
+        @if (editMode()) {
+          <span>Vista Previa</span>
+        } @else {
+          <span>Modo Edición</span>
+        }
+      </button>
+      @if (editMode()) {
+        <button
+          (click)="addCondition()"
+          class="btn-add-condition"
+          type="button">
+          + Añadir Condición
+        </button>
+        <button
+          (click)="resetToDefaults()"
+          class="btn-reset"
+          type="button"
+          title="Restaurar condiciones por defecto">
+          ↻ Restaurar
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="conditions-card">
+    @if (!editMode()) {
+      <!-- Vista de solo lectura - Formato tipo documento legal -->
+      <div class="conditions-list-view">
+        @for (condicion of condiciones(); track condicion.id; let idx = $index) {
+          <div class="condition-item">
+            <div class="condition-number">{{ idx + 1 }}.</div>
+            <div class="condition-content">
+              <h3 class="condition-title">{{ condicion.titulo }}</h3>
+              <p class="condition-text">{{ condicion.texto }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <!-- Vista de edición -->
+      <div class="conditions-edit-view">
+        <div class="edit-title-section">
+          <label class="form-label">Título de la sección:</label>
+          <input
+            type="text"
+            [value]="titulo()"
+            (input)="updateTitulo($event)"
+            class="input-field-title"
+            placeholder="CONDICIONES GENERALES">
+        </div>
+
+        @for (condicion of condiciones(); track condicion.id; let idx = $index) {
+          <div class="condition-edit-item">
+            <div class="condition-edit-header">
+              <span class="condition-edit-number">{{ idx + 1 }}.</span>
+              <button
+                (click)="deleteCondition(condicion.id)"
+                class="btn-delete-condition"
+                type="button"
+                title="Eliminar condición">
+                ✕ Eliminar
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Título de la condición:</label>
+              <input
+                type="text"
+                [value]="condicion.titulo"
+                (input)="updateConditionField(condicion.id, 'titulo', $event)"
+                class="input-field"
+                placeholder="Ej: VALIDEZ DEL PRESUPUESTO">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Texto de la condición:</label>
+              <textarea
+                [value]="condicion.texto"
+                (input)="updateConditionField(condicion.id, 'texto', $event)"
+                rows="3"
+                class="input-field textarea-field"
+                placeholder="Descripción detallada de la condición..."></textarea>
+            </div>
+          </div>
+        }
+
+        @if (condiciones().length === 0) {
+          <div class="empty-state">
+            <p class="text-gray-500 text-center">
+              No hay condiciones añadidas. Haz clic en "Añadir Condición" o "Restaurar" para cargar las condiciones por defecto.
+            </p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Nota informativa -->
+  @if (!editMode()) {
+    <div class="info-note">
+      <p class="text-sm text-gray-600 italic">
+        Estas condiciones forman parte integral del presupuesto y deben ser leídas y aceptadas antes de la firma del contrato.
+      </p>
+    </div>
+  }
+</div>
