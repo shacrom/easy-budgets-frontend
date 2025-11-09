@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, computed, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BudgetTextBlockComponent } from './budget-text-block.component';
 import { BudgetTextBlock } from '../../../models/budget-text-block.model';
@@ -26,6 +26,9 @@ export class BudgetTextBlocksComponent {
     return this.blocks().reduce((sum, block) => sum + block.total, 0);
   });
 
+  // Output: emite el total cuando cambia
+  totalChanged = output<number>();
+
   /**
    * Añade un nuevo bloque vacío
    */
@@ -40,6 +43,7 @@ export class BudgetTextBlocksComponent {
     };
 
     this.blocks.update(blocks => [...blocks, newBlock]);
+    this.emitTotal();
   }
 
   /**
@@ -49,6 +53,7 @@ export class BudgetTextBlocksComponent {
     this.blocks.update(blocks =>
       blocks.map(block => block.id === updatedBlock.id ? updatedBlock : block)
     );
+    this.emitTotal();
   }
 
   /**
@@ -56,6 +61,7 @@ export class BudgetTextBlocksComponent {
    */
   protected deleteBlock(blockId: string): void {
     this.blocks.update(blocks => blocks.filter(block => block.id !== blockId));
+    this.emitTotal();
   }
 
   /**
@@ -63,6 +69,13 @@ export class BudgetTextBlocksComponent {
    */
   protected toggleEditMode(): void {
     this.editMode.update(mode => !mode);
+  }
+
+  /**
+   * Emite el total actual
+   */
+  private emitTotal(): void {
+    this.totalChanged.emit(this.totalGeneral());
   }
 
   /**

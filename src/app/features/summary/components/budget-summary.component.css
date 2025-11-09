@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+.budget-summary-container {
+  @apply max-w-4xl mx-auto p-6;
+}
+
+.header {
+  @apply flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-300;
+}
+
+.btn-toggle-edit {
+  @apply px-5 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium;
+}
+
+.summary-card {
+  @apply bg-white rounded-lg shadow-lg overflow-hidden border-2 border-gray-300;
+}
+
+.summary-section {
+  @apply px-6 py-4 border-b border-gray-200;
+}
+
+.summary-section:last-child {
+  @apply border-b-0;
+}
+
+.summary-row {
+  @apply flex justify-between items-center py-2;
+}
+
+.summary-label {
+  @apply text-gray-700 text-base;
+}
+
+.summary-value {
+  @apply text-gray-900 text-base;
+}
+
+.subtotal-row {
+  @apply mt-2 pt-2 border-t border-gray-200;
+}
+
+/* Sección de líneas adicionales */
+.additional-lines {
+  @apply bg-gray-50;
+}
+
+.section-header {
+  @apply flex justify-between items-center mb-3;
+}
+
+.btn-add-line {
+  @apply px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors;
+}
+
+.additional-line {
+  @apply py-1;
+}
+
+.input-field {
+  @apply px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm;
+}
+
+.btn-delete {
+  @apply px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-xs font-bold;
+}
+
+/* Sección IVA */
+.iva-section {
+  @apply bg-blue-50;
+}
+
+/* Total General */
+.total-section {
+  @apply bg-linear-to-r from-blue-600 to-blue-700;
+}
+
+.total-row {
+  @apply py-4;
+}
+
+.summary-label-total {
+  @apply text-white text-xl font-bold;
+}
+
+.summary-value-total {
+  @apply text-white text-2xl font-bold;
+}

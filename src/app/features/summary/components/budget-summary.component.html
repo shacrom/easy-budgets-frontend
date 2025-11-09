@@ -1,0 +1,135 @@
+<div class="budget-summary-container">
+  <div class="header">
+    <h2 class="text-2xl font-bold text-gray-900">Resumen del Presupuesto</h2>
+    <button
+      (click)="toggleEditMode()"
+      class="btn-toggle-edit"
+      type="button">
+      @if (editMode()) {
+        <span>Vista Previa</span>
+      } @else {
+        <span>Configurar</span>
+      }
+    </button>
+  </div>
+
+  <div class="summary-card">
+    <!-- Totales principales -->
+    <div class="summary-section">
+      <div class="summary-row">
+        <span class="summary-label">Total Bloques de Texto:</span>
+        <span class="summary-value">
+          {{ totalBloques() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+        </span>
+      </div>
+
+      <div class="summary-row">
+        <span class="summary-label">Total Materiales:</span>
+        <span class="summary-value">
+          {{ totalMateriales() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+        </span>
+      </div>
+
+      <div class="summary-row subtotal-row">
+        <span class="summary-label font-semibold">Subtotal:</span>
+        <span class="summary-value font-semibold">
+          {{ subtotal() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Líneas adicionales (descuentos, extras, etc.) -->
+    @if (lineasAdicionales().length > 0 || editMode()) {
+      <div class="summary-section additional-lines">
+        <div class="section-header">
+          <h3 class="text-sm font-semibold text-gray-700">Conceptos Adicionales</h3>
+          @if (editMode()) {
+            <button
+              (click)="addLineaAdicional()"
+              class="btn-add-line"
+              type="button">
+              + Añadir
+            </button>
+          }
+        </div>
+
+        @for (linea of lineasAdicionales(); track linea.id) {
+          <div class="summary-row additional-line">
+            @if (!editMode()) {
+              <span class="summary-label">{{ linea.concepto }}:</span>
+              <span class="summary-value" [class.text-red-600]="linea.importe < 0">
+                {{ linea.importe | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+              </span>
+            } @else {
+              <div class="flex gap-2 items-center w-full">
+                <input
+                  type="text"
+                  [(ngModel)]="linea.concepto"
+                  (ngModelChange)="updateLineaAdicional(linea)"
+                  class="input-field flex-1"
+                  placeholder="Concepto (ej: Descuento, Extra)">
+                <input
+                  type="number"
+                  [(ngModel)]="linea.importe"
+                  (ngModelChange)="updateLineaAdicional(linea)"
+                  step="0.01"
+                  class="input-field w-32 text-right"
+                  placeholder="0.00">
+                <button
+                  (click)="deleteLineaAdicional(linea.id)"
+                  class="btn-delete"
+                  type="button">
+                  ✕
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        @if (lineasAdicionales().length > 0) {
+          <div class="summary-row subtotal-row">
+            <span class="summary-label font-semibold">Subtotal con Adicionales:</span>
+            <span class="summary-value font-semibold">
+              {{ baseImponible() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+            </span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- IVA -->
+    <div class="summary-section iva-section">
+      <div class="summary-row">
+        <div class="flex items-center gap-2">
+          <span class="summary-label">IVA</span>
+          @if (editMode()) {
+            <input
+              type="number"
+              [(ngModel)]="porcentajeIva"
+              min="0"
+              max="100"
+              step="0.1"
+              class="input-field w-16 text-center"
+              placeholder="21">
+            <span class="text-sm text-gray-600">%</span>
+          } @else {
+            <span class="text-sm text-gray-600">({{ porcentajeIva() }}%):</span>
+          }
+        </div>
+        <span class="summary-value">
+          {{ iva() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Total General -->
+    <div class="summary-section total-section">
+      <div class="summary-row total-row">
+        <span class="summary-label-total">TOTAL GENERAL:</span>
+        <span class="summary-value-total">
+          {{ totalGeneral() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

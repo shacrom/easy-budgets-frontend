@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, computed, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialRowComponent } from './material-row.component';
 import { Material } from '../../../models/material.model';
@@ -26,6 +26,9 @@ export class MaterialsTableComponent {
     return this.materials().reduce((sum, material) => sum + material.precioTotal, 0);
   });
 
+  // Output: emite el total cuando cambia
+  totalChanged = output<number>();
+
   /**
    * Añade un nuevo material vacío
    */
@@ -40,6 +43,7 @@ export class MaterialsTableComponent {
     };
 
     this.materials.update(materials => [...materials, newMaterial]);
+    this.emitTotal();
   }
 
   /**
@@ -49,6 +53,7 @@ export class MaterialsTableComponent {
     this.materials.update(materials =>
       materials.map(material => material.id === updatedMaterial.id ? updatedMaterial : material)
     );
+    this.emitTotal();
   }
 
   /**
@@ -56,6 +61,7 @@ export class MaterialsTableComponent {
    */
   protected deleteMaterial(materialId: string): void {
     this.materials.update(materials => materials.filter(material => material.id !== materialId));
+    this.emitTotal();
   }
 
   /**
@@ -63,6 +69,13 @@ export class MaterialsTableComponent {
    */
   protected toggleEditMode(): void {
     this.editMode.update(mode => !mode);
+  }
+
+  /**
+   * Emite el total actual
+   */
+  private emitTotal(): void {
+    this.totalChanged.emit(this.totalMateriales());
   }
 
   /**
