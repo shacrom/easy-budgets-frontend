@@ -1,0 +1,53 @@
+<div class="budget-text-blocks-container">
+  <div class="header">
+    <h2 class="text-2xl font-bold text-gray-900">Bloques de Texto del Presupuesto</h2>
+    <div class="header-actions">
+      <button
+        (click)="toggleEditMode()"
+        class="btn-toggle-edit"
+        type="button">
+        @if (editMode()) {
+          <span>Vista Previa</span>
+        } @else {
+          <span>Modo Edición</span>
+        }
+      </button>
+      @if (editMode()) {
+        <button
+          (click)="addNewBlock()"
+          class="btn-add-block"
+          type="button">
+          + Añadir Bloque
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="blocks-list">
+    @if (blocks().length === 0) {
+      <div class="empty-state">
+        <p class="text-gray-500 text-center">
+          No hay bloques añadidos. Haz clic en "Añadir Bloque" para empezar.
+        </p>
+      </div>
+    } @else {
+      @for (block of blocks(); track block.id) {
+        <app-budget-text-block
+          [block]="block"
+          [editMode]="editMode()"
+          (blockUpdated)="updateBlock($event)"
+          (blockDeleted)="deleteBlock($event)">
+        </app-budget-text-block>
+      }
+    }
+  </div>
+
+  @if (blocks().length > 0) {
+    <div class="total-section">
+      <div class="total-label">Total General:</div>
+      <div class="total-amount">
+        {{ totalGeneral() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+.budget-text-blocks-container {
+  @apply max-w-4xl mx-auto p-6;
+}
+
+.header {
+  @apply flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-300;
+}
+
+.header-actions {
+  @apply flex gap-3;
+}
+
+.btn-toggle-edit {
+  @apply px-5 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium;
+}
+
+.btn-add-block {
+  @apply px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium;
+}
+
+.blocks-list {
+  @apply space-y-4;
+}
+
+.empty-state {
+  @apply bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12;
+}
+
+.total-section {
+  @apply mt-6 bg-linear-to-r from-blue-50 to-blue-100 rounded-lg p-6 flex justify-between items-center border-2 border-blue-300;
+}
+
+.total-label {
+  @apply text-xl font-semibold text-gray-800;
+}
+
+.total-amount {
+  @apply text-2xl font-bold text-blue-700;
+}

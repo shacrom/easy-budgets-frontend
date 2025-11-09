@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+.budget-text-block {
+  @apply bg-white rounded-lg shadow-md p-6 mb-4 border border-gray-200;
+}
+
+.block-view {
+  @apply space-y-4;
+}
+
+.block-header {
+  @apply flex justify-between items-start pb-3 border-b border-gray-200;
+}
+
+.actions {
+  @apply flex gap-2;
+}
+
+.btn-edit {
+  @apply px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium;
+}
+
+.btn-delete {
+  @apply px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium;
+}
+
+.block-content {
+  @apply py-3;
+}
+
+.block-image {
+  @apply overflow-hidden;
+}
+
+.block-footer {
+  @apply pt-3 border-t border-gray-200 text-right;
+}
+
+/* Estilos para el modo edición */
+.block-edit {
+  @apply space-y-4;
+}
+
+.form-group {
+  @apply flex flex-col;
+}
+
+.form-label {
+  @apply text-sm font-medium text-gray-700 mb-1;
+}
+
+.form-input {
+  @apply px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+.form-actions {
+  @apply flex gap-3 justify-end pt-2;
+}
+
+.btn-save {
+  @apply px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium;
+}
+
+.btn-cancel {
+  @apply px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition-colors font-medium;
+}

@@ -1,0 +1,135 @@
+<div class="budget-text-block">
+  @if (!isEditing()) {
+    <!-- Vista de solo lectura -->
+    <div class="block-view">
+      <div class="block-header">
+        <h3 class="text-xl font-bold text-gray-800">{{ block().encabezado }}</h3>
+        @if (editMode()) {
+          <div class="actions">
+            <button
+              (click)="startEdit()"
+              class="btn-edit"
+              type="button">
+              Editar
+            </button>
+            <button
+              (click)="deleteBlock()"
+              class="btn-delete"
+              type="button">
+              Eliminar
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="block-content">
+        <p class="text-gray-700 whitespace-pre-wrap">{{ block().texto }}</p>
+
+        @if (block().link) {
+          <a
+            [href]="block().link"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-blue-600 hover:underline mt-2 inline-block">
+            Ver más información
+          </a>
+        }
+
+        @if (block().foto) {
+          <div class="block-image mt-4">
+            <img
+              [src]="block().foto"
+              [alt]="block().encabezado"
+              class="max-w-full h-auto rounded-lg shadow-md">
+          </div>
+        }
+      </div>
+
+      <div class="block-footer">
+        <span class="text-lg font-semibold text-gray-900">
+          Total: {{ block().total | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+        </span>
+      </div>
+    </div>
+  } @else {
+    <!-- Vista de edición -->
+    <div class="block-edit">
+      <div class="form-group">
+        <label for="encabezado-{{ block().id }}" class="form-label">
+          Encabezado
+        </label>
+        <input
+          type="text"
+          id="encabezado-{{ block().id }}"
+          [(ngModel)]="block().encabezado"
+          class="form-input"
+          placeholder="Título del bloque">
+      </div>
+
+      <div class="form-group">
+        <label for="texto-{{ block().id }}" class="form-label">
+          Descripción
+        </label>
+        <textarea
+          id="texto-{{ block().id }}"
+          [(ngModel)]="block().texto"
+          rows="4"
+          class="form-input"
+          placeholder="Descripción detallada"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="link-{{ block().id }}" class="form-label">
+          Link (opcional)
+        </label>
+        <input
+          type="url"
+          id="link-{{ block().id }}"
+          [(ngModel)]="block().link"
+          class="form-input"
+          placeholder="https://ejemplo.com">
+      </div>
+
+      <div class="form-group">
+        <label for="foto-{{ block().id }}" class="form-label">
+          URL de la foto (opcional)
+        </label>
+        <input
+          type="url"
+          id="foto-{{ block().id }}"
+          [(ngModel)]="block().foto"
+          class="form-input"
+          placeholder="https://ejemplo.com/imagen.jpg">
+      </div>
+
+      <div class="form-group">
+        <label for="total-{{ block().id }}" class="form-label">
+          Total (€)
+        </label>
+        <input
+          type="number"
+          id="total-{{ block().id }}"
+          [(ngModel)]="block().total"
+          step="0.01"
+          min="0"
+          class="form-input"
+          placeholder="0.00">
+      </div>
+
+      <div class="form-actions">
+        <button
+          (click)="saveChanges()"
+          class="btn-save"
+          type="button">
+          Guardar
+        </button>
+        <button
+          (click)="cancelEdit()"
+          class="btn-cancel"
+          type="button">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  }
+</div>
