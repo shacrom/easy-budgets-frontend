@@ -3,7 +3,9 @@
     <!-- Vista de solo lectura -->
     <div class="block-view">
       <div class="block-header">
-        <h3 class="text-xl font-bold text-gray-800">{{ block().encabezado }}</h3>
+        <h3 class="text-xl font-bold text-gray-800 bg-green-100 px-4 py-2 rounded">
+          {{ block().encabezado }}
+        </h3>
         @if (editMode()) {
           <div class="actions">
             <button
@@ -23,7 +25,13 @@
       </div>
 
       <div class="block-content">
-        <p class="text-gray-700 whitespace-pre-wrap">{{ block().texto }}</p>
+        <!-- Secciones de descripción -->
+        @for (descripcion of block().descripciones; track descripcion.id) {
+          <div class="description-section">
+            <h4 class="description-title">{{ descripcion.titulo }}</h4>
+            <p class="description-text">{{ descripcion.texto }}</p>
+          </div>
+        }
 
         @if (block().link) {
           <a
@@ -56,26 +64,71 @@
     <div class="block-edit">
       <div class="form-group">
         <label for="encabezado-{{ block().id }}" class="form-label">
-          Encabezado
+          Encabezado (fondo verde)
         </label>
         <input
           type="text"
           id="encabezado-{{ block().id }}"
-          [(ngModel)]="block().encabezado"
+          [value]="block().encabezado"
+          (input)="updateBlockField('encabezado', $event)"
           class="form-input"
           placeholder="Título del bloque">
       </div>
 
-      <div class="form-group">
-        <label for="texto-{{ block().id }}" class="form-label">
-          Descripción
-        </label>
-        <textarea
-          id="texto-{{ block().id }}"
-          [(ngModel)]="block().texto"
-          rows="4"
-          class="form-input"
-          placeholder="Descripción detallada"></textarea>
+      <!-- Secciones de descripción -->
+      <div class="descriptions-section">
+        <div class="descriptions-header">
+          <label class="form-label">Secciones de Descripción</label>
+          <button
+            (click)="addDescriptionSection()"
+            class="btn-add-section"
+            type="button">
+            + Añadir Sección
+          </button>
+        </div>
+
+        @for (descripcion of block().descripciones; track descripcion.id; let idx = $index) {
+          <div class="description-edit-item">
+            <div class="description-edit-header">
+              <span class="text-sm font-semibold text-gray-700">Sección {{ idx + 1 }}</span>
+              <button
+                (click)="deleteDescriptionSection(descripcion.id)"
+                class="btn-delete-section"
+                type="button"
+                title="Eliminar sección">
+                ✕
+              </button>
+            </div>
+
+            <div class="form-group-inline">
+              <label class="form-label-small">Título:</label>
+              <input
+                type="text"
+                [value]="descripcion.titulo"
+                (input)="updateDescriptionSection(descripcion.id, 'titulo', $event)"
+                class="form-input-small"
+                placeholder="Ej: NUESTRAS COCINAS">
+            </div>
+
+            <div class="form-group-inline">
+              <label class="form-label-small">Texto:</label>
+              <textarea
+                [value]="descripcion.texto"
+                (input)="updateDescriptionSection(descripcion.id, 'texto', $event)"
+                rows="3"
+                class="form-input-small"
+                placeholder="Las cocinas Dica se diseñan..."></textarea>
+            </div>
+          </div>
+        }
+
+        @if (block().descripciones.length === 0) {
+          <div class="empty-descriptions">
+            <p class="text-gray-500 text-sm text-center">
+              No hay secciones de descripción. Haz clic en "+ Añadir Sección" para comenzar.
+            </p>
+          </div>
+        }
       </div>
 
       <div class="form-group">
@@ -85,7 +138,8 @@
         <input
           type="url"
           id="link-{{ block().id }}"
-          [(ngModel)]="block().link"
+          [value]="block().link || ''"
+          (input)="updateBlockField('link', $event)"
           class="form-input"
           placeholder="https://ejemplo.com">
       </div>
@@ -97,7 +151,8 @@
         <input
           type="url"
           id="foto-{{ block().id }}"
-          [(ngModel)]="block().foto"
+          [value]="block().foto || ''"
+          (input)="updateBlockField('foto', $event)"
           class="form-input"
           placeholder="https://ejemplo.com/imagen.jpg">
       </div>
@@ -109,7 +164,8 @@
         <input
           type="number"
           id="total-{{ block().id }}"
-          [(ngModel)]="block().total"
+          [value]="block().total"
+          (input)="updateBlockField('total', $event)"
           step="0.01"
           min="0"
           class="form-input"

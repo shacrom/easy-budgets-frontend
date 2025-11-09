@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BudgetTextBlock } from '../../../models/budget-text-block.model';
+import { BudgetTextBlock, DescriptionSection } from '../../../models/budget-text-block.model';
 
 /**
  * Componente para mostrar y editar un bloque de texto del presupuesto
- * Incluye: encabezado, texto, link opcional, foto opcional y total
+ * Incluye: encabezado, secciones de descripción, link opcional, foto opcional y total
  */
 @Component({
   selector: 'app-budget-text-block',
@@ -57,5 +57,75 @@ export class BudgetTextBlockComponent {
    */
   protected deleteBlock(): void {
     this.blockDeleted.emit(this.block().id);
+  }
+
+  /**
+   * Añade una nueva sección de descripción
+   */
+  protected addDescriptionSection(): void {
+    const newSection: DescriptionSection = {
+      id: this.generateId(),
+      titulo: '',
+      texto: ''
+    };
+
+    const updatedBlock: BudgetTextBlock = {
+      ...this.block(),
+      descripciones: [...this.block().descripciones, newSection]
+    };
+
+    this.blockUpdated.emit(updatedBlock);
+  }
+
+  /**
+   * Actualiza una sección de descripción
+   */
+  protected updateDescriptionSection(sectionId: string, field: 'titulo' | 'texto', event: Event): void {
+    const input = event.target as HTMLInputElement | HTMLTextAreaElement;
+
+    const updatedBlock: BudgetTextBlock = {
+      ...this.block(),
+      descripciones: this.block().descripciones.map(desc =>
+        desc.id === sectionId
+          ? { ...desc, [field]: input.value }
+          : desc
+      )
+    };
+
+    this.blockUpdated.emit(updatedBlock);
+  }
+
+  /**
+   * Elimina una sección de descripción
+   */
+  protected deleteDescriptionSection(sectionId: string): void {
+    const updatedBlock: BudgetTextBlock = {
+      ...this.block(),
+      descripciones: this.block().descripciones.filter(desc => desc.id !== sectionId)
+    };
+
+    this.blockUpdated.emit(updatedBlock);
+  }
+
+  /**
+   * Actualiza un campo del bloque
+   */
+  protected updateBlockField(field: keyof BudgetTextBlock, event: Event): void {
+    const input = event.target as HTMLInputElement | HTMLTextAreaElement;
+    const value = field === 'total' ? parseFloat(input.value) || 0 : input.value;
+
+    const updatedBlock: BudgetTextBlock = {
+      ...this.block(),
+      [field]: value
+    };
+
+    this.blockUpdated.emit(updatedBlock);
+  }
+
+  /**
+   * Genera un ID único
+   */
+  private generateId(): string {
+    return `desc-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
 }

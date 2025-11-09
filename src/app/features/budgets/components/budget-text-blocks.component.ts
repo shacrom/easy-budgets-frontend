@@ -36,7 +36,7 @@ export class BudgetTextBlocksComponent {
     const newBlock: BudgetTextBlock = {
       id: this.generateId(),
       encabezado: '',
-      texto: '',
+      descripciones: [], // Inicialmente sin secciones de descripción
       link: '',
       foto: '',
       total: 0
