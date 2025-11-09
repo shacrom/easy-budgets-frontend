@@ -23,7 +23,7 @@ export class BudgetTextBlocksComponent {
 
   // Total calculado de todos los bloques
   protected readonly totalGeneral = computed(() => {
-    return this.blocks().reduce((sum, block) => sum + block.total, 0);
+    return this.blocks().reduce((sum, block) => sum + (typeof block.total === 'number' ? block.total : 0), 0);
   });
 
   // Output: emite el total cuando cambia

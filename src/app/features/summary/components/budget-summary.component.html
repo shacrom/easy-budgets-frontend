@@ -19,21 +19,21 @@
       <div class="summary-row">
         <span class="summary-label">Total Bloques de Texto:</span>
         <span class="summary-value">
-          {{ totalBloques() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+          {{ totalBloques() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
 
       <div class="summary-row">
         <span class="summary-label">Total Materiales:</span>
         <span class="summary-value">
-          {{ totalMateriales() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+          {{ totalMateriales() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
 
       <div class="summary-row subtotal-row">
         <span class="summary-label font-semibold">Subtotal:</span>
         <span class="summary-value font-semibold">
-          {{ subtotal() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+          {{ subtotal() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
     </div>
@@ -58,7 +58,7 @@
             @if (!editMode()) {
               <span class="summary-label">{{ linea.concepto }}:</span>
               <span class="summary-value" [class.text-red-600]="linea.importe < 0">
-                {{ linea.importe | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+                {{ linea.importe | currency:'EUR':'symbol':'1.2-2':'es' }}
               </span>
             } @else {
               <div class="flex gap-2 items-center w-full">
@@ -90,7 +90,7 @@
           <div class="summary-row subtotal-row">
             <span class="summary-label font-semibold">Subtotal con Adicionales:</span>
             <span class="summary-value font-semibold">
-              {{ baseImponible() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+              {{ baseImponible() | currency:'EUR':'symbol':'1.2-2':'es' }}
             </span>
           </div>
         }
@@ -117,7 +117,7 @@
           }
         </div>
         <span class="summary-value">
-          {{ iva() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+          {{ iva() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
     </div>
@@ -127,7 +127,7 @@
       <div class="summary-row total-row">
         <span class="summary-label-total">TOTAL GENERAL:</span>
         <span class="summary-value-total">
-          {{ totalGeneral() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+          {{ totalGeneral() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
     </div>

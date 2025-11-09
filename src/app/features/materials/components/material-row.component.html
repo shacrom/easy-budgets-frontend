@@ -5,10 +5,10 @@
     <td class="material-cell cantidad">{{ material().cantidad }}</td>
     <td class="material-cell unidad">{{ material().unidad }}</td>
     <td class="material-cell precio">
-      {{ material().precioUnitario | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+      {{ material().precioUnitario | currency:'EUR':'symbol':'1.2-2':'es' }}
     </td>
     <td class="material-cell precio-total">
-      {{ precioTotal() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+      {{ precioTotal() | currency:'EUR':'symbol':'1.2-2':'es' }}
     </td>
   </tr>
 } @else {
@@ -55,7 +55,7 @@
     <td class="material-cell precio-total">
       <div class="flex items-center justify-between gap-2">
         <span class="font-semibold">
-          {{ precioTotal() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+          {{ precioTotal() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
         <button
           (click)="deleteMaterial()"
