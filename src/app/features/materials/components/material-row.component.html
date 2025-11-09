@@ -1,0 +1,70 @@
+@if (!editMode()) {
+  <!-- Vista de solo lectura -->
+  <tr class="material-row">
+    <td class="material-cell descripcion">{{ material().descripcion }}</td>
+    <td class="material-cell cantidad">{{ material().cantidad }}</td>
+    <td class="material-cell unidad">{{ material().unidad }}</td>
+    <td class="material-cell precio">
+      {{ material().precioUnitario | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+    </td>
+    <td class="material-cell precio-total">
+      {{ precioTotal() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+    </td>
+  </tr>
+} @else {
+  <!-- Vista de edición -->
+  <tr class="material-row edit-mode">
+    <td class="material-cell descripcion">
+      <input
+        type="text"
+        [(ngModel)]="material().descripcion"
+        (ngModelChange)="onValueChange()"
+        class="input-field w-full"
+        placeholder="Descripción del material">
+    </td>
+    <td class="material-cell cantidad">
+      <input
+        type="number"
+        [(ngModel)]="material().cantidad"
+        (ngModelChange)="onValueChange()"
+        min="0"
+        step="0.01"
+        class="input-field w-full text-right"
+        placeholder="0">
+    </td>
+    <td class="material-cell unidad">
+      <select
+        [(ngModel)]="material().unidad"
+        (ngModelChange)="onValueChange()"
+        class="input-field w-full">
+        @for (unidad of unidades; track unidad) {
+          <option [value]="unidad">{{ unidad }}</option>
+        }
+      </select>
+    </td>
+    <td class="material-cell precio">
+      <input
+        type="number"
+        [(ngModel)]="material().precioUnitario"
+        (ngModelChange)="onValueChange()"
+        min="0"
+        step="0.01"
+        class="input-field w-full text-right"
+        placeholder="0.00">
+    </td>
+    <td class="material-cell precio-total">
+      <div class="flex items-center justify-between gap-2">
+        <span class="font-semibold">
+          {{ precioTotal() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}
+        </span>
+        <button
+          (click)="deleteMaterial()"
+          class="btn-delete-row"
+          type="button"
+          title="Eliminar material">
+          ✕
+        </button>
+      </div>
+    </td>
+  </tr>
+}

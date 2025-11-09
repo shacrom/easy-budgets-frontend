@@ -1,0 +1,71 @@
+<div class="materials-table-container">
+  <div class="header">
+    <h2 class="text-2xl font-bold text-gray-900">Listado de Materiales</h2>
+    <div class="header-actions">
+      <button
+        (click)="toggleEditMode()"
+        class="btn-toggle-edit"
+        type="button">
+        @if (editMode()) {
+          <span>Vista Previa</span>
+        } @else {
+          <span>Modo Edición</span>
+        }
+      </button>
+      @if (editMode()) {
+        <button
+          (click)="addNewMaterial()"
+          class="btn-add-material"
+          type="button">
+          + Añadir Material
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="materials-table">
+      <thead class="table-header">
+        <tr>
+          <th class="header-cell descripcion">Descripción</th>
+          <th class="header-cell cantidad">Cantidad</th>
+          <th class="header-cell unidad">Unidad</th>
+          <th class="header-cell precio">Precio Unitario</th>
+          <th class="header-cell precio-total">Precio Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (materials().length === 0) {
+          <tr>
+            <td colspan="5" class="empty-state">
+              <p class="text-gray-500 text-center py-8">
+                No hay materiales añadidos. Haz clic en "Añadir Material" para empezar.
+              </p>
+            </td>
+          </tr>
+        } @else {
+          @for (material of materials(); track material.id) {
+            <app-material-row
+              [material]="material"
+              [editMode]="editMode()"
+              (materialUpdated)="updateMaterial($event)"
+              (materialDeleted)="deleteMaterial($event)">
+            </app-material-row>
+          }
+        }
+      </tbody>
+      @if (materials().length > 0) {
+        <tfoot class="table-footer">
+          <tr>
+            <td colspan="4" class="footer-cell total-label">
+              <strong>Total Materiales:</strong>
+            </td>
+            <td class="footer-cell total-amount">
+              <strong>{{ totalMateriales() | currency:'EUR':'symbol':'1.2-2':'es-ES' }}</strong>
+            </td>
+          </tr>
+        </tfoot>
+      }
+    </table>
+  </div>
+</div>

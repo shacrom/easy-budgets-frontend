@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+.material-row {
+  @apply border-b border-gray-200 hover:bg-gray-50 transition-colors;
+}
+
+.material-row.edit-mode {
+  @apply bg-blue-50;
+}
+
+.material-cell {
+  @apply px-4 py-3 text-sm;
+}
+
+.material-cell.descripcion {
+  @apply text-left;
+}
+
+.material-cell.cantidad,
+.material-cell.unidad {
+  @apply text-center;
+}
+
+.material-cell.precio,
+.material-cell.precio-total {
+  @apply text-right font-medium;
+}
+
+.input-field {
+  @apply px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm;
+}
+
+.btn-delete-row {
+  @apply px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-xs font-bold;
+}

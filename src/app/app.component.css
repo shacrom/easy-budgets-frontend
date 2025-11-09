@@ -12,3 +12,7 @@
 .app-main {
   @apply container mx-auto px-4 py-6;
 }
+
+.section-divider {
+  @apply mb-12;
+}
