@@ -13,17 +13,23 @@
 }
 
 .material-cell.descripcion {
-  @apply text-left;
+  @apply text-left w-[30%];
 }
 
-.material-cell.cantidad,
-.material-cell.unidad {
-  @apply text-center;
+.material-cell.fabricante {
+  @apply text-left w-[20%];
 }
 
-.material-cell.precio,
+.material-cell.cantidad {
+  @apply text-center w-[15%];
+}
+
+.material-cell.precio {
+  @apply text-right font-medium w-[17.5%];
+}
+
 .material-cell.precio-total {
-  @apply text-right font-medium;
+  @apply text-right font-medium w-[17.5%];
 }
 
 .input-field {

@@ -36,8 +36,8 @@ export class MaterialsTableComponent {
     const newMaterial: Material = {
       id: this.generateId(),
       descripcion: '',
+      fabricante: '',
       cantidad: 0,
-      unidad: 'ud',
       precioUnitario: 0,
       precioTotal: 0
     };

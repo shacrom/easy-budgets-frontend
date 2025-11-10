@@ -37,23 +37,23 @@
 }
 
 .header-cell.descripcion {
-  @apply w-2/5;
+  @apply w-[30%];
+}
+
+.header-cell.fabricante {
+  @apply w-[20%] text-left;
 }
 
 .header-cell.cantidad {
-  @apply w-1/6 text-center;
-}
-
-.header-cell.unidad {
-  @apply w-1/6 text-center;
+  @apply w-[15%] text-center;
 }
 
 .header-cell.precio {
-  @apply w-1/6 text-right;
+  @apply w-[17.5%] text-right;
 }
 
 .header-cell.precio-total {
-  @apply w-1/6 text-right;
+  @apply w-[17.5%] text-right;
 }
 
 .empty-state {

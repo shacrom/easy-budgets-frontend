@@ -2,8 +2,8 @@
   <!-- Vista de solo lectura -->
   <tr class="material-row">
     <td class="material-cell descripcion">{{ material().descripcion }}</td>
+    <td class="material-cell fabricante">{{ material().fabricante }}</td>
     <td class="material-cell cantidad">{{ material().cantidad }}</td>
-    <td class="material-cell unidad">{{ material().unidad }}</td>
     <td class="material-cell precio">
       {{ material().precioUnitario | currency:'EUR':'symbol':'1.2-2':'es' }}
     </td>
@@ -22,6 +22,14 @@
         class="input-field w-full"
         placeholder="Descripción del material">
     </td>
+    <td class="material-cell fabricante">
+      <input
+        type="text"
+        [(ngModel)]="material().fabricante"
+        (ngModelChange)="onValueChange()"
+        class="input-field w-full"
+        placeholder="Fabricante">
+    </td>
     <td class="material-cell cantidad">
       <input
         type="number"
@@ -31,16 +39,6 @@
         step="0.01"
         class="input-field w-full text-right"
         placeholder="0">
-    </td>
-    <td class="material-cell unidad">
-      <select
-        [(ngModel)]="material().unidad"
-        (ngModelChange)="onValueChange()"
-        class="input-field w-full">
-        @for (unidad of unidades; track unidad) {
-          <option [value]="unidad">{{ unidad }}</option>
-        }
-      </select>
     </td>
     <td class="material-cell precio">
       <input

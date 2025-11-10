@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Material, UNIDADES_MEDIDA } from '../../../models/material.model';
+import { Material } from '../../../models/material.model';
 
 /**
  * Componente para mostrar y editar una fila de material en la tabla
@@ -25,9 +25,6 @@ export class MaterialRowComponent {
 
   // Output: evento cuando se elimina el material
   materialDeleted = output<string>();
-
-  // Unidades de medida disponibles
-  protected readonly unidades = UNIDADES_MEDIDA;
 
   // Precio total calculado
   protected readonly precioTotal = computed(() => {
