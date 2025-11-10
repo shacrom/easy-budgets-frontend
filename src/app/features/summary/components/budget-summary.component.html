@@ -16,19 +16,60 @@
   <div class="summary-card">
     <!-- Totales principales -->
     <div class="summary-section">
-      <div class="summary-row">
-        <span class="summary-label">Total Bloques de Texto:</span>
+      <!-- Total Bloques de Texto -->
+      <div class="summary-row clickable" (click)="toggleBloquesExpanded()">
+        <div class="flex items-center gap-2">
+          <span class="toggle-icon">{{ bloquesExpanded() ? '▼' : '►' }}</span>
+          <span class="summary-label">Total Bloques de Texto:</span>
+        </div>
         <span class="summary-value">
           {{ totalBloques() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
 
-      <div class="summary-row">
-        <span class="summary-label">Total Materiales:</span>
+      <!-- Detalle de bloques -->
+      @if (bloquesExpanded() && bloques().length > 0) {
+        <div class="detail-section">
+          @for (bloque of bloques(); track bloque.id) {
+            <div class="detail-row">
+              <span class="detail-label">{{ bloque.encabezado || 'Bloque sin título' }}</span>
+              <span class="detail-value">
+                {{ bloque.total | currency:'EUR':'symbol':'1.2-2':'es' }}
+              </span>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Total Materiales -->
+      <div class="summary-row clickable" (click)="toggleMaterialesExpanded()">
+        <div class="flex items-center gap-2">
+          <span class="toggle-icon">{{ materialesExpanded() ? '▼' : '►' }}</span>
+          <span class="summary-label">Total Materiales:</span>
+        </div>
         <span class="summary-value">
           {{ totalMateriales() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
+
+      <!-- Detalle de materiales -->
+      @if (materialesExpanded() && materiales().length > 0) {
+        <div class="detail-section">
+          @for (material of materiales(); track material.id) {
+            <div class="detail-row">
+              <span class="detail-label">
+                {{ material.descripcion || 'Material sin descripción' }}
+                @if (material.fabricante) {
+                  <span class="text-gray-500 text-xs">({{ material.fabricante }})</span>
+                }
+              </span>
+              <span class="detail-value">
+                {{ material.precioTotal | currency:'EUR':'symbol':'1.2-2':'es' }}
+              </span>
+            </div>
+          }
+        </div>
+      }
 
       <div class="summary-row subtotal-row">
         <span class="summary-label font-semibold">Subtotal:</span>

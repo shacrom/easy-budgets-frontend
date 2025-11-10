@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, input, signal, computed } from '@an
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BudgetSummary, SummaryLine } from '../../../models/budget-summary.model';
+import { BudgetTextBlock } from '../../../models/budget-text-block.model';
+import { Material } from '../../../models/material.model';
 
 /**
  * Componente para mostrar el resumen del presupuesto
@@ -19,10 +21,18 @@ export class BudgetSummaryComponent {
   totalBloques = input<number>(0);
   totalMateriales = input<number>(0);
 
+  // Inputs: arrays de datos para mostrar el detalle
+  bloques = input<BudgetTextBlock[]>([]);
+  materiales = input<Material[]>([]);
+
   // Estado local para configuración
   protected readonly porcentajeIva = signal<number>(21);
   protected readonly editMode = signal<boolean>(false);
   protected readonly lineasAdicionales = signal<SummaryLine[]>([]);
+
+  // Estado de los desplegables (por defecto expandidos)
+  protected readonly bloquesExpanded = signal<boolean>(true);
+  protected readonly materialesExpanded = signal<boolean>(true);
 
   // Cálculos derivados
   protected readonly subtotal = computed(() => {
@@ -50,6 +60,20 @@ export class BudgetSummaryComponent {
    */
   protected toggleEditMode(): void {
     this.editMode.update(mode => !mode);
+  }
+
+  /**
+   * Alterna el desplegable de bloques
+   */
+  protected toggleBloquesExpanded(): void {
+    this.bloquesExpanded.update(expanded => !expanded);
+  }
+
+  /**
+   * Alterna el desplegable de materiales
+   */
+  protected toggleMaterialesExpanded(): void {
+    this.materialesExpanded.update(expanded => !expanded);
   }
 
   /**

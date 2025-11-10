@@ -28,6 +28,14 @@
   @apply flex justify-between items-center py-2;
 }
 
+.summary-row.clickable {
+  @apply cursor-pointer hover:bg-gray-50 transition-colors rounded px-2 -mx-2;
+}
+
+.toggle-icon {
+  @apply text-gray-600 text-sm font-bold w-4 text-center;
+}
+
 .summary-label {
   @apply text-gray-700 text-base;
 }
@@ -38,6 +46,23 @@
 
 .subtotal-row {
   @apply mt-2 pt-2 border-t border-gray-200;
+}
+
+/* Secciones de detalle desplegables */
+.detail-section {
+  @apply ml-6 mb-2 bg-gray-50 rounded-md p-3 border-l-4 border-blue-400;
+}
+
+.detail-row {
+  @apply flex justify-between items-start py-1.5 text-sm;
+}
+
+.detail-label {
+  @apply text-gray-600 flex-1;
+}
+
+.detail-value {
+  @apply text-gray-800 font-medium ml-4;
 }
 
 /* Sección de líneas adicionales */

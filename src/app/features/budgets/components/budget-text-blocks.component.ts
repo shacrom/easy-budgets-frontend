@@ -29,6 +29,9 @@ export class BudgetTextBlocksComponent {
   // Output: emite el total cuando cambia
   totalChanged = output<number>();
 
+  // Output: emite los bloques cuando cambian
+  blocksChanged = output<BudgetTextBlock[]>();
+
   /**
    * Añade un nuevo bloque vacío
    */
@@ -76,6 +79,7 @@ export class BudgetTextBlocksComponent {
    */
   private emitTotal(): void {
     this.totalChanged.emit(this.totalGeneral());
+    this.blocksChanged.emit(this.blocks());
   }
 
   /**

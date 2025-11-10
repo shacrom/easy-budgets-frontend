@@ -29,6 +29,9 @@ export class MaterialsTableComponent {
   // Output: emite el total cuando cambia
   totalChanged = output<number>();
 
+  // Output: emite los materiales cuando cambian
+  materialsChanged = output<Material[]>();
+
   /**
    * Añade un nuevo material vacío
    */
@@ -76,6 +79,7 @@ export class MaterialsTableComponent {
    */
   private emitTotal(): void {
     this.totalChanged.emit(this.totalMateriales());
+    this.materialsChanged.emit(this.materials());
   }
 
   /**

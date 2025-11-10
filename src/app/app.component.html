@@ -8,14 +8,16 @@
     <!-- Sección 1: Bloques de Texto -->
     <section class="section-divider">
       <app-budget-text-blocks
-        (totalChanged)="onTotalBloquesChanged($event)">
+        (totalChanged)="onTotalBloquesChanged($event)"
+        (blocksChanged)="onBloquesChanged($event)">
       </app-budget-text-blocks>
     </section>
 
     <!-- Sección 2: Tabla de Materiales -->
     <section class="section-divider">
       <app-materials-table
-        (totalChanged)="onTotalMaterialesChanged($event)">
+        (totalChanged)="onTotalMaterialesChanged($event)"
+        (materialsChanged)="onMaterialesChanged($event)">
       </app-materials-table>
     </section>
 
@@ -23,7 +25,9 @@
     <section class="section-divider">
       <app-budget-summary
         [totalBloques]="totalBloques()"
-        [totalMateriales]="totalMateriales()">
+        [totalMateriales]="totalMateriales()"
+        [bloques]="bloques()"
+        [materiales]="materiales()">
       </app-budget-summary>
     </section>
 
