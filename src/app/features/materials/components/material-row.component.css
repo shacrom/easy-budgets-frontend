@@ -37,6 +37,10 @@
   @apply text-right font-medium;
 }
 
+.material-cell.acciones {
+  @apply text-center;
+}
+
 .input-field {
   @apply w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm;
 }

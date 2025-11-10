@@ -46,6 +46,10 @@
   @apply text-right;
 }
 
+.header-cell.acciones {
+  @apply text-center;
+}
+
 .empty-state {
   @apply bg-gray-50 border-none;
 }

@@ -10,6 +10,7 @@
     <td class="material-cell precio-total">
       {{ precioTotal() | currency:'EUR':'symbol':'1.2-2':'es' }}
     </td>
+    <td class="material-cell acciones"></td>
   </tr>
 } @else {
   <!-- Vista de edición -->
@@ -51,18 +52,18 @@
         placeholder="0.00">
     </td>
     <td class="material-cell precio-total">
-      <div class="flex items-center justify-between gap-2">
-        <span class="font-semibold">
-          {{ precioTotal() | currency:'EUR':'symbol':'1.2-2':'es' }}
-        </span>
-        <button
-          (click)="deleteMaterial()"
-          class="btn-delete-row"
-          type="button"
-          title="Eliminar material">
-          ✕
-        </button>
-      </div>
+      <span class="font-semibold">
+        {{ precioTotal() | currency:'EUR':'symbol':'1.2-2':'es' }}
+      </span>
+    </td>
+    <td class="material-cell acciones">
+      <button
+        (click)="deleteMaterial()"
+        class="btn-delete-row"
+        type="button"
+        title="Eliminar material">
+        ✕
+      </button>
     </td>
   </tr>
 }
