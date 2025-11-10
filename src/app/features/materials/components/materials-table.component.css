@@ -26,6 +26,7 @@
 
 .materials-table {
   @apply w-full border-collapse;
+  table-layout: fixed;
 }
 
 .table-header {
@@ -36,24 +37,13 @@
   @apply px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider;
 }
 
-.header-cell.descripcion {
-  @apply w-[30%];
-}
-
-.header-cell.fabricante {
-  @apply w-[20%] text-left;
-}
-
 .header-cell.cantidad {
-  @apply w-[15%] text-center;
+  @apply text-center;
 }
 
-.header-cell.precio {
-  @apply w-[17.5%] text-right;
-}
-
+.header-cell.precio,
 .header-cell.precio-total {
-  @apply w-[17.5%] text-right;
+  @apply text-right;
 }
 
 .empty-state {

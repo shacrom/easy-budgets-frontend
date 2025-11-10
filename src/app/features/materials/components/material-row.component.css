@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+:host {
+  /* Ensure the component host doesn't create an extra box between <tbody> and <tr> */
+  display: contents;
+}
+
 .material-row {
   @apply border-b border-gray-200 hover:bg-gray-50 transition-colors;
 }
@@ -13,27 +18,27 @@
 }
 
 .material-cell.descripcion {
-  @apply text-left w-[30%];
+  @apply text-left;
 }
 
 .material-cell.fabricante {
-  @apply text-left w-[20%];
+  @apply text-left;
 }
 
 .material-cell.cantidad {
-  @apply text-center w-[15%];
+  @apply text-center;
 }
 
 .material-cell.precio {
-  @apply text-right font-medium w-[17.5%];
+  @apply text-right font-medium;
 }
 
 .material-cell.precio-total {
-  @apply text-right font-medium w-[17.5%];
+  @apply text-right font-medium;
 }
 
 .input-field {
-  @apply px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm;
+  @apply w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm;
 }
 
 .btn-delete-row {

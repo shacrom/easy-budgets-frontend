@@ -19,7 +19,7 @@
         type="text"
         [(ngModel)]="material().descripcion"
         (ngModelChange)="onValueChange()"
-        class="input-field w-full"
+        class="input-field"
         placeholder="Descripción del material">
     </td>
     <td class="material-cell fabricante">
@@ -27,7 +27,7 @@
         type="text"
         [(ngModel)]="material().fabricante"
         (ngModelChange)="onValueChange()"
-        class="input-field w-full"
+        class="input-field"
         placeholder="Fabricante">
     </td>
     <td class="material-cell cantidad">
@@ -37,7 +37,7 @@
         (ngModelChange)="onValueChange()"
         min="0"
         step="0.01"
-        class="input-field w-full text-right"
+        class="input-field text-right"
         placeholder="0">
     </td>
     <td class="material-cell precio">
@@ -47,7 +47,7 @@
         (ngModelChange)="onValueChange()"
         min="0"
         step="0.01"
-        class="input-field w-full text-right"
+        class="input-field text-right"
         placeholder="0.00">
     </td>
     <td class="material-cell precio-total">
