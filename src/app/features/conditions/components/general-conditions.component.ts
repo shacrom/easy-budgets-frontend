@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Condition, DEFAULT_CONDITIONS } from '../../../models/conditions.model';
+import { Condition, DEFAULT_CONDITIONS, CONDITION_TEMPLATES, TemplateType } from '../../../models/conditions.model';
 
 /**
  * Componente para gestionar las condiciones generales del presupuesto
- * Permite editar, añadir y eliminar condiciones
+ * Permite editar, añadir y eliminar condiciones, y seleccionar plantillas predefinidas
  */
 @Component({
   selector: 'app-general-conditions',
@@ -15,7 +15,7 @@ import { Condition, DEFAULT_CONDITIONS } from '../../../models/conditions.model'
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GeneralConditionsComponent {
-  // Título de la sección
+  // Título de la sección (ahora editable)
   protected readonly titulo = signal<string>('CONDICIONES GENERALES');
 
   // Lista de condiciones
@@ -23,6 +23,12 @@ export class GeneralConditionsComponent {
 
   // Modo de edición
   protected readonly editMode = signal<boolean>(false);
+
+  // Plantilla seleccionada actualmente
+  protected readonly selectedTemplate = signal<TemplateType>('general');
+
+  // Plantillas disponibles
+  protected readonly templates = CONDITION_TEMPLATES;
 
   /**
    * Alterna el modo de edición
@@ -37,6 +43,20 @@ export class GeneralConditionsComponent {
   protected updateTitulo(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.titulo.set(input.value);
+  }
+
+  /**
+   * Cambia la plantilla de condiciones
+   */
+  protected changeTemplate(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const templateId = select.value as TemplateType;
+
+    const template = CONDITION_TEMPLATES.find(t => t.id === templateId);
+    if (template) {
+      this.selectedTemplate.set(templateId);
+      this.condiciones.set([...template.conditions]);
+    }
   }
 
   /**
@@ -83,10 +103,13 @@ export class GeneralConditionsComponent {
   }
 
   /**
-   * Restaura las condiciones por defecto
+   * Restaura la plantilla seleccionada actualmente
    */
-  protected resetToDefaults(): void {
-    this.condiciones.set([...DEFAULT_CONDITIONS]);
+  protected resetToTemplate(): void {
+    const template = CONDITION_TEMPLATES.find(t => t.id === this.selectedTemplate());
+    if (template) {
+      this.condiciones.set([...template.conditions]);
+    }
   }
 
   /**

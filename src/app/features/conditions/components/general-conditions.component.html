@@ -1,6 +1,15 @@
 <div class="general-conditions-container">
   <div class="header">
-    <h2 class="text-2xl font-bold text-gray-900">{{ titulo() }}</h2>
+    @if (editMode()) {
+      <input
+        type="text"
+        [value]="titulo()"
+        (input)="updateTitulo($event)"
+        class="header-title-editable"
+        placeholder="CONDICIONES GENERALES">
+    } @else {
+      <h2 class="text-2xl font-bold text-gray-900">{{ titulo() }}</h2>
+    }
     <div class="header-actions">
       <button
         (click)="toggleEditMode()"
@@ -20,15 +29,35 @@
           + Añadir Condición
         </button>
         <button
-          (click)="resetToDefaults()"
+          (click)="resetToTemplate()"
           class="btn-reset"
           type="button"
-          title="Restaurar condiciones por defecto">
+          title="Restaurar plantilla seleccionada">
           ↻ Restaurar
         </button>
       }
     </div>
   </div>
+
+  @if (editMode()) {
+    <div class="template-selector-container">
+      <label for="template-select" class="template-label">
+        Seleccionar Plantilla:
+      </label>
+      <select
+        id="template-select"
+        [value]="selectedTemplate()"
+        (change)="changeTemplate($event)"
+        class="template-select">
+        @for (template of templates; track template.id) {
+          <option [value]="template.id">{{ template.name }}</option>
+        }
+      </select>
+      <p class="template-hint">
+        Cambia la plantilla para cargar condiciones específicas de cada proveedor
+      </p>
+    </div>
+  }
 
   <div class="conditions-card">
     @if (!editMode()) {
@@ -47,16 +76,6 @@
     } @else {
       <!-- Vista de edición -->
       <div class="conditions-edit-view">
-        <div class="edit-title-section">
-          <label class="form-label">Título de la sección:</label>
-          <input
-            type="text"
-            [value]="titulo()"
-            (input)="updateTitulo($event)"
-            class="input-field-title"
-            placeholder="CONDICIONES GENERALES">
-        </div>
-
         @for (condicion of condiciones(); track condicion.id; let idx = $index) {
           <div class="condition-edit-item">
             <div class="condition-edit-header">
@@ -95,7 +114,7 @@
         @if (condiciones().length === 0) {
           <div class="empty-state">
             <p class="text-gray-500 text-center">
-              No hay condiciones añadidas. Haz clic en "Añadir Condición" o "Restaurar" para cargar las condiciones por defecto.
+              No hay condiciones añadidas. Haz clic en "Añadir Condición" o "Restaurar" para cargar las condiciones de la plantilla seleccionada.
             </p>
           </div>
         }
