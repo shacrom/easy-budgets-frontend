@@ -5,14 +5,24 @@
 }
 
 .app-header {
-  @apply bg-white shadow-md py-6 px-8 mb-6;
-  @apply border-b-4 border-blue-600;
+  @apply bg-white py-12 px-8 mb-12;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.app-header h1 {
+  @apply text-4xl font-light text-gray-800 tracking-widest uppercase mb-2;
+  letter-spacing: 0.2em;
+}
+
+.app-header p {
+  @apply text-sm text-gray-600 uppercase tracking-wide;
+  letter-spacing: 0.15em;
 }
 
 .app-main {
-  @apply container mx-auto px-4 py-6;
+  @apply max-w-7xl mx-auto px-6 py-8;
 }
 
 .section-divider {
-  @apply mb-12;
+  @apply mb-16;
 }

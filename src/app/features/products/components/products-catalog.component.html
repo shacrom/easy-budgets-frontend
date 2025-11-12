@@ -1,15 +1,15 @@
 <div class="products-catalog-container">
   <!-- Header -->
   <div class="header">
-    <h1 class="text-3xl font-bold text-gray-900">Catálogo de Productos</h1>
+    <h1>Catálogo de Productos</h1>
     <button
       (click)="toggleAddForm()"
       class="btn-add-product"
       type="button">
       @if (showAddForm()) {
-        <span>✕ Cancelar</span>
+        <span>Cancelar</span>
       } @else {
-        <span>+ Añadir Producto</span>
+        <span>Añadir Producto</span>
       }
     </button>
   </div>
@@ -17,13 +17,13 @@
   <!-- Mensajes -->
   @if (successMessage()) {
     <div class="alert alert-success">
-      ✓ {{ successMessage() }}
+      {{ successMessage() }}
     </div>
   }
 
   @if (errorMessage()) {
     <div class="alert alert-error">
-      ✕ {{ errorMessage() }}
+      {{ errorMessage() }}
     </div>
   }
 
@@ -138,7 +138,7 @@
       [value]="searchTerm()"
       (input)="updateSearch($event)"
       class="search-input"
-      placeholder="🔍 Buscar por referencia, descripción o fabricante...">
+      placeholder="Buscar por referencia, descripción o fabricante...">
     <span class="search-results-count">
       {{ filteredProducts().length }} producto(s) encontrado(s)
     </span>
@@ -152,11 +152,11 @@
       </div>
     } @else if (filteredProducts().length === 0) {
       <div class="empty-state">
-        <p class="text-gray-500 text-center">
+        <p>
           @if (searchTerm()) {
             No se encontraron productos con el término "{{ searchTerm() }}"
           } @else {
-            No hay productos en el catálogo. ¡Añade el primero!
+            No hay productos en el catálogo. Añade el primero.
           }
         </p>
       </div>

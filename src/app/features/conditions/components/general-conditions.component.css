@@ -1,57 +1,67 @@
 @import "tailwindcss";
 
 .general-conditions-container {
-  @apply max-w-5xl mx-auto p-6;
+  @apply max-w-5xl mx-auto p-8;
 }
 
 .header {
-  @apply flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-300;
+  @apply flex justify-between items-center mb-8 pb-6 border-b border-gray-200;
+}
+
+.header h2 {
+  @apply text-3xl font-light text-gray-800 tracking-widest uppercase;
+  letter-spacing: 0.15em;
 }
 
 .header-title-editable {
-  @apply text-2xl font-bold text-gray-900 border-2 border-purple-400 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent;
+  @apply text-3xl font-light text-gray-800 tracking-widest uppercase border border-gray-300 px-4 py-2 focus:outline-none focus:border-gray-800 transition-colors;
+  letter-spacing: 0.15em;
 }
 
 .header-actions {
-  @apply flex gap-3;
+  @apply flex gap-4;
 }
 
 .btn-toggle-edit {
-  @apply px-5 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium;
+  @apply px-6 py-3 bg-gray-800 text-white text-sm uppercase tracking-wide hover:bg-gray-700 transition-all font-light;
+  letter-spacing: 0.1em;
 }
 
 .btn-add-condition {
-  @apply px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium;
+  @apply px-6 py-3 bg-gray-800 text-white text-sm uppercase tracking-wide hover:bg-gray-700 transition-all font-light;
+  letter-spacing: 0.1em;
 }
 
 .btn-reset {
-  @apply px-5 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors font-medium;
+  @apply px-6 py-3 bg-gray-600 text-white text-sm uppercase tracking-wide hover:bg-gray-500 transition-all font-light;
+  letter-spacing: 0.1em;
 }
 
 /* Selector de plantillas */
 .template-selector-container {
-  @apply mb-6 p-5 bg-linear-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200;
+  @apply mb-8 p-6 bg-gray-50 border border-gray-200;
 }
 
 .template-label {
-  @apply text-base font-bold text-gray-800 mb-3 block;
+  @apply text-sm font-medium text-gray-600 mb-3 block uppercase tracking-wide;
+  letter-spacing: 0.05em;
 }
 
 .template-select {
-  @apply w-full md:w-auto px-4 py-2.5 border-2 border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-base bg-white cursor-pointer;
+  @apply w-full md:w-auto px-4 py-3 border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors font-light text-sm bg-white cursor-pointer;
 }
 
 .template-hint {
-  @apply text-sm text-gray-600 mt-2 italic;
+  @apply text-xs text-gray-600 mt-2 font-light;
 }
 
 .conditions-card {
-  @apply bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 p-8;
+  @apply bg-white shadow-sm overflow-hidden border border-gray-200 p-8;
 }
 
 /* Vista de solo lectura - Estilo documento legal */
 .conditions-list-view {
-  @apply space-y-6;
+  @apply space-y-8;
 }
 
 .condition-item {
@@ -59,7 +69,7 @@
 }
 
 .condition-number {
-  @apply text-lg font-bold text-gray-800 shrink-0 w-8;
+  @apply text-base font-light text-gray-700 shrink-0 w-8;
 }
 
 .condition-content {
@@ -67,11 +77,13 @@
 }
 
 .condition-title {
-  @apply text-base font-bold text-gray-900 uppercase mb-2;
+  @apply text-sm font-medium text-gray-900 mb-3 uppercase tracking-wide;
+  letter-spacing: 0.05em;
 }
 
 .condition-text {
-  @apply text-sm text-gray-700 leading-relaxed text-justify;
+  @apply text-sm text-gray-700 leading-relaxed font-light;
+  text-align: justify;
 }
 
 /* Vista de edición */
@@ -80,11 +92,12 @@
 }
 
 .form-label {
-  @apply text-sm font-semibold text-gray-700 mb-2 block;
+  @apply text-xs font-medium text-gray-600 mb-2 block uppercase tracking-wide;
+  letter-spacing: 0.05em;
 }
 
 .condition-edit-item {
-  @apply bg-gray-50 p-6 rounded-lg border border-gray-200;
+  @apply bg-gray-50 p-6 border border-gray-200;
 }
 
 .condition-edit-header {
@@ -92,11 +105,11 @@
 }
 
 .condition-edit-number {
-  @apply text-lg font-bold text-gray-800;
+  @apply text-base font-light text-gray-800;
 }
 
 .btn-delete-condition {
-  @apply px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium;
+  @apply px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 transition-colors text-xs font-light uppercase;
 }
 
 .form-group {
@@ -104,7 +117,7 @@
 }
 
 .input-field {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm;
+  @apply w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors text-sm font-light;
 }
 
 .textarea-field {
@@ -117,7 +130,11 @@
 
 /* Nota informativa */
 .info-note {
-  @apply mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg;
+  @apply mt-8 p-4 bg-gray-50 border-l-4 border-gray-800;
+}
+
+.info-note p {
+  @apply text-sm text-gray-600 font-light;
 }
 
 .empty-state {

@@ -1,38 +1,50 @@
 @import "tailwindcss";
 
 .products-catalog-container {
-  @apply max-w-7xl mx-auto p-6;
+  @apply max-w-7xl mx-auto p-8;
 }
 
 /* Header */
 .header {
-  @apply flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-300;
+  @apply flex justify-between items-center mb-10 pb-6 border-b border-gray-200;
+}
+
+.header h1 {
+  @apply text-4xl font-light text-gray-800 tracking-widest uppercase;
+  letter-spacing: 0.15em;
 }
 
 .btn-add-product {
-  @apply px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium shadow-md;
+  @apply px-8 py-3 bg-gray-800 text-white text-sm uppercase tracking-wide hover:bg-gray-700 transition-all font-light shadow-md;
+  letter-spacing: 0.1em;
 }
 
 /* Alertas */
 .alert {
-  @apply p-4 rounded-lg mb-4 font-medium;
+  @apply p-4 mb-6 font-light text-sm uppercase tracking-wide;
+  letter-spacing: 0.05em;
 }
 
 .alert-success {
-  @apply bg-green-100 text-green-800 border border-green-300;
+  @apply bg-green-50 text-green-800 border-l-4 border-green-600;
 }
 
 .alert-error {
-  @apply bg-red-100 text-red-800 border border-red-300;
+  @apply bg-red-50 text-red-800 border-l-4 border-red-600;
 }
 
 /* Formulario */
 .form-card {
-  @apply bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200;
+  @apply bg-white shadow-sm p-8 mb-10 border border-gray-200;
+}
+
+.form-card h2 {
+  @apply text-2xl font-light text-gray-800 tracking-wide uppercase mb-6;
+  letter-spacing: 0.1em;
 }
 
 .form-grid {
-  @apply grid grid-cols-1 md:grid-cols-2 gap-4 mb-6;
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6 mb-8;
 }
 
 .form-group {
@@ -44,53 +56,57 @@
 }
 
 .form-label {
-  @apply text-sm font-semibold text-gray-700 mb-2;
+  @apply text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide;
+  letter-spacing: 0.05em;
 }
 
 .input-field {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  @apply w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors text-sm;
 }
 
 .input-field-sm {
-  @apply w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-400;
+  @apply w-full px-3 py-2 text-sm border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors;
 }
 
 .checkbox-field {
-  @apply w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500;
+  @apply w-5 h-5 text-gray-800 focus:ring-2 focus:ring-gray-500;
 }
 
 .checkbox-label {
-  @apply ml-2 text-sm font-medium text-gray-700 cursor-pointer;
+  @apply ml-2 text-sm font-light text-gray-700;
 }
 
 .form-actions {
-  @apply flex justify-end gap-3 pt-4 border-t border-gray-200;
+  @apply flex justify-end gap-4 pt-6 border-t border-gray-200;
 }
 
 .btn-primary {
-  @apply px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply px-8 py-3 bg-gray-800 text-white text-sm uppercase tracking-wide hover:bg-gray-700 transition-all font-light disabled:opacity-50 disabled:cursor-not-allowed;
+  letter-spacing: 0.1em;
 }
 
 .btn-secondary {
-  @apply px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors font-medium;
+  @apply px-8 py-3 bg-gray-200 text-gray-700 text-sm uppercase tracking-wide hover:bg-gray-300 transition-all font-light;
+  letter-spacing: 0.1em;
 }
 
 /* Buscador */
 .search-container {
-  @apply mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3;
+  @apply mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4;
 }
 
 .search-input {
-  @apply flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base;
+  @apply flex-1 px-5 py-4 border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors text-sm;
 }
 
 .search-results-count {
-  @apply text-sm text-gray-600 font-medium;
+  @apply text-xs text-gray-600 font-light uppercase tracking-wide;
+  letter-spacing: 0.05em;
 }
 
 /* Tabla */
 .table-container {
-  @apply bg-white rounded-lg shadow-md overflow-hidden border border-gray-200;
+  @apply bg-white shadow-sm overflow-hidden border border-gray-200;
 }
 
 .products-table {
@@ -98,15 +114,16 @@
 }
 
 .products-table thead {
-  @apply bg-gray-100 border-b-2 border-gray-300;
+  @apply bg-gray-50 border-b border-gray-200;
 }
 
 .products-table th {
-  @apply px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider;
+  @apply px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider;
+  letter-spacing: 0.05em;
 }
 
 .products-table tbody tr {
-  @apply border-b border-gray-200 hover:bg-gray-50 transition-colors;
+  @apply border-b border-gray-100 hover:bg-gray-50 transition-colors;
 }
 
 .products-table tbody tr:last-child {
@@ -114,24 +131,25 @@
 }
 
 .products-table td {
-  @apply px-4 py-3 text-sm text-gray-900;
+  @apply px-6 py-4 text-sm text-gray-900 font-light;
 }
 
 .inactive-row {
-  @apply bg-gray-100 opacity-60;
+  @apply bg-gray-50 opacity-50;
 }
 
 /* Badges */
 .badge {
-  @apply inline-block px-3 py-1 rounded-full text-xs font-semibold;
+  @apply inline-block px-3 py-1 text-xs font-light uppercase tracking-wide;
+  letter-spacing: 0.05em;
 }
 
 .badge-active {
-  @apply bg-green-100 text-green-800;
+  @apply bg-green-50 text-green-700 border border-green-200;
 }
 
 .badge-inactive {
-  @apply bg-gray-200 text-gray-600;
+  @apply bg-gray-100 text-gray-600 border border-gray-200;
 }
 
 /* Botones de acción */
@@ -140,26 +158,32 @@
 }
 
 .btn-edit {
-  @apply px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors font-medium text-sm;
+  @apply px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-light text-xs uppercase;
 }
 
 .btn-delete {
-  @apply px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors font-medium text-sm;
+  @apply px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 transition-colors font-light text-xs uppercase;
 }
 
 .btn-save {
-  @apply px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors font-bold text-lg;
+  @apply px-4 py-2 bg-green-50 text-green-700 hover:bg-green-100 transition-colors font-light text-xs uppercase;
 }
 
 .btn-cancel {
-  @apply px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors font-bold text-lg;
+  @apply px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-light text-xs uppercase;
 }
 
 /* Estados vacíos */
 .empty-state {
-  @apply py-16 px-4;
+  @apply py-20 px-4;
+}
+
+.empty-state p {
+  @apply text-gray-500 text-center font-light text-sm uppercase tracking-wide;
+  letter-spacing: 0.05em;
 }
 
 .loading-state {
-  @apply py-16 px-4 text-center text-gray-600 font-medium;
+  @apply py-20 px-4 text-center text-gray-600 font-light text-sm uppercase tracking-wide;
+  letter-spacing: 0.05em;
 }

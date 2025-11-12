@@ -8,7 +8,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     <nav class="navbar">
       <div class="navbar-container">
         <div class="navbar-brand">
-          <h1 class="navbar-title">Easy Budgets</h1>
+          <h1 class="navbar-title">ENTRECUINES</h1>
           <p class="navbar-subtitle">Sistema de Presupuestos</p>
         </div>
         <div class="navbar-links">
@@ -16,13 +16,13 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
             routerLink="/presupuestos"
             routerLinkActive="active"
             class="nav-link">
-            📝 Presupuestos
+            PRESUPUESTOS
           </a>
           <a
             routerLink="/productos"
             routerLinkActive="active"
             class="nav-link">
-            📦 Catálogo
+            CATÁLOGO
           </a>
         </div>
       </div>
@@ -32,11 +32,11 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     @import "tailwindcss";
 
     .navbar {
-      @apply bg-white shadow-md border-b-4 border-blue-600 mb-6;
+      @apply bg-white shadow-sm border-b border-gray-200;
     }
 
     .navbar-container {
-      @apply container mx-auto px-6 py-4 flex justify-between items-center;
+      @apply max-w-7xl mx-auto px-8 py-6 flex justify-between items-center;
     }
 
     .navbar-brand {
@@ -44,23 +44,48 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     }
 
     .navbar-title {
-      @apply text-2xl font-bold text-blue-700;
+      @apply text-3xl font-light tracking-widest text-gray-800;
+      font-family: 'Arial', sans-serif;
+      letter-spacing: 0.15em;
     }
 
     .navbar-subtitle {
-      @apply text-sm text-gray-600;
+      @apply text-xs text-gray-500 uppercase tracking-wide mt-1;
+      letter-spacing: 0.1em;
     }
 
     .navbar-links {
-      @apply flex gap-4;
+      @apply flex gap-8;
     }
 
     .nav-link {
-      @apply px-6 py-2 rounded-md font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-colors;
+      @apply text-sm font-medium text-gray-700 uppercase tracking-wider hover:text-gray-900 transition-colors relative;
+      letter-spacing: 0.1em;
+      padding-bottom: 2px;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background-color: #1f2937;
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
     }
 
     .nav-link.active {
-      @apply bg-blue-600 text-white hover:bg-blue-700 hover:text-white;
+      @apply text-gray-900;
+    }
+
+    .nav-link.active::after {
+      width: 100%;
+      background-color: #1f2937;
     }
   `]
 })
