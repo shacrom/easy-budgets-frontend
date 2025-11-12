@@ -29,7 +29,7 @@ export class MaterialRowComponent {
   // Calculated total price
   protected readonly totalPrice = computed(() => {
     const mat = this.material();
-    return mat.cantidad * mat.precioUnitario;
+    return mat.quantity * mat.unitPrice;
   });
 
   /**
@@ -38,7 +38,7 @@ export class MaterialRowComponent {
   protected onValueChange(): void {
     const updatedMaterial: Material = {
       ...this.material(),
-      precioTotal: this.material().cantidad * this.material().precioUnitario
+      totalPrice: this.material().quantity * this.material().unitPrice
     };
     this.materialUpdated.emit(updatedMaterial);
   }

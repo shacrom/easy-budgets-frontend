@@ -23,7 +23,7 @@ export class MaterialsTableComponent {
 
   // Total calculated from all materials
   protected readonly totalMaterials = computed(() => {
-    return this.materials().reduce((sum, material) => sum + material.precioTotal, 0);
+    return this.materials().reduce((sum, material) => sum + material.totalPrice, 0);
   });
 
   // Output: emits total when it changes
@@ -38,11 +38,11 @@ export class MaterialsTableComponent {
   protected addNewMaterial(): void {
     const newMaterial: Material = {
       id: this.generateId(),
-      descripcion: '',
-      fabricante: '',
-      cantidad: 0,
-      precioUnitario: 0,
-      precioTotal: 0
+      description: '',
+      manufacturer: '',
+      quantity: 0,
+      unitPrice: 0,
+      totalPrice: 0
     };
 
     this.materials.update(materials => [...materials, newMaterial]);

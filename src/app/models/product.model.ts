@@ -6,12 +6,12 @@ export interface Product {
   reference: string;
   description: string;
   manufacturer: string;
-  base_price: number;
-  vat_rate: number;
+  basePrice: number;
+  vatRate: number;
   category?: string;
   active: boolean;
-  created_at?: string;
-  updated_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /**
@@ -21,8 +21,8 @@ export interface CreateProductDto {
   reference: string;
   description: string;
   manufacturer: string;
-  base_price: number;
-  vat_rate: number;
+  basePrice: number;
+  vatRate: number;
   category?: string;
   active?: boolean;
 }
@@ -34,8 +34,8 @@ export interface UpdateProductDto {
   reference?: string;
   description?: string;
   manufacturer?: string;
-  base_price?: number;
-  vat_rate?: number;
+  basePrice?: number;
+  vatRate?: number;
   category?: string;
   active?: boolean;
 }

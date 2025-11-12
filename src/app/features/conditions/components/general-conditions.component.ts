@@ -65,8 +65,8 @@ export class GeneralConditionsComponent {
   protected addCondition(): void {
     const newCondition: Condition = {
       id: this.generateId(),
-      titulo: '',
-      texto: ''
+      title: '',
+      text: ''
     };
 
     this.conditions.update(conds => [...conds, newCondition]);
@@ -84,7 +84,7 @@ export class GeneralConditionsComponent {
   /**
    * Updates a specific field of a condition
    */
-  protected updateConditionField(conditionId: string, field: 'titulo' | 'texto', event: Event): void {
+  protected updateConditionField(conditionId: string, field: 'title' | 'text', event: Event): void {
     const input = event.target as HTMLInputElement | HTMLTextAreaElement;
     this.conditions.update(conds =>
       conds.map(cond =>

@@ -1,62 +1,62 @@
 @if (!editMode()) {
   <!-- Read-only view -->
   <tr class="material-row">
-    <td class="material-cell descripcion">{{ material().descripcion }}</td>
-    <td class="material-cell fabricante">{{ material().fabricante }}</td>
-    <td class="material-cell cantidad">{{ material().cantidad }}</td>
-    <td class="material-cell precio">
-      {{ material().precioUnitario | currency:'EUR':'symbol':'1.2-2':'es' }}
+    <td class="material-cell description">{{ material().description }}</td>
+    <td class="material-cell manufacturer">{{ material().manufacturer }}</td>
+    <td class="material-cell quantity">{{ material().quantity }}</td>
+    <td class="material-cell price">
+      {{ material().unitPrice | currency:'EUR':'symbol':'1.2-2':'es' }}
     </td>
-    <td class="material-cell precio-total">
+    <td class="material-cell price-total">
       {{ totalPrice() | currency:'EUR':'symbol':'1.2-2':'es' }}
     </td>
-    <td class="material-cell acciones"></td>
+    <td class="material-cell actions"></td>
   </tr>
 } @else {
   <!-- Edit view -->
   <tr class="material-row edit-mode">
-    <td class="material-cell descripcion">
+    <td class="material-cell description">
       <input
         type="text"
-        [(ngModel)]="material().descripcion"
+        [(ngModel)]="material().description"
         (ngModelChange)="onValueChange()"
         class="input-field"
         placeholder="Descripción del material">
     </td>
-    <td class="material-cell fabricante">
+    <td class="material-cell manufacturer">
       <input
         type="text"
-        [(ngModel)]="material().fabricante"
+        [(ngModel)]="material().manufacturer"
         (ngModelChange)="onValueChange()"
         class="input-field"
         placeholder="Fabricante">
     </td>
-    <td class="material-cell cantidad">
+    <td class="material-cell quantity">
       <input
         type="number"
-        [(ngModel)]="material().cantidad"
+        [(ngModel)]="material().quantity"
         (ngModelChange)="onValueChange()"
         min="0"
         step="0.01"
         class="input-field text-right"
         placeholder="0">
     </td>
-    <td class="material-cell precio">
+    <td class="material-cell price">
       <input
         type="number"
-        [(ngModel)]="material().precioUnitario"
+        [(ngModel)]="material().unitPrice"
         (ngModelChange)="onValueChange()"
         min="0"
         step="0.01"
         class="input-field text-right"
         placeholder="0.00">
     </td>
-    <td class="material-cell precio-total">
+    <td class="material-cell price-total">
       <span class="font-normal">
         {{ totalPrice() | currency:'EUR':'symbol':'1.2-2':'es' }}
       </span>
     </td>
-    <td class="material-cell acciones">
+    <td class="material-cell actions">
       <button
         (click)="deleteMaterial()"
         class="btn-delete-row"

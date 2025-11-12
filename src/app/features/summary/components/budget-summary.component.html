@@ -32,7 +32,7 @@
         <div class="detail-section">
           @for (block of blocks(); track block.id) {
             <div class="detail-row">
-              <span class="detail-label">{{ block.encabezado || 'Bloque sin título' }}</span>
+              <span class="detail-label">{{ block.heading || 'Bloque sin título' }}</span>
               <span class="detail-value">
                 {{ block.total | currency:'EUR':'symbol':'1.2-2':'es' }}
               </span>
@@ -56,15 +56,15 @@
       @if (materialsExpanded() && materials().length > 0) {
         <div class="detail-section">
           @for (material of materials(); track material.id) {
-            <div class="detail-row">
+            <div class="summary-line">
               <span class="detail-label">
-                {{ material.descripcion || 'Material sin descripción' }}
-                @if (material.fabricante) {
-                  <span class="text-gray-500 text-xs">({{ material.fabricante }})</span>
+                {{ material.description || 'Material sin descripción' }}
+                @if (material.manufacturer) {
+                  <span class="text-gray-500 text-xs">({{ material.manufacturer }})</span>
                 }
               </span>
               <span class="detail-value">
-                {{ material.precioTotal | currency:'EUR':'symbol':'1.2-2':'es' }}
+                {{ material.totalPrice | currency:'EUR':'symbol':'1.2-2':'es' }}
               </span>
             </div>
           }
@@ -97,21 +97,21 @@
         @for (line of additionalLines(); track line.id) {
           <div class="summary-row additional-line">
             @if (!editMode()) {
-              <span class="summary-label">{{ line.concepto }}:</span>
-              <span class="summary-value" [class.text-red-600]="line.importe < 0">
-                {{ line.importe | currency:'EUR':'symbol':'1.2-2':'es' }}
+              <span class="summary-label">{{ line.concept }}:</span>
+              <span class="summary-value" [class.text-red-600]="line.amount < 0">
+                {{ line.amount | currency:'EUR':'symbol':'1.2-2':'es' }}
               </span>
             } @else {
               <div class="flex gap-2 items-center w-full">
                 <input
                   type="text"
-                  [(ngModel)]="line.concepto"
+                  [(ngModel)]="line.concept"
                   (ngModelChange)="updateAdditionalLine(line)"
                   class="input-field flex-1"
                   placeholder="Concepto (ej: Descuento, Extra)">
                 <input
                   type="number"
-                  [(ngModel)]="line.importe"
+                  [(ngModel)]="line.amount"
                   (ngModelChange)="updateAdditionalLine(line)"
                   step="0.01"
                   class="input-field w-32 text-right"

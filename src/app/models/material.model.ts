@@ -4,9 +4,9 @@
  */
 export interface Material {
   id: string;
-  descripcion: string;
-  fabricante: string;
-  cantidad: number;
-  precioUnitario: number;
-  precioTotal: number; // calculado: cantidad * precioUnitario
+  description: string;
+  manufacturer: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number; // calculado: cantidad * precioUnitario
 }

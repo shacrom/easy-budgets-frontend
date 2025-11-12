@@ -69,8 +69,8 @@
             type="number"
             step="0.01"
             min="0"
-            [value]="newProduct().base_price"
-            (input)="updateNewProductField('base_price', $event)"
+            [value]="newProduct().basePrice"
+            (input)="updateNewProductField('basePrice', $event)"
             class="input-field"
             placeholder="0.00">
         </div>
@@ -82,8 +82,8 @@
             step="1"
             min="0"
             max="100"
-            [value]="newProduct().vat_rate"
-            (input)="updateNewProductField('vat_rate', $event)"
+            [value]="newProduct().vatRate"
+            (input)="updateNewProductField('vatRate', $event)"
             class="input-field"
             placeholder="21">
         </div>
@@ -212,19 +212,19 @@
                   <input
                     type="number"
                     step="0.01"
-                    [value]="editingProduct()!.base_price"
-                    (input)="updateEditingProductField('base_price', $event)"
+                    [value]="editingProduct()!.basePrice"
+                    (input)="updateEditingProductField('basePrice', $event)"
                     class="input-field-sm">
                 </td>
                 <td>
                   <input
                     type="number"
-                    [value]="editingProduct()!.vat_rate"
-                    (input)="updateEditingProductField('vat_rate', $event)"
+                    [value]="editingProduct()!.vatRate"
+                    (input)="updateEditingProductField('vatRate', $event)"
                     class="input-field-sm">
                 </td>
                 <td class="text-right font-semibold">
-                  {{ (editingProduct()!.base_price * (1 + editingProduct()!.vat_rate / 100)).toFixed(2) }}€
+                  {{ (editingProduct()!.basePrice * (1 + editingProduct()!.vatRate / 100)).toFixed(2) }}€
                 </td>
                 <td>
                   <input
@@ -257,10 +257,10 @@
                 <td>{{ product.description }}</td>
                 <td>{{ product.manufacturer }}</td>
                 <td>{{ product.category || '-' }}</td>
-                <td class="text-right">{{ product.base_price.toFixed(2) }}€</td>
-                <td class="text-right">{{ product.vat_rate }}%</td>
+                <td class="text-right">{{ product.basePrice.toFixed(2) }}€</td>
+                <td class="text-right">{{ product.vatRate }}%</td>
                 <td class="text-right font-semibold">
-                  {{ (product.base_price * (1 + product.vat_rate / 100)).toFixed(2) }}€
+                  {{ (product.basePrice * (1 + product.vatRate / 100)).toFixed(2) }}€
                 </td>
                 <td>
                   @if (product.active) {

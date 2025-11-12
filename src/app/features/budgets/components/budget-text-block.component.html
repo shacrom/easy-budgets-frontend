@@ -4,7 +4,7 @@
     <div class="block-view">
       <div class="block-header">
         <h3 class="text-xl font-bold text-gray-800 bg-green-100 px-4 py-2 rounded">
-          {{ block().encabezado }}
+          {{ block().heading }}
         </h3>
         @if (editMode()) {
           <div class="actions">
@@ -26,10 +26,10 @@
 
       <div class="block-content">
         <!-- Secciones de descripción -->
-        @for (descripcion of block().descripciones; track descripcion.id) {
+        @for (descripcion of block().descriptions; track descripcion.id) {
           <div class="description-section">
-            <h4 class="description-title">{{ descripcion.titulo }}</h4>
-            <p class="description-text">{{ descripcion.texto }}</p>
+            <h3 class="description-title">{{ descripcion.title }}</h3>
+            <p class="description-text">{{ descripcion.text }}</p>
           </div>
         }
 
@@ -43,11 +43,11 @@
           </a>
         }
 
-        @if (block().foto) {
+        @if (block().photo) {
           <div class="block-image mt-4">
             <img
-              [src]="block().foto"
-              [alt]="block().encabezado"
+              [src]="block().photo"
+              [alt]="block().heading"
               class="max-w-full h-auto rounded-lg shadow-md">
           </div>
         }
@@ -69,8 +69,8 @@
         <input
           type="text"
           id="encabezado-{{ block().id }}"
-          [value]="block().encabezado"
-          (input)="updateBlockField('encabezado', $event)"
+          [value]="block().heading"
+          (input)="updateBlockField('heading', $event)"
           class="form-input"
           placeholder="Título del bloque">
       </div>
@@ -87,7 +87,7 @@
           </button>
         </div>
 
-        @for (descripcion of block().descripciones; track descripcion.id; let idx = $index) {
+        @for (descripcion of block().descriptions; track descripcion.id; let idx = $index) {
           <div class="description-edit-item">
             <div class="description-edit-header">
               <span class="text-sm font-light text-gray-700 uppercase" style="letter-spacing: 0.05em;">Sección {{ idx + 1 }}</span>
@@ -104,8 +104,8 @@
               <label class="form-label-small">Título:</label>
               <input
                 type="text"
-                [value]="descripcion.titulo"
-                (input)="updateDescriptionSection(descripcion.id, 'titulo', $event)"
+                [value]="descripcion.title"
+                (input)="updateDescriptionSection(descripcion.id, 'title', $event)"
                 class="form-input-small"
                 placeholder="Ej: NUESTRAS COCINAS">
             </div>
@@ -113,8 +113,8 @@
             <div class="form-group-inline">
               <label class="form-label-small">Texto:</label>
               <textarea
-                [value]="descripcion.texto"
-                (input)="updateDescriptionSection(descripcion.id, 'texto', $event)"
+                [value]="descripcion.text"
+                (input)="updateDescriptionSection(descripcion.id, 'text', $event)"
                 rows="3"
                 class="form-input-small"
                 placeholder="Las cocinas Dica se diseñan..."></textarea>
@@ -122,7 +122,7 @@
           </div>
         }
 
-        @if (block().descripciones.length === 0) {
+        @if (block().descriptions.length === 0) {
           <div class="empty-descriptions">
             <p class="text-gray-500 text-sm text-center">
               No hay secciones de descripción. Haz clic en "+ Añadir Sección" para comenzar.
@@ -151,8 +151,8 @@
         <input
           type="url"
           id="foto-{{ block().id }}"
-          [value]="block().foto || ''"
-          (input)="updateBlockField('foto', $event)"
+          [value]="block().photo || ''"
+          (input)="updateBlockField('photo', $event)"
           class="form-input"
           placeholder="https://ejemplo.com/imagen.jpg">
       </div>

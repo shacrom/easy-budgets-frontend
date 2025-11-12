@@ -38,10 +38,10 @@ export class BudgetTextBlocksComponent {
   protected addNewBlock(): void {
     const newBlock: BudgetTextBlock = {
       id: this.generateId(),
-      encabezado: '',
-      descripciones: [], // Initially without description sections
+      heading: '',
+      descriptions: [], // Initially without description sections
       link: '',
-      foto: '',
+      photo: '',
       total: 0
     };
 

@@ -29,8 +29,8 @@ export class ProductsCatalogComponent {
     reference: '',
     description: '',
     manufacturer: '',
-    base_price: 0,
-    vat_rate: 21,
+    basePrice: 0,
+    vatRate: 21,
     category: '',
     active: true
   });
@@ -99,7 +99,7 @@ export class ProductsCatalogComponent {
       return;
     }
 
-    if (product.base_price <= 0) {
+    if (product.basePrice <= 0) {
       this.errorMessage.set('El precio debe ser mayor que 0');
       return;
     }
@@ -151,7 +151,7 @@ export class ProductsCatalogComponent {
       return;
     }
 
-    if (product.base_price <= 0) {
+    if (product.basePrice <= 0) {
       this.errorMessage.set('El precio debe ser mayor que 0');
       return;
     }
@@ -214,7 +214,7 @@ export class ProductsCatalogComponent {
    */
   protected updateNewProductField(field: keyof CreateProductDto, event: Event): void {
     const input = event.target as HTMLInputElement;
-    const value = field === 'base_price' || field === 'vat_rate'
+    const value = field === 'basePrice' || field === 'vatRate'
       ? parseFloat(input.value)
       : field === 'active'
         ? (input as HTMLInputElement).checked
@@ -228,7 +228,7 @@ export class ProductsCatalogComponent {
    */
   protected updateEditingProductField(field: keyof Product, event: Event): void {
     const input = event.target as HTMLInputElement;
-    const value = field === 'base_price' || field === 'vat_rate'
+    const value = field === 'basePrice' || field === 'vatRate'
       ? parseFloat(input.value)
       : field === 'active'
         ? (input as HTMLInputElement).checked
@@ -247,8 +247,8 @@ export class ProductsCatalogComponent {
       reference: '',
       description: '',
       manufacturer: '',
-      base_price: 0,
-      vat_rate: 21,
+      basePrice: 0,
+      vatRate: 21,
       category: '',
       active: true
     });

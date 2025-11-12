@@ -3,8 +3,8 @@
  */
 export interface DescriptionSection {
   id: string;
-  titulo: string;
-  texto: string;
+  title: string;
+  text: string;
 }
 
 /**
@@ -13,9 +13,9 @@ export interface DescriptionSection {
  */
 export interface BudgetTextBlock {
   id: string;
-  encabezado: string;
-  descripciones: DescriptionSection[]; // Lista de secciones con título y texto
+  heading: string;
+  descriptions: DescriptionSection[]; // Lista de secciones con título y texto
   link?: string;
-  foto?: string;
+  photo?: string;
   total: number;
 }

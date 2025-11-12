@@ -65,13 +65,13 @@ export class BudgetTextBlockComponent {
   protected addDescriptionSection(): void {
     const newSection: DescriptionSection = {
       id: this.generateId(),
-      titulo: '',
-      texto: ''
+      title: '',
+      text: ''
     };
 
     const updatedBlock: BudgetTextBlock = {
       ...this.block(),
-      descripciones: [...this.block().descripciones, newSection]
+      descriptions: [...this.block().descriptions, newSection]
     };
 
     this.blockUpdated.emit(updatedBlock);
@@ -80,12 +80,12 @@ export class BudgetTextBlockComponent {
   /**
    * Updates a description section
    */
-  protected updateDescriptionSection(sectionId: string, field: 'titulo' | 'texto', event: Event): void {
+  protected updateDescriptionSection(sectionId: string, field: 'title' | 'text', event: Event): void {
     const input = event.target as HTMLInputElement | HTMLTextAreaElement;
 
     const updatedBlock: BudgetTextBlock = {
       ...this.block(),
-      descripciones: this.block().descripciones.map(desc =>
+      descriptions: this.block().descriptions.map(desc =>
         desc.id === sectionId
           ? { ...desc, [field]: input.value }
           : desc
@@ -101,7 +101,7 @@ export class BudgetTextBlockComponent {
   protected deleteDescriptionSection(sectionId: string): void {
     const updatedBlock: BudgetTextBlock = {
       ...this.block(),
-      descripciones: this.block().descripciones.filter(desc => desc.id !== sectionId)
+      descriptions: this.block().descriptions.filter(desc => desc.id !== sectionId)
     };
 
     this.blockUpdated.emit(updatedBlock);

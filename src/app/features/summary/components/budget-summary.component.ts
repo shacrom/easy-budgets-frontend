@@ -40,7 +40,7 @@ export class BudgetSummaryComponent {
   });
 
   protected readonly totalAdditionalLines = computed(() => {
-    return this.additionalLines().reduce((sum, line) => sum + line.importe, 0);
+    return this.additionalLines().reduce((sum, line) => sum + line.amount, 0);
   });
 
   protected readonly taxableBase = computed(() => {
@@ -82,8 +82,8 @@ export class BudgetSummaryComponent {
   protected addAdditionalLine(): void {
     const newLine: SummaryLine = {
       id: this.generateId(),
-      concepto: '',
-      importe: 0
+      concept: '',
+      amount: 0
     };
 
     this.additionalLines.update(lines => [...lines, newLine]);
