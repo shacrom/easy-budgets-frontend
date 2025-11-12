@@ -22,14 +22,14 @@ export class SupabaseService {
   // ============================================
   // PRODUCTOS
   // ============================================
-  
+
   async getProducts() {
     const { data, error } = await this.supabase
       .from('products')
       .select('*')
       .eq('is_active', true)
       .order('description');
-    
+
     if (error) throw error;
     return data;
   }
@@ -40,7 +40,7 @@ export class SupabaseService {
       .select('*')
       .eq('reference', reference)
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -51,7 +51,7 @@ export class SupabaseService {
       .insert([product])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -63,21 +63,30 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
+  }
+
+  async deleteProduct(id: string) {
+    const { error } = await this.supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   }
 
   // ============================================
   // CLIENTES
   // ============================================
-  
+
   async getCustomers() {
     const { data, error } = await this.supabase
       .from('customers')
       .select('*')
       .order('name');
-    
+
     if (error) throw error;
     return data;
   }
@@ -88,7 +97,7 @@ export class SupabaseService {
       .select('*')
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -99,7 +108,7 @@ export class SupabaseService {
       .insert([customer])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -111,7 +120,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -119,7 +128,7 @@ export class SupabaseService {
   // ============================================
   // PRESUPUESTOS
   // ============================================
-  
+
   async getBudgets() {
     const { data, error } = await this.supabase
       .from('budgets')
@@ -128,7 +137,7 @@ export class SupabaseService {
         customer:customers(*)
       `)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data;
   }
@@ -145,7 +154,7 @@ export class SupabaseService {
       `)
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -156,7 +165,7 @@ export class SupabaseService {
       .insert([budget])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -168,7 +177,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -176,14 +185,14 @@ export class SupabaseService {
   // ============================================
   // BLOQUES DE TEXTO DEL PRESUPUESTO
   // ============================================
-  
+
   async addTextBlockToBudget(textBlock: any) {
     const { data, error } = await this.supabase
       .from('budget_text_blocks')
       .insert([textBlock])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -195,7 +204,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -205,21 +214,21 @@ export class SupabaseService {
       .from('budget_text_blocks')
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
   }
 
   // ============================================
   // MATERIALES DEL PRESUPUESTO
   // ============================================
-  
+
   async addMaterialToBudget(material: any) {
     const { data, error } = await this.supabase
       .from('budget_materials')
       .insert([material])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -231,7 +240,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -241,21 +250,21 @@ export class SupabaseService {
       .from('budget_materials')
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
   }
 
   // ============================================
   // LÍNEAS ADICIONALES DEL PRESUPUESTO
   // ============================================
-  
+
   async addAdditionalLineToBudget(line: any) {
     const { data, error } = await this.supabase
       .from('budget_additional_lines')
       .insert([line])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -267,7 +276,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -277,20 +286,20 @@ export class SupabaseService {
       .from('budget_additional_lines')
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
   }
 
   // ============================================
   // CONDICIONES GENERALES
   // ============================================
-  
+
   async getGeneralConditions() {
     const { data, error } = await this.supabase
       .from('general_conditions')
       .select('*')
       .order('is_default', { ascending: false });
-    
+
     if (error) throw error;
     return data;
   }
@@ -301,7 +310,7 @@ export class SupabaseService {
       .select('*')
       .eq('is_default', true)
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -312,7 +321,7 @@ export class SupabaseService {
       .insert([conditions])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -324,7 +333,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }

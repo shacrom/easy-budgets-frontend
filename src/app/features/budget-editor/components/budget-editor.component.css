@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+.app-container {
+  @apply min-h-screen bg-gray-50;
+}
+
+.app-header {
+  @apply bg-white shadow-md py-6 px-8 mb-6;
+  @apply border-b-4 border-blue-600;
+}
+
+.app-main {
+  @apply container mx-auto px-4 py-6;
+}
+
+.section-divider {
+  @apply mb-12;
+}

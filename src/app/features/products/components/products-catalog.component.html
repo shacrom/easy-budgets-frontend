@@ -1,0 +1,297 @@
+<div class="products-catalog-container">
+  <!-- Header -->
+  <div class="header">
+    <h1 class="text-3xl font-bold text-gray-900">Catálogo de Productos</h1>
+    <button
+      (click)="toggleAddForm()"
+      class="btn-add-product"
+      type="button">
+      @if (showAddForm()) {
+        <span>✕ Cancelar</span>
+      } @else {
+        <span>+ Añadir Producto</span>
+      }
+    </button>
+  </div>
+
+  <!-- Mensajes -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      ✓ {{ successMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert alert-error">
+      ✕ {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Formulario de Nuevo Producto -->
+  @if (showAddForm()) {
+    <div class="form-card">
+      <h2 class="text-xl font-bold text-gray-900 mb-4">Nuevo Producto</h2>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Referencia *</label>
+          <input
+            type="text"
+            [value]="newProduct().reference"
+            (input)="updateNewProductField('reference', $event)"
+            class="input-field"
+            placeholder="Ej: REF-001">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Fabricante *</label>
+          <input
+            type="text"
+            [value]="newProduct().manufacturer"
+            (input)="updateNewProductField('manufacturer', $event)"
+            class="input-field"
+            placeholder="Ej: DICA">
+        </div>
+
+        <div class="form-group col-span-2">
+          <label class="form-label">Descripción *</label>
+          <input
+            type="text"
+            [value]="newProduct().description"
+            (input)="updateNewProductField('description', $event)"
+            class="input-field"
+            placeholder="Descripción del producto">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Precio Base (€) *</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            [value]="newProduct().base_price"
+            (input)="updateNewProductField('base_price', $event)"
+            class="input-field"
+            placeholder="0.00">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">IVA (%) *</label>
+          <input
+            type="number"
+            step="1"
+            min="0"
+            max="100"
+            [value]="newProduct().vat_rate"
+            (input)="updateNewProductField('vat_rate', $event)"
+            class="input-field"
+            placeholder="21">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Categoría</label>
+          <input
+            type="text"
+            [value]="newProduct().category"
+            (input)="updateNewProductField('category', $event)"
+            class="input-field"
+            placeholder="Ej: Cocinas">
+        </div>
+
+        <div class="form-group flex items-center">
+          <input
+            type="checkbox"
+            id="new-active"
+            [checked]="newProduct().active"
+            (change)="updateNewProductField('active', $event)"
+            class="checkbox-field">
+          <label for="new-active" class="checkbox-label">Producto activo</label>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          (click)="toggleAddForm()"
+          class="btn-secondary"
+          type="button">
+          Cancelar
+        </button>
+        <button
+          (click)="addProduct()"
+          [disabled]="isLoading()"
+          class="btn-primary"
+          type="button">
+          @if (isLoading()) {
+            <span>Guardando...</span>
+          } @else {
+            <span>Guardar Producto</span>
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Buscador -->
+  <div class="search-container">
+    <input
+      type="text"
+      [value]="searchTerm()"
+      (input)="updateSearch($event)"
+      class="search-input"
+      placeholder="🔍 Buscar por referencia, descripción o fabricante...">
+    <span class="search-results-count">
+      {{ filteredProducts().length }} producto(s) encontrado(s)
+    </span>
+  </div>
+
+  <!-- Tabla de Productos -->
+  <div class="table-container">
+    @if (isLoading() && products().length === 0) {
+      <div class="loading-state">
+        <p>Cargando productos...</p>
+      </div>
+    } @else if (filteredProducts().length === 0) {
+      <div class="empty-state">
+        <p class="text-gray-500 text-center">
+          @if (searchTerm()) {
+            No se encontraron productos con el término "{{ searchTerm() }}"
+          } @else {
+            No hay productos en el catálogo. ¡Añade el primero!
+          }
+        </p>
+      </div>
+    } @else {
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th>Referencia</th>
+            <th>Descripción</th>
+            <th>Fabricante</th>
+            <th>Categoría</th>
+            <th>Precio Base</th>
+            <th>IVA</th>
+            <th>Precio Final</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of filteredProducts(); track product.id) {
+            <tr [class.inactive-row]="!product.active">
+              @if (editingProduct()?.id === product.id) {
+                <!-- Modo Edición -->
+                <td>
+                  <input
+                    type="text"
+                    [value]="editingProduct()!.reference"
+                    (input)="updateEditingProductField('reference', $event)"
+                    class="input-field-sm">
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    [value]="editingProduct()!.description"
+                    (input)="updateEditingProductField('description', $event)"
+                    class="input-field-sm">
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    [value]="editingProduct()!.manufacturer"
+                    (input)="updateEditingProductField('manufacturer', $event)"
+                    class="input-field-sm">
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    [value]="editingProduct()!.category || ''"
+                    (input)="updateEditingProductField('category', $event)"
+                    class="input-field-sm">
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    step="0.01"
+                    [value]="editingProduct()!.base_price"
+                    (input)="updateEditingProductField('base_price', $event)"
+                    class="input-field-sm">
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    [value]="editingProduct()!.vat_rate"
+                    (input)="updateEditingProductField('vat_rate', $event)"
+                    class="input-field-sm">
+                </td>
+                <td class="text-right font-semibold">
+                  {{ (editingProduct()!.base_price * (1 + editingProduct()!.vat_rate / 100)).toFixed(2) }}€
+                </td>
+                <td>
+                  <input
+                    type="checkbox"
+                    [checked]="editingProduct()!.active"
+                    (change)="updateEditingProductField('active', $event)"
+                    class="checkbox-field">
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      (click)="saveProduct(editingProduct()!)"
+                      class="btn-save"
+                      type="button"
+                      title="Guardar">
+                      ✓
+                    </button>
+                    <button
+                      (click)="cancelEdit()"
+                      class="btn-cancel"
+                      type="button"
+                      title="Cancelar">
+                      ✕
+                    </button>
+                  </div>
+                </td>
+              } @else {
+                <!-- Modo Vista -->
+                <td class="font-mono font-semibold">{{ product.reference }}</td>
+                <td>{{ product.description }}</td>
+                <td>{{ product.manufacturer }}</td>
+                <td>{{ product.category || '-' }}</td>
+                <td class="text-right">{{ product.base_price.toFixed(2) }}€</td>
+                <td class="text-right">{{ product.vat_rate }}%</td>
+                <td class="text-right font-semibold">
+                  {{ (product.base_price * (1 + product.vat_rate / 100)).toFixed(2) }}€
+                </td>
+                <td>
+                  @if (product.active) {
+                    <span class="badge badge-active">Activo</span>
+                  } @else {
+                    <span class="badge badge-inactive">Inactivo</span>
+                  }
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button
+                      (click)="startEdit(product)"
+                      class="btn-edit"
+                      type="button"
+                      title="Editar">
+                      ✎
+                    </button>
+                    <button
+                      (click)="deleteProduct(product.id!)"
+                      class="btn-delete"
+                      type="button"
+                      title="Eliminar">
+                      🗑
+                    </button>
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
