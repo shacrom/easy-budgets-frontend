@@ -10,11 +10,11 @@
 }
 
 .material-row.edit-mode {
-  @apply bg-blue-50;
+  @apply bg-gray-50;
 }
 
 .material-cell {
-  @apply px-4 py-3 text-sm;
+  @apply px-4 py-3 text-sm font-light;
 }
 
 .material-cell.descripcion {
@@ -30,11 +30,11 @@
 }
 
 .material-cell.precio {
-  @apply text-right font-medium;
+  @apply text-right font-normal;
 }
 
 .material-cell.precio-total {
-  @apply text-right font-medium;
+  @apply text-right font-normal;
 }
 
 .material-cell.acciones {
@@ -42,9 +42,10 @@
 }
 
 .input-field {
-  @apply w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm;
+  @apply w-full px-2 py-1 border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors text-sm font-light;
 }
 
 .btn-delete-row {
-  @apply px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-xs font-bold;
+  @apply px-3 py-1 bg-red-50 text-red-700 hover:bg-red-100 transition-colors text-xs font-light uppercase;
+  letter-spacing: 0.05em;
 }

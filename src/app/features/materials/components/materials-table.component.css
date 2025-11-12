@@ -5,7 +5,7 @@
 }
 
 .header {
-  @apply flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-300;
+  @apply flex justify-between items-center mb-6 pb-4 border-b border-gray-300;
 }
 
 .header-actions {
@@ -13,15 +13,17 @@
 }
 
 .btn-toggle-edit {
-  @apply px-5 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium;
+  @apply px-5 py-2 bg-gray-800 text-white hover:bg-gray-900 transition-colors font-light uppercase;
+  letter-spacing: 0.1em;
 }
 
 .btn-add-material {
-  @apply px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium;
+  @apply px-5 py-2 bg-gray-700 text-white hover:bg-gray-800 transition-colors font-light uppercase;
+  letter-spacing: 0.1em;
 }
 
 .table-wrapper {
-  @apply bg-white rounded-lg shadow-md overflow-hidden border border-gray-200;
+  @apply bg-white shadow-sm overflow-hidden border border-gray-200;
 }
 
 .materials-table {
@@ -30,11 +32,12 @@
 }
 
 .table-header {
-  @apply bg-gray-100 border-b-2 border-gray-300;
+  @apply bg-gray-50 border-b border-gray-300;
 }
 
 .header-cell {
-  @apply px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider;
+  @apply px-4 py-3 text-left text-xs font-light text-gray-700 uppercase;
+  letter-spacing: 0.1em;
 }
 
 .header-cell.cantidad {
@@ -55,17 +58,18 @@
 }
 
 .table-footer {
-  @apply bg-linear-to-r from-blue-50 to-blue-100 border-t-2 border-blue-300;
+  @apply bg-gray-50 border-t-2 border-gray-800;
 }
 
 .footer-cell {
-  @apply px-4 py-4 text-sm;
+  @apply px-4 py-4 text-sm font-light;
 }
 
 .footer-cell.total-label {
-  @apply text-right text-gray-800 text-base;
+  @apply text-right text-gray-900 text-base uppercase;
+  letter-spacing: 0.05em;
 }
 
 .footer-cell.total-amount {
-  @apply text-right text-blue-700 text-lg;
+  @apply text-right text-gray-900 text-lg font-normal;
 }

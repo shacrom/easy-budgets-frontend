@@ -5,15 +5,16 @@
 }
 
 .header {
-  @apply flex justify-between items-center mb-6 pb-4 border-b-2 border-gray-300;
+  @apply flex justify-between items-center mb-6 pb-4 border-b border-gray-300;
 }
 
 .btn-toggle-edit {
-  @apply px-5 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium;
+  @apply px-5 py-2 bg-gray-800 text-white hover:bg-gray-900 transition-colors font-light uppercase;
+  letter-spacing: 0.1em;
 }
 
 .summary-card {
-  @apply bg-white rounded-lg shadow-lg overflow-hidden border-2 border-gray-300;
+  @apply bg-white shadow-sm overflow-hidden border border-gray-300;
 }
 
 .summary-section {
@@ -29,19 +30,20 @@
 }
 
 .summary-row.clickable {
-  @apply cursor-pointer hover:bg-gray-50 transition-colors rounded px-2 -mx-2;
+  @apply cursor-pointer hover:bg-gray-50 transition-colors px-2 -mx-2;
 }
 
 .toggle-icon {
-  @apply text-gray-600 text-sm font-bold w-4 text-center;
+  @apply text-gray-600 text-sm font-light w-4 text-center;
 }
 
 .summary-label {
-  @apply text-gray-700 text-base;
+  @apply text-gray-700 text-base font-light uppercase;
+  letter-spacing: 0.05em;
 }
 
 .summary-value {
-  @apply text-gray-900 text-base;
+  @apply text-gray-900 text-base font-normal;
 }
 
 .subtotal-row {
@@ -50,7 +52,7 @@
 
 /* Secciones de detalle desplegables */
 .detail-section {
-  @apply ml-6 mb-2 bg-gray-50 rounded-md p-3 border-l-4 border-blue-400;
+  @apply ml-6 mb-2 bg-gray-50 p-3 border-l-4 border-gray-800;
 }
 
 .detail-row {
@@ -58,11 +60,11 @@
 }
 
 .detail-label {
-  @apply text-gray-600 flex-1;
+  @apply text-gray-600 flex-1 font-light;
 }
 
 .detail-value {
-  @apply text-gray-800 font-medium ml-4;
+  @apply text-gray-800 font-normal ml-4;
 }
 
 /* Sección de líneas adicionales */
@@ -75,7 +77,8 @@
 }
 
 .btn-add-line {
-  @apply px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors;
+  @apply px-3 py-1 bg-gray-700 text-white text-sm hover:bg-gray-800 transition-colors font-light uppercase;
+  letter-spacing: 0.05em;
 }
 
 .additional-line {
@@ -83,21 +86,22 @@
 }
 
 .input-field {
-  @apply px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm;
+  @apply px-3 py-1 border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors text-sm font-light;
 }
 
 .btn-delete {
-  @apply px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-xs font-bold;
+  @apply px-3 py-1 bg-red-50 text-red-700 hover:bg-red-100 transition-colors text-xs font-light uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* Sección IVA */
 .iva-section {
-  @apply bg-blue-50;
+  @apply bg-gray-50;
 }
 
 /* Total General */
 .total-section {
-  @apply bg-linear-to-r from-blue-600 to-blue-700;
+  @apply bg-gray-900;
 }
 
 .total-row {
@@ -105,9 +109,10 @@
 }
 
 .summary-label-total {
-  @apply text-white text-xl font-bold;
+  @apply text-white text-xl font-light uppercase;
+  letter-spacing: 0.15em;
 }
 
 .summary-value-total {
-  @apply text-white text-2xl font-bold;
+  @apply text-white text-2xl font-normal;
 }

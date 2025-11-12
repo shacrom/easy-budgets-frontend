@@ -83,20 +83,20 @@
             (click)="addDescriptionSection()"
             class="btn-add-section"
             type="button">
-            + Añadir Sección
+            Añadir Sección
           </button>
         </div>
 
         @for (descripcion of block().descripciones; track descripcion.id; let idx = $index) {
           <div class="description-edit-item">
             <div class="description-edit-header">
-              <span class="text-sm font-semibold text-gray-700">Sección {{ idx + 1 }}</span>
+              <span class="text-sm font-light text-gray-700 uppercase" style="letter-spacing: 0.05em;">Sección {{ idx + 1 }}</span>
               <button
                 (click)="deleteDescriptionSection(descripcion.id)"
                 class="btn-delete-section"
                 type="button"
                 title="Eliminar sección">
-                ✕
+                Eliminar
               </button>
             </div>
 
