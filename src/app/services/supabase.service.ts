@@ -20,14 +20,14 @@ export class SupabaseService {
   }
 
   // ============================================
-  // PRODUCTOS
+  // PRODUCTS
   // ============================================
 
   async getProducts() {
     const { data, error } = await this.supabase
-      .from('products')
+      .from('Products')
       .select('*')
-      .eq('is_active', true)
+      .eq('isActive', true)
       .order('description');
 
     if (error) throw error;
@@ -36,7 +36,7 @@ export class SupabaseService {
 
   async getProductByReference(reference: string) {
     const { data, error } = await this.supabase
-      .from('products')
+      .from('Products')
       .select('*')
       .eq('reference', reference)
       .single();
@@ -47,7 +47,7 @@ export class SupabaseService {
 
   async createProduct(product: any) {
     const { data, error } = await this.supabase
-      .from('products')
+      .from('Products')
       .insert([product])
       .select()
       .single();
@@ -58,9 +58,9 @@ export class SupabaseService {
 
   async updateProduct(id: string, updates: any) {
     const { data, error } = await this.supabase
-      .from('products')
+      .from('Products')
       .update(updates)
-      .eq('id', id)
+      .eq('Id', id)
       .select()
       .single();
 
@@ -70,20 +70,20 @@ export class SupabaseService {
 
   async deleteProduct(id: string) {
     const { error } = await this.supabase
-      .from('products')
+      .from('Products')
       .delete()
-      .eq('id', id);
+      .eq('Id', id);
 
     if (error) throw error;
   }
 
   // ============================================
-  // CLIENTES
+  // CUSTOMERS
   // ============================================
 
   async getCustomers() {
     const { data, error } = await this.supabase
-      .from('customers')
+      .from('Customers')
       .select('*')
       .order('name');
 
@@ -93,9 +93,9 @@ export class SupabaseService {
 
   async getCustomer(id: string) {
     const { data, error } = await this.supabase
-      .from('customers')
+      .from('Customers')
       .select('*')
-      .eq('id', id)
+      .eq('Id', id)
       .single();
 
     if (error) throw error;
@@ -104,7 +104,7 @@ export class SupabaseService {
 
   async createCustomer(customer: any) {
     const { data, error } = await this.supabase
-      .from('customers')
+      .from('Customers')
       .insert([customer])
       .select()
       .single();
@@ -115,9 +115,9 @@ export class SupabaseService {
 
   async updateCustomer(id: string, updates: any) {
     const { data, error } = await this.supabase
-      .from('customers')
+      .from('Customers')
       .update(updates)
-      .eq('id', id)
+      .eq('Id', id)
       .select()
       .single();
 
@@ -126,17 +126,17 @@ export class SupabaseService {
   }
 
   // ============================================
-  // PRESUPUESTOS
+  // BUDGETS
   // ============================================
 
   async getBudgets() {
     const { data, error } = await this.supabase
-      .from('budgets')
+      .from('Budgets')
       .select(`
         *,
-        customer:customers(*)
+        customer:Customers(*)
       `)
-      .order('created_at', { ascending: false });
+      .order('createdAt', { ascending: false });
 
     if (error) throw error;
     return data;
@@ -144,15 +144,15 @@ export class SupabaseService {
 
   async getBudget(id: string) {
     const { data, error } = await this.supabase
-      .from('budgets')
+      .from('Budgets')
       .select(`
         *,
-        customer:customers(*),
-        text_blocks:budget_text_blocks(*),
-        materials:budget_materials(*),
-        additional_lines:budget_additional_lines(*)
+        customer:Customers(*),
+        textBlocks:BudgetTextBlocks(*),
+        materials:BudgetMaterials(*),
+        additionalLines:BudgetAdditionalLines(*)
       `)
-      .eq('id', id)
+      .eq('Id', id)
       .single();
 
     if (error) throw error;
@@ -161,7 +161,7 @@ export class SupabaseService {
 
   async createBudget(budget: any) {
     const { data, error } = await this.supabase
-      .from('budgets')
+      .from('Budgets')
       .insert([budget])
       .select()
       .single();
@@ -172,9 +172,9 @@ export class SupabaseService {
 
   async updateBudget(id: string, updates: any) {
     const { data, error } = await this.supabase
-      .from('budgets')
+      .from('Budgets')
       .update(updates)
-      .eq('id', id)
+      .eq('Id', id)
       .select()
       .single();
 
@@ -183,12 +183,12 @@ export class SupabaseService {
   }
 
   // ============================================
-  // BLOQUES DE TEXTO DEL PRESUPUESTO
+  // TEXT BLOCKS
   // ============================================
 
   async addTextBlockToBudget(textBlock: any) {
     const { data, error } = await this.supabase
-      .from('budget_text_blocks')
+      .from('BudgetTextBlocks')
       .insert([textBlock])
       .select()
       .single();
@@ -199,9 +199,9 @@ export class SupabaseService {
 
   async updateBudgetTextBlock(id: string, updates: any) {
     const { data, error } = await this.supabase
-      .from('budget_text_blocks')
+      .from('BudgetTextBlocks')
       .update(updates)
-      .eq('id', id)
+      .eq('Id', id)
       .select()
       .single();
 
@@ -211,20 +211,20 @@ export class SupabaseService {
 
   async deleteBudgetTextBlock(id: string) {
     const { error } = await this.supabase
-      .from('budget_text_blocks')
+      .from('BudgetTextBlocks')
       .delete()
-      .eq('id', id);
+      .eq('Id', id);
 
     if (error) throw error;
   }
 
   // ============================================
-  // MATERIALES DEL PRESUPUESTO
+  // MATERIALS
   // ============================================
 
   async addMaterialToBudget(material: any) {
     const { data, error } = await this.supabase
-      .from('budget_materials')
+      .from('BudgetMaterials')
       .insert([material])
       .select()
       .single();
@@ -235,9 +235,9 @@ export class SupabaseService {
 
   async updateBudgetMaterial(id: string, updates: any) {
     const { data, error } = await this.supabase
-      .from('budget_materials')
+      .from('BudgetMaterials')
       .update(updates)
-      .eq('id', id)
+      .eq('Id', id)
       .select()
       .single();
 
@@ -247,20 +247,20 @@ export class SupabaseService {
 
   async deleteBudgetMaterial(id: string) {
     const { error } = await this.supabase
-      .from('budget_materials')
+      .from('BudgetMaterials')
       .delete()
-      .eq('id', id);
+      .eq('Id', id);
 
     if (error) throw error;
   }
 
   // ============================================
-  // LÍNEAS ADICIONALES DEL PRESUPUESTO
+  // ADDITIONAL LINES
   // ============================================
 
   async addAdditionalLineToBudget(line: any) {
     const { data, error } = await this.supabase
-      .from('budget_additional_lines')
+      .from('BudgetAdditionalLines')
       .insert([line])
       .select()
       .single();
@@ -271,9 +271,9 @@ export class SupabaseService {
 
   async updateBudgetAdditionalLine(id: string, updates: any) {
     const { data, error } = await this.supabase
-      .from('budget_additional_lines')
+      .from('BudgetAdditionalLines')
       .update(updates)
-      .eq('id', id)
+      .eq('Id', id)
       .select()
       .single();
 
@@ -283,22 +283,22 @@ export class SupabaseService {
 
   async deleteBudgetAdditionalLine(id: string) {
     const { error } = await this.supabase
-      .from('budget_additional_lines')
+      .from('BudgetAdditionalLines')
       .delete()
-      .eq('id', id);
+      .eq('Id', id);
 
     if (error) throw error;
   }
 
   // ============================================
-  // CONDICIONES GENERALES
+  // GENERAL CONDITIONS
   // ============================================
 
   async getGeneralConditions() {
     const { data, error } = await this.supabase
-      .from('general_conditions')
+      .from('GeneralConditions')
       .select('*')
-      .order('is_default', { ascending: false });
+      .order('isDefault', { ascending: false });
 
     if (error) throw error;
     return data;
@@ -306,9 +306,9 @@ export class SupabaseService {
 
   async getDefaultGeneralConditions() {
     const { data, error } = await this.supabase
-      .from('general_conditions')
+      .from('GeneralConditions')
       .select('*')
-      .eq('is_default', true)
+      .eq('isDefault', true)
       .single();
 
     if (error) throw error;
@@ -317,7 +317,7 @@ export class SupabaseService {
 
   async createGeneralConditions(conditions: any) {
     const { data, error } = await this.supabase
-      .from('general_conditions')
+      .from('GeneralConditions')
       .insert([conditions])
       .select()
       .single();
@@ -328,9 +328,9 @@ export class SupabaseService {
 
   async updateGeneralConditions(id: string, updates: any) {
     const { data, error } = await this.supabase
-      .from('general_conditions')
+      .from('GeneralConditions')
       .update(updates)
-      .eq('id', id)
+      .eq('Id', id)
       .select()
       .single();
 

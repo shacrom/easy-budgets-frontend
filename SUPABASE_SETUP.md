@@ -192,170 +192,170 @@ Una vez creado el proyecto:
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================
--- 1. TABLA: products
+-- 1. TABLA: Products
 -- ============================================
-CREATE TABLE products (
+CREATE TABLE Products (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     reference VARCHAR(100) UNIQUE NOT NULL,
     description TEXT NOT NULL,
     manufacturer VARCHAR(200),
-    unit_price DECIMAL(10,2) NOT NULL CHECK (unit_price >= 0),
+    unitPrice DECIMAL(10,2) NOT NULL CHECK (unitPrice >= 0),
     category VARCHAR(100),
-    image_url TEXT,
+    imageUrl TEXT,
     link TEXT,
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    isActive BOOLEAN DEFAULT true,
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Índices para mejorar rendimiento
-CREATE INDEX idx_products_reference ON products(reference);
-CREATE INDEX idx_products_category ON products(category);
-CREATE INDEX idx_products_active ON products(is_active);
+CREATE INDEX idx_Products_reference ON Products(reference);
+CREATE INDEX idx_Products_category ON Products(category);
+CREATE INDEX idx_Products_isActive ON Products(isActive);
 
 -- ============================================
--- 2. TABLA: customers
+-- 2. TABLA: Customers
 -- ============================================
-CREATE TABLE customers (
+CREATE TABLE Customers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(200) NOT NULL,
     email VARCHAR(255) UNIQUE,
     phone VARCHAR(50),
     address TEXT,
     city VARCHAR(100),
-    postal_code VARCHAR(20),
-    tax_id VARCHAR(50),
+    postalCode VARCHAR(20),
+    taxId VARCHAR(50),
     notes TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Índices
-CREATE INDEX idx_customers_name ON customers(name);
-CREATE INDEX idx_customers_email ON customers(email);
+CREATE INDEX idx_Customers_name ON Customers(name);
+CREATE INDEX idx_Customers_email ON Customers(email);
 
 -- ============================================
--- 3. TABLA: budgets
+-- 3. TABLA: Budgets
 -- ============================================
-CREATE TABLE budgets (
+CREATE TABLE Budgets (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    budget_number VARCHAR(50) UNIQUE NOT NULL,
-    customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
+    budgetNumber VARCHAR(50) UNIQUE NOT NULL,
+    customerId UUID REFERENCES Customers(id) ON DELETE SET NULL,
     title VARCHAR(255) NOT NULL,
     status VARCHAR(50) DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'accepted', 'rejected', 'archived')),
     subtotal DECIMAL(10,2) NOT NULL DEFAULT 0,
-    tax_percentage DECIMAL(5,2) DEFAULT 21.00,
-    tax_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+    taxPercentage DECIMAL(5,2) DEFAULT 21.00,
+    taxAmount DECIMAL(10,2) NOT NULL DEFAULT 0,
     total DECIMAL(10,2) NOT NULL DEFAULT 0,
-    valid_until DATE,
+    validUntil DATE,
     notes TEXT,
-    pdf_url TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    pdfUrl TEXT,
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Índices
-CREATE INDEX idx_budgets_customer ON budgets(customer_id);
-CREATE INDEX idx_budgets_status ON budgets(status);
-CREATE INDEX idx_budgets_number ON budgets(budget_number);
-CREATE INDEX idx_budgets_created ON budgets(created_at DESC);
+CREATE INDEX idx_Budgets_customerId ON Budgets(customerId);
+CREATE INDEX idx_Budgets_status ON Budgets(status);
+CREATE INDEX idx_Budgets_budgetNumber ON Budgets(budgetNumber);
+CREATE INDEX idx_Budgets_createdAt ON Budgets(createdAt DESC);
 
 -- ============================================
--- 4. TABLA: budget_text_blocks
+-- 4. TABLA: BudgetTextBlocks
 -- ============================================
-CREATE TABLE budget_text_blocks (
+CREATE TABLE BudgetTextBlocks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    budget_id UUID NOT NULL REFERENCES budgets(id) ON DELETE CASCADE,
-    order_index INTEGER NOT NULL,
+    budgetId UUID NOT NULL REFERENCES Budgets(id) ON DELETE CASCADE,
+    orderIndex INTEGER NOT NULL,
     heading VARCHAR(255),
     content JSONB,
     link TEXT,
-    image_url TEXT,
+    imageUrl TEXT,
     subtotal DECIMAL(10,2) DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Índices
-CREATE INDEX idx_budget_text_blocks_budget ON budget_text_blocks(budget_id);
-CREATE INDEX idx_budget_text_blocks_order ON budget_text_blocks(budget_id, order_index);
+CREATE INDEX idx_BudgetTextBlocks_budgetId ON BudgetTextBlocks(budgetId);
+CREATE INDEX idx_BudgetTextBlocks_orderIndex ON BudgetTextBlocks(budgetId, orderIndex);
 
 -- ============================================
--- 5. TABLA: budget_materials
+-- 5. TABLA: BudgetMaterials
 -- ============================================
-CREATE TABLE budget_materials (
+CREATE TABLE BudgetMaterials (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    budget_id UUID NOT NULL REFERENCES budgets(id) ON DELETE CASCADE,
-    product_id UUID REFERENCES products(id) ON DELETE SET NULL,
-    order_index INTEGER NOT NULL,
+    budgetId UUID NOT NULL REFERENCES Budgets(id) ON DELETE CASCADE,
+    productId UUID REFERENCES Products(id) ON DELETE SET NULL,
+    orderIndex INTEGER NOT NULL,
     description TEXT NOT NULL,
     manufacturer VARCHAR(200),
     quantity DECIMAL(10,2) NOT NULL CHECK (quantity > 0),
-    unit_price DECIMAL(10,2) NOT NULL CHECK (unit_price >= 0),
-    total_price DECIMAL(10,2) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    unitPrice DECIMAL(10,2) NOT NULL CHECK (unitPrice >= 0),
+    totalPrice DECIMAL(10,2) NOT NULL,
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Índices
-CREATE INDEX idx_budget_materials_budget ON budget_materials(budget_id);
-CREATE INDEX idx_budget_materials_product ON budget_materials(product_id);
-CREATE INDEX idx_budget_materials_order ON budget_materials(budget_id, order_index);
+CREATE INDEX idx_BudgetMaterials_budgetId ON BudgetMaterials(budgetId);
+CREATE INDEX idx_BudgetMaterials_productId ON BudgetMaterials(productId);
+CREATE INDEX idx_BudgetMaterials_orderIndex ON BudgetMaterials(budgetId, orderIndex);
 
 -- ============================================
--- 6. TABLA: budget_additional_lines
+-- 6. TABLA: BudgetAdditionalLines
 -- ============================================
-CREATE TABLE budget_additional_lines (
+CREATE TABLE BudgetAdditionalLines (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    budget_id UUID NOT NULL REFERENCES budgets(id) ON DELETE CASCADE,
+    budgetId UUID NOT NULL REFERENCES Budgets(id) ON DELETE CASCADE,
     concept VARCHAR(255) NOT NULL,
     amount DECIMAL(10,2) NOT NULL,
-    order_index INTEGER NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    orderIndex INTEGER NOT NULL,
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Índices
-CREATE INDEX idx_budget_additional_budget ON budget_additional_lines(budget_id);
+CREATE INDEX idx_BudgetAdditionalLines_budgetId ON BudgetAdditionalLines(budgetId);
 
 -- ============================================
--- 7. TABLA: general_conditions
+-- 7. TABLA: GeneralConditions
 -- ============================================
-CREATE TABLE general_conditions (
+CREATE TABLE GeneralConditions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100) NOT NULL,
     content TEXT NOT NULL,
-    is_default BOOLEAN DEFAULT false,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    isDefault BOOLEAN DEFAULT false,
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- ============================================
--- TRIGGERS para updated_at automático
+-- TRIGGERS para updatedAt automático
 -- ============================================
-CREATE OR REPLACE FUNCTION update_updated_at_column()
+CREATE OR REPLACE FUNCTION updateUpdatedAtColumn()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
+    NEW.updatedAt = NOW();
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_Products_updatedAt BEFORE UPDATE ON Products
+    FOR EACH ROW EXECUTE FUNCTION updateUpdatedAtColumn();
 
-CREATE TRIGGER update_customers_updated_at BEFORE UPDATE ON customers
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_Customers_updatedAt BEFORE UPDATE ON Customers
+    FOR EACH ROW EXECUTE FUNCTION updateUpdatedAtColumn();
 
-CREATE TRIGGER update_budgets_updated_at BEFORE UPDATE ON budgets
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_Budgets_updatedAt BEFORE UPDATE ON Budgets
+    FOR EACH ROW EXECUTE FUNCTION updateUpdatedAtColumn();
 
-CREATE TRIGGER update_general_conditions_updated_at BEFORE UPDATE ON general_conditions
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_GeneralConditions_updatedAt BEFORE UPDATE ON GeneralConditions
+    FOR EACH ROW EXECUTE FUNCTION updateUpdatedAtColumn();
 
 -- ============================================
 -- DATOS DE EJEMPLO (Opcional)
 -- ============================================
 
 -- Insertar algunas condiciones generales por defecto
-INSERT INTO general_conditions (name, content, is_default) VALUES
+INSERT INTO GeneralConditions (name, content, isDefault) VALUES
 ('Condiciones Estándar', 
 '1. Los precios incluyen IVA.
 2. El presupuesto es válido por 30 días.
@@ -364,7 +364,7 @@ INSERT INTO general_conditions (name, content, is_default) VALUES
 true);
 
 -- Insertar algunos productos de ejemplo
-INSERT INTO products (reference, description, manufacturer, unit_price, category) VALUES
+INSERT INTO Products (reference, description, manufacturer, unitPrice, category) VALUES
 ('REF-001', 'Mueble de cocina bajo 80cm', 'Fabricante A', 250.00, 'Cocina'),
 ('REF-002', 'Encimera granito 200x60cm', 'Fabricante B', 450.00, 'Cocina'),
 ('REF-003', 'Lavabo porcelana 60cm', 'Fabricante C', 180.00, 'Baño'),
