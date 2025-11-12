@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 .budget-text-blocks-container {
-  @apply max-w-4xl mx-auto p-6;
+  @apply max-w-6xl mx-auto px-8 py-6;
 }
 
 .header {
