@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { BudgetTextBlock, DescriptionSection } from '../../../models/budget-text-block.model';
 
 /**
- * Componente para mostrar y editar un bloque de texto del presupuesto
- * Incluye: encabezado, secciones de descripción, link opcional, foto opcional y total
+ * Component to display and edit a budget text block
+ * Includes: heading, description sections, optional link, optional photo and total
  */
 @Component({
   selector: 'app-budget-text-block',
@@ -15,30 +15,30 @@ import { BudgetTextBlock, DescriptionSection } from '../../../models/budget-text
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BudgetTextBlockComponent {
-  // Input: datos del bloque de texto
+  // Input: text block data
   block = input.required<BudgetTextBlock>();
 
-  // Input: modo de edición
+  // Input: edit mode
   editMode = input<boolean>(false);
 
-  // Output: evento cuando se actualiza el bloque
+  // Output: event when block is updated
   blockUpdated = output<BudgetTextBlock>();
 
-  // Output: evento cuando se elimina el bloque
+  // Output: event when block is deleted
   blockDeleted = output<string>();
 
-  // Estado local para edición
+  // Local state for editing
   protected readonly isEditing = signal(false);
 
   /**
-   * Activa el modo de edición
+   * Activates edit mode
    */
   protected startEdit(): void {
     this.isEditing.set(true);
   }
 
   /**
-   * Guarda los cambios y emite el evento de actualización
+   * Saves changes and emits update event
    */
   protected saveChanges(): void {
     this.blockUpdated.emit(this.block());
@@ -46,21 +46,21 @@ export class BudgetTextBlockComponent {
   }
 
   /**
-   * Cancela la edición
+   * Cancels editing
    */
   protected cancelEdit(): void {
     this.isEditing.set(false);
   }
 
   /**
-   * Elimina el bloque y emite el evento
+   * Deletes the block and emits event
    */
   protected deleteBlock(): void {
     this.blockDeleted.emit(this.block().id);
   }
 
   /**
-   * Añade una nueva sección de descripción
+   * Adds a new description section
    */
   protected addDescriptionSection(): void {
     const newSection: DescriptionSection = {
@@ -78,7 +78,7 @@ export class BudgetTextBlockComponent {
   }
 
   /**
-   * Actualiza una sección de descripción
+   * Updates a description section
    */
   protected updateDescriptionSection(sectionId: string, field: 'titulo' | 'texto', event: Event): void {
     const input = event.target as HTMLInputElement | HTMLTextAreaElement;
@@ -96,7 +96,7 @@ export class BudgetTextBlockComponent {
   }
 
   /**
-   * Elimina una sección de descripción
+   * Deletes a description section
    */
   protected deleteDescriptionSection(sectionId: string): void {
     const updatedBlock: BudgetTextBlock = {
@@ -108,7 +108,7 @@ export class BudgetTextBlockComponent {
   }
 
   /**
-   * Actualiza un campo del bloque
+   * Updates a block field
    */
   protected updateBlockField(field: keyof BudgetTextBlock, event: Event): void {
     const input = event.target as HTMLInputElement | HTMLTextAreaElement;
@@ -123,7 +123,7 @@ export class BudgetTextBlockComponent {
   }
 
   /**
-   * Genera un ID único
+   * Generates a unique ID
    */
   private generateId(): string {
     return `desc-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;

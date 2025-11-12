@@ -4,8 +4,8 @@ import { MaterialRowComponent } from './material-row.component';
 import { Material } from '../../../models/material.model';
 
 /**
- * Componente contenedor para la tabla de materiales
- * Gestiona la lista completa de materiales del presupuesto
+ * Container component for the materials table
+ * Manages the complete list of budget materials
  */
 @Component({
   selector: 'app-materials-table',
@@ -15,25 +15,25 @@ import { Material } from '../../../models/material.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MaterialsTableComponent {
-  // Lista de materiales
+  // List of materials
   protected readonly materials = signal<Material[]>([]);
 
-  // Modo de edición
+  // Edit mode
   protected readonly editMode = signal<boolean>(true);
 
-  // Total calculado de todos los materiales
-  protected readonly totalMateriales = computed(() => {
+  // Total calculated from all materials
+  protected readonly totalMaterials = computed(() => {
     return this.materials().reduce((sum, material) => sum + material.precioTotal, 0);
   });
 
-  // Output: emite el total cuando cambia
+  // Output: emits total when it changes
   totalChanged = output<number>();
 
-  // Output: emite los materiales cuando cambian
+  // Output: emits materials when they change
   materialsChanged = output<Material[]>();
 
   /**
-   * Añade un nuevo material vacío
+   * Adds a new empty material
    */
   protected addNewMaterial(): void {
     const newMaterial: Material = {
@@ -50,7 +50,7 @@ export class MaterialsTableComponent {
   }
 
   /**
-   * Actualiza un material existente
+   * Updates an existing material
    */
   protected updateMaterial(updatedMaterial: Material): void {
     this.materials.update(materials =>
@@ -60,7 +60,7 @@ export class MaterialsTableComponent {
   }
 
   /**
-   * Elimina un material por su ID
+   * Deletes a material by its ID
    */
   protected deleteMaterial(materialId: string): void {
     this.materials.update(materials => materials.filter(material => material.id !== materialId));
@@ -68,22 +68,22 @@ export class MaterialsTableComponent {
   }
 
   /**
-   * Alterna el modo de edición
+   * Toggles edit mode
    */
   protected toggleEditMode(): void {
     this.editMode.update(mode => !mode);
   }
 
   /**
-   * Emite el total actual
+   * Emits the current total
    */
   private emitTotal(): void {
-    this.totalChanged.emit(this.totalMateriales());
+    this.totalChanged.emit(this.totalMaterials());
     this.materialsChanged.emit(this.materials());
   }
 
   /**
-   * Genera un ID único para nuevos materiales
+   * Generates a unique ID for new materials
    */
   private generateId(): string {
     return `material-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;

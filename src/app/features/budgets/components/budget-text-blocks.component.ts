@@ -4,8 +4,8 @@ import { BudgetTextBlockComponent } from './budget-text-block.component';
 import { BudgetTextBlock } from '../../../models/budget-text-block.model';
 
 /**
- * Componente contenedor para gestionar todos los bloques de texto del presupuesto
- * Permite añadir, editar y eliminar bloques
+ * Container component to manage all budget text blocks
+ * Allows adding, editing, and deleting blocks
  */
 @Component({
   selector: 'app-budget-text-blocks',
@@ -15,31 +15,31 @@ import { BudgetTextBlock } from '../../../models/budget-text-block.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BudgetTextBlocksComponent {
-  // Lista de bloques de texto
+  // List of text blocks
   protected readonly blocks = signal<BudgetTextBlock[]>([]);
 
-  // Modo de edición
+  // Edit mode
   protected readonly editMode = signal<boolean>(true);
 
-  // Total calculado de todos los bloques
-  protected readonly totalGeneral = computed(() => {
+  // Total calculated from all blocks
+  protected readonly grandTotal = computed(() => {
     return this.blocks().reduce((sum, block) => sum + (typeof block.total === 'number' ? block.total : 0), 0);
   });
 
-  // Output: emite el total cuando cambia
+  // Output: emits total when it changes
   totalChanged = output<number>();
 
-  // Output: emite los bloques cuando cambian
+  // Output: emits blocks when they change
   blocksChanged = output<BudgetTextBlock[]>();
 
   /**
-   * Añade un nuevo bloque vacío
+   * Adds a new empty block
    */
   protected addNewBlock(): void {
     const newBlock: BudgetTextBlock = {
       id: this.generateId(),
       encabezado: '',
-      descripciones: [], // Inicialmente sin secciones de descripción
+      descripciones: [], // Initially without description sections
       link: '',
       foto: '',
       total: 0
@@ -50,7 +50,7 @@ export class BudgetTextBlocksComponent {
   }
 
   /**
-   * Actualiza un bloque existente
+   * Updates an existing block
    */
   protected updateBlock(updatedBlock: BudgetTextBlock): void {
     this.blocks.update(blocks =>
@@ -60,7 +60,7 @@ export class BudgetTextBlocksComponent {
   }
 
   /**
-   * Elimina un bloque por su ID
+   * Deletes a block by its ID
    */
   protected deleteBlock(blockId: string): void {
     this.blocks.update(blocks => blocks.filter(block => block.id !== blockId));
@@ -68,22 +68,22 @@ export class BudgetTextBlocksComponent {
   }
 
   /**
-   * Alterna el modo de edición
+   * Toggles edit mode
    */
   protected toggleEditMode(): void {
     this.editMode.update(mode => !mode);
   }
 
   /**
-   * Emite el total actual
+   * Emits the current total
    */
   private emitTotal(): void {
-    this.totalChanged.emit(this.totalGeneral());
+    this.totalChanged.emit(this.grandTotal());
     this.blocksChanged.emit(this.blocks());
   }
 
   /**
-   * Genera un ID único para nuevos bloques
+   * Generates a unique ID for new blocks
    */
   private generateId(): string {
     return `block-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;

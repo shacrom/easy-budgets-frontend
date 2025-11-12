@@ -14,48 +14,48 @@
   </div>
 
   <div class="summary-card">
-    <!-- Totales principales -->
+    <!-- Main totals -->
     <div class="summary-section">
-      <!-- Total Bloques de Texto -->
-      <div class="summary-row clickable" (click)="toggleBloquesExpanded()">
+      <!-- Total Text Blocks -->
+      <div class="summary-row clickable" (click)="toggleBlocksExpanded()">
         <div class="flex items-center gap-2">
-          <span class="toggle-icon">{{ bloquesExpanded() ? '▼' : '►' }}</span>
+          <span class="toggle-icon">{{ blocksExpanded() ? '▼' : '►' }}</span>
           <span class="summary-label">Total Bloques de Texto:</span>
         </div>
         <span class="summary-value">
-          {{ totalBloques() | currency:'EUR':'symbol':'1.2-2':'es' }}
+          {{ totalBlocks() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
 
-      <!-- Detalle de bloques -->
-      @if (bloquesExpanded() && bloques().length > 0) {
+      <!-- Blocks detail -->
+      @if (blocksExpanded() && blocks().length > 0) {
         <div class="detail-section">
-          @for (bloque of bloques(); track bloque.id) {
+          @for (block of blocks(); track block.id) {
             <div class="detail-row">
-              <span class="detail-label">{{ bloque.encabezado || 'Bloque sin título' }}</span>
+              <span class="detail-label">{{ block.encabezado || 'Bloque sin título' }}</span>
               <span class="detail-value">
-                {{ bloque.total | currency:'EUR':'symbol':'1.2-2':'es' }}
+                {{ block.total | currency:'EUR':'symbol':'1.2-2':'es' }}
               </span>
             </div>
           }
         </div>
       }
 
-      <!-- Total Materiales -->
-      <div class="summary-row clickable" (click)="toggleMaterialesExpanded()">
+      <!-- Total Materials -->
+      <div class="summary-row clickable" (click)="toggleMaterialsExpanded()">
         <div class="flex items-center gap-2">
-          <span class="toggle-icon">{{ materialesExpanded() ? '▼' : '►' }}</span>
+          <span class="toggle-icon">{{ materialsExpanded() ? '▼' : '►' }}</span>
           <span class="summary-label">Total Materiales:</span>
         </div>
         <span class="summary-value">
-          {{ totalMateriales() | currency:'EUR':'symbol':'1.2-2':'es' }}
+          {{ totalMaterials() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
 
-      <!-- Detalle de materiales -->
-      @if (materialesExpanded() && materiales().length > 0) {
+      <!-- Materials detail -->
+      @if (materialsExpanded() && materials().length > 0) {
         <div class="detail-section">
-          @for (material of materiales(); track material.id) {
+          @for (material of materials(); track material.id) {
             <div class="detail-row">
               <span class="detail-label">
                 {{ material.descripcion || 'Material sin descripción' }}
@@ -79,14 +79,14 @@
       </div>
     </div>
 
-    <!-- Líneas adicionales (descuentos, extras, etc.) -->
-    @if (lineasAdicionales().length > 0 || editMode()) {
+    <!-- Additional lines (discounts, extras, etc.) -->
+    @if (additionalLines().length > 0 || editMode()) {
       <div class="summary-section additional-lines">
         <div class="section-header">
           <h3 class="text-sm font-semibold text-gray-700">Conceptos Adicionales</h3>
           @if (editMode()) {
             <button
-              (click)="addLineaAdicional()"
+              (click)="addAdditionalLine()"
               class="btn-add-line"
               type="button">
               + Añadir
@@ -94,30 +94,30 @@
           }
         </div>
 
-        @for (linea of lineasAdicionales(); track linea.id) {
+        @for (line of additionalLines(); track line.id) {
           <div class="summary-row additional-line">
             @if (!editMode()) {
-              <span class="summary-label">{{ linea.concepto }}:</span>
-              <span class="summary-value" [class.text-red-600]="linea.importe < 0">
-                {{ linea.importe | currency:'EUR':'symbol':'1.2-2':'es' }}
+              <span class="summary-label">{{ line.concepto }}:</span>
+              <span class="summary-value" [class.text-red-600]="line.importe < 0">
+                {{ line.importe | currency:'EUR':'symbol':'1.2-2':'es' }}
               </span>
             } @else {
               <div class="flex gap-2 items-center w-full">
                 <input
                   type="text"
-                  [(ngModel)]="linea.concepto"
-                  (ngModelChange)="updateLineaAdicional(linea)"
+                  [(ngModel)]="line.concepto"
+                  (ngModelChange)="updateAdditionalLine(line)"
                   class="input-field flex-1"
                   placeholder="Concepto (ej: Descuento, Extra)">
                 <input
                   type="number"
-                  [(ngModel)]="linea.importe"
-                  (ngModelChange)="updateLineaAdicional(linea)"
+                  [(ngModel)]="line.importe"
+                  (ngModelChange)="updateAdditionalLine(line)"
                   step="0.01"
                   class="input-field w-32 text-right"
                   placeholder="0.00">
                 <button
-                  (click)="deleteLineaAdicional(linea.id)"
+                  (click)="deleteAdditionalLine(line.id)"
                   class="btn-delete"
                   type="button">
                   ✕
@@ -127,18 +127,18 @@
           </div>
         }
 
-        @if (lineasAdicionales().length > 0) {
+        @if (additionalLines().length > 0) {
           <div class="summary-row subtotal-row">
             <span class="summary-label font-semibold">Subtotal con Adicionales:</span>
             <span class="summary-value font-semibold">
-              {{ baseImponible() | currency:'EUR':'symbol':'1.2-2':'es' }}
+              {{ taxableBase() | currency:'EUR':'symbol':'1.2-2':'es' }}
             </span>
           </div>
         }
       </div>
     }
 
-    <!-- IVA -->
+    <!-- VAT -->
     <div class="summary-section iva-section">
       <div class="summary-row">
         <div class="flex items-center gap-2">
@@ -146,7 +146,7 @@
           @if (editMode()) {
             <input
               type="number"
-              [(ngModel)]="porcentajeIva"
+              [(ngModel)]="vatPercentage"
               min="0"
               max="100"
               step="0.1"
@@ -154,21 +154,21 @@
               placeholder="21">
             <span class="text-sm text-gray-600">%</span>
           } @else {
-            <span class="text-sm text-gray-600">({{ porcentajeIva() }}%):</span>
+            <span class="text-sm text-gray-600">({{ vatPercentage() }}%):</span>
           }
         </div>
         <span class="summary-value">
-          {{ iva() | currency:'EUR':'symbol':'1.2-2':'es' }}
+          {{ vat() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
     </div>
 
-    <!-- Total General -->
+    <!-- Grand Total -->
     <div class="summary-section total-section">
       <div class="summary-row total-row">
         <span class="summary-label-total">TOTAL GENERAL:</span>
         <span class="summary-value-total">
-          {{ totalGeneral() | currency:'EUR':'symbol':'1.2-2':'es' }}
+          {{ grandTotal() | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
     </div>

@@ -3,12 +3,12 @@
     @if (editMode()) {
       <input
         type="text"
-        [value]="titulo()"
-        (input)="updateTitulo($event)"
+        [value]="title()"
+        (input)="updateTitle($event)"
         class="header-title-editable"
         placeholder="CONDICIONES GENERALES">
     } @else {
-      <h2 class="text-2xl font-bold text-gray-900">{{ titulo() }}</h2>
+      <h2 class="text-2xl font-bold text-gray-900">{{ title() }}</h2>
     }
     <div class="header-actions">
       <button
@@ -61,27 +61,27 @@
 
   <div class="conditions-card">
     @if (!editMode()) {
-      <!-- Vista de solo lectura - Formato tipo documento legal -->
+      <!-- Read-only view - Legal document format -->
       <div class="conditions-list-view">
-        @for (condicion of condiciones(); track condicion.id; let idx = $index) {
+        @for (condition of conditions(); track condition.id; let idx = $index) {
           <div class="condition-item">
             <div class="condition-number">{{ idx + 1 }}.</div>
             <div class="condition-content">
-              <h3 class="condition-title">{{ condicion.titulo }}</h3>
-              <p class="condition-text">{{ condicion.texto }}</p>
+              <h3 class="condition-title">{{ condition.titulo }}</h3>
+              <p class="condition-text">{{ condition.texto }}</p>
             </div>
           </div>
         }
       </div>
     } @else {
-      <!-- Vista de edición -->
+      <!-- Edit view -->
       <div class="conditions-edit-view">
-        @for (condicion of condiciones(); track condicion.id; let idx = $index) {
+        @for (condition of conditions(); track condition.id; let idx = $index) {
           <div class="condition-edit-item">
             <div class="condition-edit-header">
               <span class="condition-edit-number">{{ idx + 1 }}.</span>
               <button
-                (click)="deleteCondition(condicion.id)"
+                (click)="deleteCondition(condition.id)"
                 class="btn-delete-condition"
                 type="button"
                 title="Eliminar condición">
@@ -93,8 +93,8 @@
               <label class="form-label">Título de la condición:</label>
               <input
                 type="text"
-                [value]="condicion.titulo"
-                (input)="updateConditionField(condicion.id, 'titulo', $event)"
+                [value]="condition.titulo"
+                (input)="updateConditionField(condition.id, 'titulo', $event)"
                 class="input-field"
                 placeholder="Ej: VALIDEZ DEL PRESUPUESTO">
             </div>
@@ -102,8 +102,8 @@
             <div class="form-group">
               <label class="form-label">Texto de la condición:</label>
               <textarea
-                [value]="condicion.texto"
-                (input)="updateConditionField(condicion.id, 'texto', $event)"
+                [value]="condition.texto"
+                (input)="updateConditionField(condition.id, 'texto', $event)"
                 rows="3"
                 class="input-field textarea-field"
                 placeholder="Descripción detallada de la condición..."></textarea>
@@ -111,7 +111,7 @@
           </div>
         }
 
-        @if (condiciones().length === 0) {
+        @if (conditions().length === 0) {
           <div class="empty-state">
             <p class="text-gray-500 text-center">
               No hay condiciones añadidas. Haz clic en "Añadir Condición" o "Restaurar" para cargar las condiciones de la plantilla seleccionada.
@@ -122,7 +122,7 @@
     }
   </div>
 
-  <!-- Nota informativa -->
+  <!-- Informative note -->
   @if (!editMode()) {
     <div class="info-note">
       <p class="text-sm text-gray-600 italic">

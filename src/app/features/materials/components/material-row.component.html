@@ -1,5 +1,5 @@
 @if (!editMode()) {
-  <!-- Vista de solo lectura -->
+  <!-- Read-only view -->
   <tr class="material-row">
     <td class="material-cell descripcion">{{ material().descripcion }}</td>
     <td class="material-cell fabricante">{{ material().fabricante }}</td>
@@ -8,12 +8,12 @@
       {{ material().precioUnitario | currency:'EUR':'symbol':'1.2-2':'es' }}
     </td>
     <td class="material-cell precio-total">
-      {{ precioTotal() | currency:'EUR':'symbol':'1.2-2':'es' }}
+      {{ totalPrice() | currency:'EUR':'symbol':'1.2-2':'es' }}
     </td>
     <td class="material-cell acciones"></td>
   </tr>
 } @else {
-  <!-- Vista de edición -->
+  <!-- Edit view -->
   <tr class="material-row edit-mode">
     <td class="material-cell descripcion">
       <input
@@ -53,7 +53,7 @@
     </td>
     <td class="material-cell precio-total">
       <span class="font-normal">
-        {{ precioTotal() | currency:'EUR':'symbol':'1.2-2':'es' }}
+        {{ totalPrice() | currency:'EUR':'symbol':'1.2-2':'es' }}
       </span>
     </td>
     <td class="material-cell acciones">

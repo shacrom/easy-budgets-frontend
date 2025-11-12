@@ -18,39 +18,39 @@ import { Material } from '../../../models/material.model';
   styleUrl: './budget-editor.component.css'
 })
 export class BudgetEditorComponent {
-  // Totales de cada sección
-  protected readonly totalBloques = signal<number>(0);
-  protected readonly totalMateriales = signal<number>(0);
+  // Totals from each section
+  protected readonly totalBlocks = signal<number>(0);
+  protected readonly totalMaterials = signal<number>(0);
 
-  // Arrays de datos
-  protected readonly bloques = signal<BudgetTextBlock[]>([]);
-  protected readonly materiales = signal<Material[]>([]);
+  // Data arrays
+  protected readonly blocks = signal<BudgetTextBlock[]>([]);
+  protected readonly materials = signal<Material[]>([]);
 
   /**
-   * Actualiza el total de bloques
+   * Updates the blocks total
    */
-  protected onTotalBloquesChanged(total: number): void {
-    this.totalBloques.set(total);
+  protected onTotalBlocksChanged(total: number): void {
+    this.totalBlocks.set(total);
   }
 
   /**
-   * Actualiza el total de materiales
+   * Updates the materials total
    */
-  protected onTotalMaterialesChanged(total: number): void {
-    this.totalMateriales.set(total);
+  protected onTotalMaterialsChanged(total: number): void {
+    this.totalMaterials.set(total);
   }
 
   /**
-   * Actualiza los bloques
+   * Updates the blocks
    */
-  protected onBloquesChanged(bloques: BudgetTextBlock[]): void {
-    this.bloques.set(bloques);
+  protected onBlocksChanged(blocks: BudgetTextBlock[]): void {
+    this.blocks.set(blocks);
   }
 
   /**
-   * Actualiza los materiales
+   * Updates the materials
    */
-  protected onMaterialesChanged(materiales: Material[]): void {
-    this.materiales.set(materiales);
+  protected onMaterialsChanged(materials: Material[]): void {
+    this.materials.set(materials);
   }
 }

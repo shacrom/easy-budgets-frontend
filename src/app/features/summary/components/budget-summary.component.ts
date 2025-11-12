@@ -6,8 +6,8 @@ import { BudgetTextBlock } from '../../../models/budget-text-block.model';
 import { Material } from '../../../models/material.model';
 
 /**
- * Componente para mostrar el resumen del presupuesto
- * Muestra el total de bloques, materiales, IVA y total general
+ * Component to display the budget summary
+ * Shows totals for blocks, materials, VAT and grand total
  */
 @Component({
   selector: 'app-budget-summary',
@@ -17,96 +17,96 @@ import { Material } from '../../../models/material.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BudgetSummaryComponent {
-  // Inputs: totales de cada sección
-  totalBloques = input<number>(0);
-  totalMateriales = input<number>(0);
+  // Inputs: totals from each section
+  totalBlocks = input<number>(0);
+  totalMaterials = input<number>(0);
 
-  // Inputs: arrays de datos para mostrar el detalle
-  bloques = input<BudgetTextBlock[]>([]);
-  materiales = input<Material[]>([]);
+  // Inputs: data arrays to show details
+  blocks = input<BudgetTextBlock[]>([]);
+  materials = input<Material[]>([]);
 
-  // Estado local para configuración
-  protected readonly porcentajeIva = signal<number>(21);
+  // Local state for configuration
+  protected readonly vatPercentage = signal<number>(21);
   protected readonly editMode = signal<boolean>(false);
-  protected readonly lineasAdicionales = signal<SummaryLine[]>([]);
+  protected readonly additionalLines = signal<SummaryLine[]>([]);
 
-  // Estado de los desplegables (por defecto expandidos)
-  protected readonly bloquesExpanded = signal<boolean>(true);
-  protected readonly materialesExpanded = signal<boolean>(true);
+  // Dropdown states (expanded by default)
+  protected readonly blocksExpanded = signal<boolean>(true);
+  protected readonly materialsExpanded = signal<boolean>(true);
 
-  // Cálculos derivados
+  // Derived calculations
   protected readonly subtotal = computed(() => {
-    return this.totalBloques() + this.totalMateriales();
+    return this.totalBlocks() + this.totalMaterials();
   });
 
-  protected readonly totalLineasAdicionales = computed(() => {
-    return this.lineasAdicionales().reduce((sum, linea) => sum + linea.importe, 0);
+  protected readonly totalAdditionalLines = computed(() => {
+    return this.additionalLines().reduce((sum, line) => sum + line.importe, 0);
   });
 
-  protected readonly baseImponible = computed(() => {
-    return this.subtotal() + this.totalLineasAdicionales();
+  protected readonly taxableBase = computed(() => {
+    return this.subtotal() + this.totalAdditionalLines();
   });
 
-  protected readonly iva = computed(() => {
-    return this.baseImponible() * (this.porcentajeIva() / 100);
+  protected readonly vat = computed(() => {
+    return this.taxableBase() * (this.vatPercentage() / 100);
   });
 
-  protected readonly totalGeneral = computed(() => {
-    return this.baseImponible() + this.iva();
+  protected readonly grandTotal = computed(() => {
+    return this.taxableBase() + this.vat();
   });
 
   /**
-   * Alterna el modo de edición
+   * Toggles edit mode
    */
   protected toggleEditMode(): void {
     this.editMode.update(mode => !mode);
   }
 
   /**
-   * Alterna el desplegable de bloques
+   * Toggles blocks dropdown
    */
-  protected toggleBloquesExpanded(): void {
-    this.bloquesExpanded.update(expanded => !expanded);
+  protected toggleBlocksExpanded(): void {
+    this.blocksExpanded.update(expanded => !expanded);
   }
 
   /**
-   * Alterna el desplegable de materiales
+   * Toggles materials dropdown
    */
-  protected toggleMaterialesExpanded(): void {
-    this.materialesExpanded.update(expanded => !expanded);
+  protected toggleMaterialsExpanded(): void {
+    this.materialsExpanded.update(expanded => !expanded);
   }
 
   /**
-   * Añade una nueva línea adicional (descuento, extra, etc.)
+   * Adds a new additional line (discount, extra, etc.)
    */
-  protected addLineaAdicional(): void {
+  protected addAdditionalLine(): void {
     const newLine: SummaryLine = {
       id: this.generateId(),
       concepto: '',
       importe: 0
     };
 
-    this.lineasAdicionales.update(lineas => [...lineas, newLine]);
+    this.additionalLines.update(lines => [...lines, newLine]);
   }
 
   /**
-   * Actualiza una línea adicional
+   * Updates an additional line
    */
-  protected updateLineaAdicional(updatedLine: SummaryLine): void {
-    this.lineasAdicionales.update(lineas =>
-      lineas.map(linea => linea.id === updatedLine.id ? updatedLine : linea)
+  protected updateAdditionalLine(updatedLine: SummaryLine): void {
+    this.additionalLines.update(lines =>
+      lines.map(line => line.id === updatedLine.id ? updatedLine : line)
     );
   }
 
   /**
-   * Elimina una línea adicional
+   * Deletes an additional line
    */
-  protected deleteLineaAdicional(lineaId: string): void {
-    this.lineasAdicionales.update(lineas => lineas.filter(linea => linea.id !== lineaId));
+  protected deleteAdditionalLine(lineId: string): void {
+    this.additionalLines.update(lines => lines.filter(line => line.id !== lineId));
   }
 
   /**
-   * Genera un ID único
+   * Generates a unique ID
    */
   private generateId(): string {
     return `line-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;

@@ -5,33 +5,33 @@
   </header>
 
   <main class="app-main">
-    <!-- Sección 1: Bloques de Texto -->
+    <!-- Section 1: Text Blocks -->
     <section class="section-divider">
       <app-budget-text-blocks
-        (totalChanged)="onTotalBloquesChanged($event)"
-        (blocksChanged)="onBloquesChanged($event)">
+        (totalChanged)="onTotalBlocksChanged($event)"
+        (blocksChanged)="onBlocksChanged($event)">
       </app-budget-text-blocks>
     </section>
 
-    <!-- Sección 2: Tabla de Materiales -->
+    <!-- Section 2: Materials Table -->
     <section class="section-divider">
       <app-materials-table
-        (totalChanged)="onTotalMaterialesChanged($event)"
-        (materialsChanged)="onMaterialesChanged($event)">
+        (totalChanged)="onTotalMaterialsChanged($event)"
+        (materialsChanged)="onMaterialsChanged($event)">
       </app-materials-table>
     </section>
 
-    <!-- Sección 3: Resumen del Presupuesto -->
+    <!-- Section 3: Budget Summary -->
     <section class="section-divider">
       <app-budget-summary
-        [totalBloques]="totalBloques()"
-        [totalMateriales]="totalMateriales()"
-        [bloques]="bloques()"
-        [materiales]="materiales()">
+        [totalBlocks]="totalBlocks()"
+        [totalMaterials]="totalMaterials()"
+        [blocks]="blocks()"
+        [materials]="materials()">
       </app-budget-summary>
     </section>
 
-    <!-- Sección 4: Condiciones Generales -->
+    <!-- Section 4: General Conditions -->
     <section class="section-divider">
       <app-general-conditions></app-general-conditions>
     </section>

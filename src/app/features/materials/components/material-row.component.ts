@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Material } from '../../../models/material.model';
 
 /**
- * Componente para mostrar y editar una fila de material en la tabla
+ * Component to display and edit a material row in the table
  */
 @Component({
   selector: 'app-material-row',
@@ -14,26 +14,26 @@ import { Material } from '../../../models/material.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MaterialRowComponent {
-  // Input: datos del material
+  // Input: material data
   material = input.required<Material>();
 
-  // Input: modo de edición
+  // Input: edit mode
   editMode = input<boolean>(false);
 
-  // Output: evento cuando se actualiza el material
+  // Output: event when material is updated
   materialUpdated = output<Material>();
 
-  // Output: evento cuando se elimina el material
+  // Output: event when material is deleted
   materialDeleted = output<string>();
 
-  // Precio total calculado
-  protected readonly precioTotal = computed(() => {
+  // Calculated total price
+  protected readonly totalPrice = computed(() => {
     const mat = this.material();
     return mat.cantidad * mat.precioUnitario;
   });
 
   /**
-   * Actualiza el precio total cuando cambian cantidad o precio unitario
+   * Updates total price when quantity or unit price changes
    */
   protected onValueChange(): void {
     const updatedMaterial: Material = {
@@ -44,7 +44,7 @@ export class MaterialRowComponent {
   }
 
   /**
-   * Elimina el material
+   * Deletes the material
    */
   protected deleteMaterial(): void {
     this.materialDeleted.emit(this.material().id);
