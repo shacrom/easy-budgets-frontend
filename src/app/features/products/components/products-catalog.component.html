@@ -1,7 +1,6 @@
 <div class="products-catalog-container">
   <!-- Header -->
   <div class="header">
-    <h1>Catálogo de Productos</h1>
     <button
       (click)="toggleAddForm()"
       class="btn-add-product"
@@ -276,14 +275,14 @@
                       class="btn-edit"
                       type="button"
                       title="Editar">
-                      ✎
+                      <span class="material-icons">edit</span>
                     </button>
                     <button
                       (click)="deleteProduct(product.id!)"
                       class="btn-delete"
                       type="button"
                       title="Eliminar">
-                      🗑
+                      <span class="material-icons">delete</span>
                     </button>
                   </div>
                 </td>
