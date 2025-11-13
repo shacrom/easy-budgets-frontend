@@ -4,36 +4,42 @@
   </header>
 
   <main class="app-main">
-    <!-- Section 1: Text Blocks -->
-    <section class="section-divider">
-      <app-budget-text-blocks
-        [budgetId]="currentBudgetId()"
-        (totalChanged)="onTotalBlocksChanged($event)"
-        (blocksChanged)="onBlocksChanged($event)">
-      </app-budget-text-blocks>
-    </section>
+    @if (!isInitialized()) {
+      <div class="loading-container">
+        <p class="text-gray-500 text-center">Inicializando presupuesto...</p>
+      </div>
+    } @else {
+      <!-- Section 1: Text Blocks -->
+      <section class="section-divider">
+        <app-budget-text-blocks
+          [budgetId]="currentBudgetId()"
+          (totalChanged)="onTotalBlocksChanged($event)"
+          (blocksChanged)="onBlocksChanged($event)">
+        </app-budget-text-blocks>
+      </section>
 
-    <!-- Section 2: Materials Table -->
-    <section class="section-divider">
-      <app-materials-table
-        (totalChanged)="onTotalMaterialsChanged($event)"
-        (materialsChanged)="onMaterialsChanged($event)">
-      </app-materials-table>
-    </section>
+      <!-- Section 2: Materials Table -->
+      <section class="section-divider">
+        <app-materials-table
+          (totalChanged)="onTotalMaterialsChanged($event)"
+          (materialsChanged)="onMaterialsChanged($event)">
+        </app-materials-table>
+      </section>
 
-    <!-- Section 3: Budget Summary -->
-    <section class="section-divider">
-      <app-budget-summary
-        [totalBlocks]="totalBlocks()"
-        [totalMaterials]="totalMaterials()"
-        [blocks]="blocks()"
-        [materials]="materials()">
-      </app-budget-summary>
-    </section>
+      <!-- Section 3: Budget Summary -->
+      <section class="section-divider">
+        <app-budget-summary
+          [totalBlocks]="totalBlocks()"
+          [totalMaterials]="totalMaterials()"
+          [blocks]="blocks()"
+          [materials]="materials()">
+        </app-budget-summary>
+      </section>
 
-    <!-- Section 4: General Conditions -->
-    <section class="section-divider">
-      <app-general-conditions></app-general-conditions>
-    </section>
+      <!-- Section 4: General Conditions -->
+      <section class="section-divider">
+        <app-general-conditions></app-general-conditions>
+      </section>
+    }
   </main>
 </div>
