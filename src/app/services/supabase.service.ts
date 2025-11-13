@@ -31,7 +31,7 @@ export class SupabaseService {
       .order('description');
 
     if (error) throw error;
-    
+
     // Mapear de PascalCase a camelCase
     return data.map((product: any) => ({
       id: product.id,
@@ -73,7 +73,7 @@ export class SupabaseService {
       .single();
 
     if (error) throw error;
-    
+
     // Mapear respuesta a camelCase
     return {
       id: data.id,
@@ -105,7 +105,7 @@ export class SupabaseService {
       .single();
 
     if (error) throw error;
-    
+
     // Mapear respuesta a camelCase
     return {
       id: data.id,
