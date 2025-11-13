@@ -201,7 +201,10 @@ export class SupabaseService {
       .select(`
         *,
         customer:Customers(*),
-        textBlocks:BudgetTextBlocks(*),
+        textBlocks:BudgetTextBlocks(
+          *,
+          descriptions:BudgetTextBlockSections(*)
+        ),
         materials:BudgetMaterials(*),
         additionalLines:BudgetAdditionalLines(*)
       `)
@@ -209,6 +212,17 @@ export class SupabaseService {
       .single();
 
     if (error) throw error;
+
+    // Ordenar los bloques de texto y sus secciones
+    if (data.textBlocks) {
+      data.textBlocks = data.textBlocks
+        .sort((a: any, b: any) => a.orderIndex - b.orderIndex)
+        .map((block: any) => ({
+          ...block,
+          descriptions: block.descriptions?.sort((a: any, b: any) => a.orderIndex - b.orderIndex) || []
+        }));
+    }
+
     return data;
   }
 
@@ -239,10 +253,36 @@ export class SupabaseService {
   // TEXT BLOCKS
   // ============================================
 
+  async getTextBlocksForBudget(budgetId: string) {
+    const { data, error } = await this.supabase
+      .from('BudgetTextBlocks')
+      .select(`
+        *,
+        descriptions:BudgetTextBlockSections(*)
+      `)
+      .eq('budgetId', budgetId)
+      .order('orderIndex');
+
+    if (error) throw error;
+
+    // Ordenar las secciones dentro de cada bloque
+    return data.map((block: any) => ({
+      ...block,
+      descriptions: block.descriptions?.sort((a: any, b: any) => a.orderIndex - b.orderIndex) || []
+    }));
+  }
+
   async addTextBlockToBudget(textBlock: any) {
     const { data, error } = await this.supabase
       .from('BudgetTextBlocks')
-      .insert([textBlock])
+      .insert([{
+        budgetId: textBlock.budgetId,
+        orderIndex: textBlock.orderIndex,
+        heading: textBlock.heading,
+        link: textBlock.link,
+        imageUrl: textBlock.imageUrl,
+        subtotal: textBlock.subtotal || 0
+      }])
       .select()
       .single();
 
@@ -253,8 +293,14 @@ export class SupabaseService {
   async updateBudgetTextBlock(id: string, updates: any) {
     const { data, error } = await this.supabase
       .from('BudgetTextBlocks')
-      .update(updates)
-      .eq('Id', id)
+      .update({
+        orderIndex: updates.orderIndex,
+        heading: updates.heading,
+        link: updates.link,
+        imageUrl: updates.imageUrl,
+        subtotal: updates.subtotal
+      })
+      .eq('id', id)
       .select()
       .single();
 
@@ -263,12 +309,67 @@ export class SupabaseService {
   }
 
   async deleteBudgetTextBlock(id: string) {
+    // Las secciones se eliminan automáticamente por CASCADE
     const { error } = await this.supabase
       .from('BudgetTextBlocks')
       .delete()
-      .eq('Id', id);
+      .eq('id', id);
 
     if (error) throw error;
+  }
+
+  // ============================================
+  // TEXT BLOCK SECTIONS
+  // ============================================
+
+  async addSectionToTextBlock(section: any) {
+    const { data, error } = await this.supabase
+      .from('BudgetTextBlockSections')
+      .insert([{
+        textBlockId: section.textBlockId,
+        orderIndex: section.orderIndex,
+        title: section.title,
+        text: section.text
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async updateTextBlockSection(id: string, updates: any) {
+    const { data, error } = await this.supabase
+      .from('BudgetTextBlockSections')
+      .update({
+        orderIndex: updates.orderIndex,
+        title: updates.title,
+        text: updates.text
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteTextBlockSection(id: string) {
+    const { error } = await this.supabase
+      .from('BudgetTextBlockSections')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  async reorderTextBlockSections(textBlockId: string, sectionIds: string[]) {
+    // Actualizar el orderIndex de todas las secciones
+    const updates = sectionIds.map((id, index) =>
+      this.updateTextBlockSection(id, { orderIndex: index })
+    );
+
+    await Promise.all(updates);
   }
 
   // ============================================
