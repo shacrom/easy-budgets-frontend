@@ -112,13 +112,6 @@ export class BudgetTextBlocksComponent {
   }
 
   /**
-   * Refresh blocks from database (called when sections are modified)
-   */
-  protected async refreshBlocks(): Promise<void> {
-    await this.loadBlocks(this.budgetId());
-  }
-
-  /**
    * Toggles edit mode
    */
   protected toggleEditMode(): void {

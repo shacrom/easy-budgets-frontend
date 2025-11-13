@@ -30,9 +30,6 @@ export class BudgetTextBlockComponent {
   // Output: event when block is deleted
   blockDeleted = output<string>();
 
-  // Output: event when a section is added (to refresh from DB)
-  sectionAdded = output<void>();
-
   // Local state for editing
   protected readonly isEditing = signal(false);
 
@@ -71,7 +68,7 @@ export class BudgetTextBlockComponent {
         subtotal: this.block().subtotal,
         orderIndex: this.block().orderIndex
       });
-      
+
       this.isEditing.set(false);
       this.blockUpdated.emit(this.block());
     } catch (error) {
@@ -123,9 +120,8 @@ export class BudgetTextBlockComponent {
         text: ''
       });
 
-      // Add to local state immediately for better UX
-      this.sections.update(sections => [...sections, newSection]);
-      this.sectionAdded.emit(); // Notify parent to refresh
+  // Add to local state immediately for better UX
+  this.sections.update(sections => [...sections, newSection]);
     } catch (error) {
       console.error('Error adding section:', error);
     }
@@ -142,7 +138,7 @@ export class BudgetTextBlockComponent {
 
     try {
       // Update locally first for immediate feedback
-      this.sections.update(sections => 
+      this.sections.update(sections =>
         sections.map(section =>
           section.id === sectionId
             ? { ...section, [field]: value }
@@ -176,10 +172,9 @@ export class BudgetTextBlockComponent {
 
     try {
       await this.supabase.deleteTextBlockSection(sectionId);
-      
-      // Remove from local state
-      this.sections.update(sections => sections.filter(s => s.id !== sectionId));
-      this.sectionAdded.emit(); // Notify parent to refresh
+
+  // Remove from local state
+  this.sections.update(sections => sections.filter(s => s.id !== sectionId));
     } catch (error) {
       console.error('Error deleting section:', error);
     }
