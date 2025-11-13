@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, signal, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, computed, inject, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { Product, CreateProductDto } from '../../../models/product.model';
 import { SupabaseService } from '../../../services/supabase.service';
 
@@ -12,10 +14,28 @@ import { SupabaseService } from '../../../services/supabase.service';
   selector: 'app-products-catalog',
   templateUrl: './products-catalog.component.html',
   styleUrls: ['./products-catalog.component.css'],
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatTableModule, MatPaginatorModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProductsCatalogComponent {
+export class ProductsCatalogComponent implements AfterViewInit {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  // Angular Material Table config
+  protected readonly displayedColumns = [
+    'reference',
+    'description',
+    'manufacturer',
+    'category',
+    'basePrice',
+    'vatRate',
+    'finalPrice',
+    'active',
+    'actions'
+  ];
+  protected readonly pageSizeOptions = [5, 10, 25];
+  protected pageIndex = signal(0);
+  protected pageSize = signal(5);
+
   private readonly supabaseService = inject(SupabaseService);
 
   // Lista de productos
@@ -45,14 +65,36 @@ export class ProductsCatalogComponent {
   // Productos filtrados
   protected readonly filteredProducts = computed(() => {
     const term = this.searchTerm().toLowerCase();
-    if (!term) return this.products();
+    let filtered = this.products();
+    if (term) {
+      filtered = filtered.filter(p =>
+        p.reference.toLowerCase().includes(term) ||
+        p.description.toLowerCase().includes(term) ||
+        p.manufacturer.toLowerCase().includes(term)
+      );
+    }
+    // Paginación manual
+    const start = this.pageIndex() * this.pageSize();
+    return filtered.slice(start, start + this.pageSize());
+  });
 
+  protected get totalFilteredProducts(): number {
+    const term = this.searchTerm().toLowerCase();
+    if (!term) return this.products().length;
     return this.products().filter(p =>
       p.reference.toLowerCase().includes(term) ||
       p.description.toLowerCase().includes(term) ||
       p.manufacturer.toLowerCase().includes(term)
-    );
-  });
+    ).length;
+  }
+  ngAfterViewInit(): void {
+    // No-op, but required for paginator ViewChild
+  }
+
+  protected onPageChange(event: any): void {
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+  }
 
   constructor() {
     this.loadProducts();

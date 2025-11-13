@@ -160,137 +160,77 @@
         </p>
       </div>
     } @else {
-      <table class="products-table">
-        <thead>
-          <tr>
-            <th>Referencia</th>
-            <th>Descripción</th>
-            <th>Fabricante</th>
-            <th>Categoría</th>
-            <th>Precio Base</th>
-            <th>IVA</th>
-            <th>Precio Final</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (product of filteredProducts(); track product.id) {
-            <tr [class.inactive-row]="!product.active">
-              @if (editingProduct()?.id === product.id) {
-                <!-- Modo Edición -->
-                <td>
-                  <input
-                    type="text"
-                    [value]="editingProduct()!.reference"
-                    (input)="updateEditingProductField('reference', $event)"
-                    class="input-field-sm">
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    [value]="editingProduct()!.description"
-                    (input)="updateEditingProductField('description', $event)"
-                    class="input-field-sm">
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    [value]="editingProduct()!.manufacturer"
-                    (input)="updateEditingProductField('manufacturer', $event)"
-                    class="input-field-sm">
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    [value]="editingProduct()!.category || ''"
-                    (input)="updateEditingProductField('category', $event)"
-                    class="input-field-sm">
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    step="0.01"
-                    [value]="editingProduct()!.basePrice"
-                    (input)="updateEditingProductField('basePrice', $event)"
-                    class="input-field-sm">
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    [value]="editingProduct()!.vatRate"
-                    (input)="updateEditingProductField('vatRate', $event)"
-                    class="input-field-sm">
-                </td>
-                <td class="text-right font-semibold">
-                  {{ (editingProduct()!.basePrice * (1 + editingProduct()!.vatRate / 100)).toFixed(2) }}€
-                </td>
-                <td>
-                  <input
-                    type="checkbox"
-                    [checked]="editingProduct()!.active"
-                    (change)="updateEditingProductField('active', $event)"
-                    class="checkbox-field">
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <button
-                      (click)="saveProduct(editingProduct()!)"
-                      class="btn-save"
-                      type="button"
-                      title="Guardar">
-                      ✓
-                    </button>
-                    <button
-                      (click)="cancelEdit()"
-                      class="btn-cancel"
-                      type="button"
-                      title="Cancelar">
-                      ✕
-                    </button>
-                  </div>
-                </td>
-              } @else {
-                <!-- Modo Vista -->
-                <td class="font-mono font-semibold">{{ product.reference }}</td>
-                <td>{{ product.description }}</td>
-                <td>{{ product.manufacturer }}</td>
-                <td>{{ product.category || '-' }}</td>
-                <td class="text-right">{{ product.basePrice.toFixed(2) }}€</td>
-                <td class="text-right">{{ product.vatRate }}%</td>
-                <td class="text-right font-semibold">
-                  {{ (product.basePrice * (1 + product.vatRate / 100)).toFixed(2) }}€
-                </td>
-                <td>
-                  @if (product.active) {
-                    <span class="badge badge-active">Activo</span>
-                  } @else {
-                    <span class="badge badge-inactive">Inactivo</span>
-                  }
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <button
-                      (click)="startEdit(product)"
-                      class="btn-edit"
-                      type="button"
-                      title="Editar">
-                      <span class="material-icons">edit</span>
-                    </button>
-                    <button
-                      (click)="deleteProduct(product.id!)"
-                      class="btn-delete"
-                      type="button"
-                      title="Eliminar">
-                      <span class="material-icons">delete</span>
-                    </button>
-                  </div>
-                </td>
-              }
-            </tr>
-          }
-        </tbody>
+      <table mat-table [dataSource]="filteredProducts()" class="mat-elevation-z1 products-table">
+        <!-- Referencia -->
+        <ng-container matColumnDef="reference">
+          <th mat-header-cell *matHeaderCellDef>Referencia</th>
+          <td mat-cell *matCellDef="let product">{{ product.reference }}</td>
+        </ng-container>
+        <!-- Descripción -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Descripción</th>
+          <td mat-cell *matCellDef="let product">{{ product.description }}</td>
+        </ng-container>
+        <!-- Fabricante -->
+        <ng-container matColumnDef="manufacturer">
+          <th mat-header-cell *matHeaderCellDef>Fabricante</th>
+          <td mat-cell *matCellDef="let product">{{ product.manufacturer }}</td>
+        </ng-container>
+        <!-- Categoría -->
+        <ng-container matColumnDef="category">
+          <th mat-header-cell *matHeaderCellDef>Categoría</th>
+          <td mat-cell *matCellDef="let product">{{ product.category || '-' }}</td>
+        </ng-container>
+        <!-- Precio Base -->
+        <ng-container matColumnDef="basePrice">
+          <th mat-header-cell *matHeaderCellDef>Precio Base</th>
+          <td mat-cell *matCellDef="let product" class="text-right">{{ product.basePrice.toFixed(2) }}€</td>
+        </ng-container>
+        <!-- IVA -->
+        <ng-container matColumnDef="vatRate">
+          <th mat-header-cell *matHeaderCellDef>IVA</th>
+          <td mat-cell *matCellDef="let product" class="text-right">{{ product.vatRate }}%</td>
+        </ng-container>
+        <!-- Precio Final -->
+        <ng-container matColumnDef="finalPrice">
+          <th mat-header-cell *matHeaderCellDef>Precio Final</th>
+          <td mat-cell *matCellDef="let product" class="text-right font-semibold">
+            {{ (product.basePrice * (1 + product.vatRate / 100)).toFixed(2) }}€
+          </td>
+        </ng-container>
+        <!-- Estado -->
+        <ng-container matColumnDef="active">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let product">
+            <span *ngIf="product.active" class="badge badge-active">Activo</span>
+            <span *ngIf="!product.active" class="badge badge-inactive">Inactivo</span>
+          </td>
+        </ng-container>
+        <!-- Acciones -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+          <td mat-cell *matCellDef="let product">
+            <div class="action-buttons">
+              <button (click)="startEdit(product)" class="btn-edit" type="button" title="Editar">
+                <span class="material-icons">edit</span>
+              </button>
+              <button (click)="deleteProduct(product.id!)" class="btn-delete" type="button" title="Eliminar">
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
+      <mat-paginator
+        [length]="totalFilteredProducts"
+        [pageSize]="pageSize()"
+        [pageIndex]="pageIndex()"
+        [pageSizeOptions]="pageSizeOptions"
+        (page)="onPageChange($event)">
+      </mat-paginator>
     }
   </div>
 </div>
