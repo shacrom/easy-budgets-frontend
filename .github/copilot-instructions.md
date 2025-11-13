@@ -20,6 +20,9 @@ La tercera será hará un resumen con el sumatorio de los totales de la primera 
 
 Y en el cuarto se debe de poder introducir las condiciones generales.
 
+
+Además, ahora quiero que utilices también los iconos de MUI (Material Icons) en el proyecto para los componentes y la interfaz.
+
 Quiero que me eches una mano parte por parte para poder cumplir con estos requerimientos. 
 
 También añadir que los pdfs tienen que tener un estilo ya definido con pie de página y encabezado de página.
