@@ -18,6 +18,10 @@ import { Material } from '../../../models/material.model';
   styleUrl: './budget-editor.component.css'
 })
 export class BudgetEditorComponent {
+  // TODO: This should come from route params or a service
+  // For now, using a placeholder. You'll need to implement proper budget loading
+  protected readonly currentBudgetId = signal<string>('temp-budget-id');
+
   // Totals from each section
   protected readonly totalBlocks = signal<number>(0);
   protected readonly totalMaterials = signal<number>(0);

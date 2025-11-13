@@ -28,7 +28,7 @@
 
       <div class="block-content">
         <!-- Secciones de descripción -->
-        @for (descripcion of block().descriptions; track descripcion.id) {
+        @for (descripcion of sections(); track descripcion.id) {
           <div class="description-section">
             <h3 class="description-title">{{ descripcion.title }}</h3>
             <p class="description-text">{{ descripcion.text }}</p>
@@ -45,10 +45,10 @@
           </a>
         }
 
-        @if (block().photo) {
+        @if (block().imageUrl) {
           <div class="block-image mt-4">
             <img
-              [src]="block().photo"
+              [src]="block().imageUrl"
               [alt]="block().heading"
               class="max-w-full h-auto rounded-lg shadow-md">
           </div>
@@ -57,7 +57,7 @@
 
       <div class="block-footer">
         <span class="text-lg font-semibold text-gray-900">
-          Total: {{ block().total | currency:'EUR':'symbol':'1.2-2':'es' }}
+          Total: {{ block().subtotal | currency:'EUR':'symbol':'1.2-2':'es' }}
         </span>
       </div>
     </div>
@@ -89,7 +89,7 @@
           </button>
         </div>
 
-        @for (descripcion of block().descriptions; track descripcion.id; let idx = $index) {
+        @for (descripcion of sections(); track descripcion.id; let idx = $index) {
           <div class="description-edit-item">
             <div class="description-edit-header">
               <span class="text-sm font-light text-gray-700 uppercase" style="letter-spacing: 0.05em;">Sección {{ idx + 1 }}</span>
@@ -124,7 +124,7 @@
           </div>
         }
 
-        @if (block().descriptions.length === 0) {
+        @if (sections().length === 0) {
           <div class="empty-descriptions">
             <p class="text-gray-500 text-sm text-center">
               No hay secciones de descripción. Haz clic en "+ Añadir Sección" para comenzar.
@@ -153,8 +153,8 @@
         <input
           type="url"
           id="foto-{{ block().id }}"
-          [value]="block().photo || ''"
-          (input)="updateBlockField('photo', $event)"
+          [value]="block().imageUrl || ''"
+          (input)="updateBlockField('imageUrl', $event)"
           class="form-input"
           placeholder="https://ejemplo.com/imagen.jpg">
       </div>
@@ -166,8 +166,8 @@
         <input
           type="number"
           id="total-{{ block().id }}"
-          [value]="block().total"
-          (input)="updateBlockField('total', $event)"
+          [value]="block().subtotal"
+          (input)="updateBlockField('subtotal', $event)"
           step="0.01"
           min="0"
           class="form-input"

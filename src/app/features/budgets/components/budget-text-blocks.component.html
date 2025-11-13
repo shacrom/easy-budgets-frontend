@@ -24,7 +24,11 @@
   </div>
 
   <div class="blocks-list">
-    @if (blocks().length === 0) {
+    @if (isLoading()) {
+      <div class="loading-state">
+        <p class="text-gray-500 text-center">Cargando bloques...</p>
+      </div>
+    } @else if (blocks().length === 0) {
       <div class="empty-state">
         <p class="text-gray-500 text-center">
           No hay bloques añadidos. Haz clic en "Añadir Bloque" para empezar.
@@ -36,7 +40,8 @@
           [block]="block"
           [editMode]="editMode()"
           (blockUpdated)="updateBlock($event)"
-          (blockDeleted)="deleteBlock($event)">
+          (blockDeleted)="deleteBlock($event)"
+          (sectionAdded)="refreshBlocks()">
         </app-budget-text-block>
       }
     }
