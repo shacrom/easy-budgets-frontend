@@ -11,14 +11,16 @@
             <button
               (click)="startEdit()"
               class="btn-edit"
-              type="button">
-              Editar
+              type="button"
+              title="Editar">
+              <span class="material-icons">edit</span>
             </button>
             <button
               (click)="deleteBlock()"
               class="btn-delete"
-              type="button">
-              Eliminar
+              type="button"
+              title="Eliminar">
+              <span class="material-icons">delete</span>
             </button>
           </div>
         }
@@ -64,7 +66,7 @@
     <div class="block-edit">
       <div class="form-group">
         <label for="encabezado-{{ block().id }}" class="form-label">
-          Encabezado (fondo verde)
+          Encabezado
         </label>
         <input
           type="text"
