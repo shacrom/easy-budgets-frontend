@@ -31,7 +31,20 @@ export class SupabaseService {
       .order('description');
 
     if (error) throw error;
-    return data;
+    
+    // Mapear de PascalCase a camelCase
+    return data.map((product: any) => ({
+      id: product.id,
+      reference: product.reference,
+      description: product.description,
+      manufacturer: product.manufacturer,
+      basePrice: product.unitPrice,
+      vatRate: 21, // Por defecto 21% si no existe
+      category: product.category,
+      active: product.isActive,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt
+    }));
   }
 
   async getProductByReference(reference: string) {
@@ -48,31 +61,71 @@ export class SupabaseService {
   async createProduct(product: any) {
     const { data, error } = await this.supabase
       .from('Products')
-      .insert([product])
+      .insert([{
+        reference: product.reference,
+        description: product.description,
+        manufacturer: product.manufacturer,
+        unitPrice: product.basePrice,
+        category: product.category,
+        isActive: product.active ?? true
+      }])
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Mapear respuesta a camelCase
+    return {
+      id: data.id,
+      reference: data.reference,
+      description: data.description,
+      manufacturer: data.manufacturer,
+      basePrice: data.unitPrice,
+      vatRate: 21,
+      category: data.category,
+      active: data.isActive,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    };
   }
 
   async updateProduct(id: string, updates: any) {
     const { data, error } = await this.supabase
       .from('Products')
-      .update(updates)
-      .eq('Id', id)
+      .update({
+        reference: updates.reference,
+        description: updates.description,
+        manufacturer: updates.manufacturer,
+        unitPrice: updates.basePrice,
+        category: updates.category,
+        isActive: updates.active
+      })
+      .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Mapear respuesta a camelCase
+    return {
+      id: data.id,
+      reference: data.reference,
+      description: data.description,
+      manufacturer: data.manufacturer,
+      basePrice: data.unitPrice,
+      vatRate: 21,
+      category: data.category,
+      active: data.isActive,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    };
   }
 
   async deleteProduct(id: string) {
     const { error } = await this.supabase
       .from('Products')
       .delete()
-      .eq('Id', id);
+      .eq('id', id);
 
     if (error) throw error;
   }

@@ -139,7 +139,7 @@
       class="search-input"
       placeholder="Buscar por referencia, descripción o fabricante...">
     <span class="search-results-count">
-      {{ filteredProducts().length }} producto(s) encontrado(s)
+      {{ dataSource.filteredData.length }} producto(s) encontrado(s)
     </span>
   </div>
 
@@ -149,18 +149,12 @@
       <div class="loading-state">
         <p>Cargando productos...</p>
       </div>
-    } @else if (filteredProducts().length === 0) {
+    } @else if (dataSource.data.length === 0) {
       <div class="empty-state">
-        <p>
-          @if (searchTerm()) {
-            No se encontraron productos con el término "{{ searchTerm() }}"
-          } @else {
-            No hay productos en el catálogo. Añade el primero.
-          }
-        </p>
+        <p>No hay productos en el catálogo. Añade el primero.</p>
       </div>
     } @else {
-      <table mat-table [dataSource]="filteredProducts()" class="mat-elevation-z1 products-table">
+      <table mat-table [dataSource]="dataSource" class="mat-elevation-z1 products-table">
         <!-- Referencia -->
         <ng-container matColumnDef="reference">
           <th mat-header-cell *matHeaderCellDef>Referencia</th>
@@ -184,18 +178,18 @@
         <!-- Precio Base -->
         <ng-container matColumnDef="basePrice">
           <th mat-header-cell *matHeaderCellDef>Precio Base</th>
-          <td mat-cell *matCellDef="let product" class="text-right">{{ product.basePrice.toFixed(2) }}€</td>
+          <td mat-cell *matCellDef="let product" class="text-right">{{ (product.basePrice || 0).toFixed(2) }}€</td>
         </ng-container>
         <!-- IVA -->
         <ng-container matColumnDef="vatRate">
           <th mat-header-cell *matHeaderCellDef>IVA</th>
-          <td mat-cell *matCellDef="let product" class="text-right">{{ product.vatRate }}%</td>
+          <td mat-cell *matCellDef="let product" class="text-right">{{ product.vatRate || 0 }}%</td>
         </ng-container>
         <!-- Precio Final -->
         <ng-container matColumnDef="finalPrice">
           <th mat-header-cell *matHeaderCellDef>Precio Final</th>
           <td mat-cell *matCellDef="let product" class="text-right font-semibold">
-            {{ (product.basePrice * (1 + product.vatRate / 100)).toFixed(2) }}€
+            {{ ((product.basePrice || 0) * (1 + (product.vatRate || 0) / 100)).toFixed(2) }}€
           </td>
         </ng-container>
         <!-- Estado -->
@@ -225,11 +219,8 @@
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
       <mat-paginator
-        [length]="totalFilteredProducts"
-        [pageSize]="pageSize()"
-        [pageIndex]="pageIndex()"
         [pageSizeOptions]="pageSizeOptions"
-        (page)="onPageChange($event)">
+        showFirstLastButtons>
       </mat-paginator>
     }
   </div>

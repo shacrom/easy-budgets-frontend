@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, signal, computed, inject, ViewChild, AfterViewInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, inject, ViewChild, AfterViewInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { Product, CreateProductDto } from '../../../models/product.model';
 import { SupabaseService } from '../../../services/supabase.service';
@@ -32,9 +32,8 @@ export class ProductsCatalogComponent implements AfterViewInit {
     'active',
     'actions'
   ];
-  protected readonly pageSizeOptions = [5, 10, 25];
-  protected pageIndex = signal(0);
-  protected pageSize = signal(5);
+  protected readonly pageSizeOptions = [5, 10, 25, 50];
+  protected readonly dataSource = new MatTableDataSource<Product>();
 
   private readonly supabaseService = inject(SupabaseService);
 
@@ -62,42 +61,28 @@ export class ProductsCatalogComponent implements AfterViewInit {
   protected readonly successMessage = signal<string>('');
   protected readonly searchTerm = signal<string>('');
 
-  // Productos filtrados
-  protected readonly filteredProducts = computed(() => {
-    const term = this.searchTerm().toLowerCase();
-    let filtered = this.products();
-    if (term) {
-      filtered = filtered.filter(p =>
-        p.reference.toLowerCase().includes(term) ||
-        p.description.toLowerCase().includes(term) ||
-        p.manufacturer.toLowerCase().includes(term)
-      );
-    }
-    // Paginación manual
-    const start = this.pageIndex() * this.pageSize();
-    return filtered.slice(start, start + this.pageSize());
-  });
-
-  protected get totalFilteredProducts(): number {
-    const term = this.searchTerm().toLowerCase();
-    if (!term) return this.products().length;
-    return this.products().filter(p =>
-      p.reference.toLowerCase().includes(term) ||
-      p.description.toLowerCase().includes(term) ||
-      p.manufacturer.toLowerCase().includes(term)
-    ).length;
-  }
-  ngAfterViewInit(): void {
-    // No-op, but required for paginator ViewChild
-  }
-
-  protected onPageChange(event: any): void {
-    this.pageIndex.set(event.pageIndex);
-    this.pageSize.set(event.pageSize);
-  }
-
   constructor() {
     this.loadProducts();
+
+    // Effect para aplicar filtro cuando cambia el término de búsqueda
+    effect(() => {
+      const term = this.searchTerm();
+      this.dataSource.filter = term.trim().toLowerCase();
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+
+    // Configurar filtro personalizado para buscar en múltiples campos
+    this.dataSource.filterPredicate = (product: Product, filter: string) => {
+      const searchStr = filter.toLowerCase();
+      return (
+        product.reference.toLowerCase().includes(searchStr) ||
+        product.description.toLowerCase().includes(searchStr) ||
+        product.manufacturer.toLowerCase().includes(searchStr)
+      );
+    };
   }
 
   /**
@@ -110,6 +95,7 @@ export class ProductsCatalogComponent implements AfterViewInit {
     try {
       const products = await this.supabaseService.getProducts();
       this.products.set(products);
+      this.dataSource.data = products;
     } catch (error) {
       this.errorMessage.set('Error al cargar los productos');
       console.error('Error loading products:', error);
@@ -152,6 +138,7 @@ export class ProductsCatalogComponent implements AfterViewInit {
     try {
       const newProduct = await this.supabaseService.createProduct(product);
       this.products.update(products => [...products, newProduct]);
+      this.dataSource.data = [...this.dataSource.data, newProduct];
       this.successMessage.set('Producto añadido correctamente');
       this.resetNewProduct();
       this.showAddForm.set(false);
@@ -206,6 +193,7 @@ export class ProductsCatalogComponent implements AfterViewInit {
       this.products.update(products =>
         products.map(p => p.id === updated.id ? updated : p)
       );
+      this.dataSource.data = this.dataSource.data.map(p => p.id === updated.id ? updated : p);
       this.editingProduct.set(null);
       this.successMessage.set('Producto actualizado correctamente');
 
@@ -232,6 +220,7 @@ export class ProductsCatalogComponent implements AfterViewInit {
     try {
       await this.supabaseService.deleteProduct(productId);
       this.products.update(products => products.filter(p => p.id !== productId));
+      this.dataSource.data = this.dataSource.data.filter(p => p.id !== productId);
       this.successMessage.set('Producto eliminado correctamente');
 
       setTimeout(() => this.successMessage.set(''), 3000);
