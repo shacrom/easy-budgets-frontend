@@ -89,6 +89,32 @@
           </button>
         </div>
 
+        <div class="template-selector">
+          <label class="template-label">Plantillas rápidas</label>
+          <div class="template-controls">
+            <select
+              class="template-select"
+              (change)="onTemplateChange($event)"
+              [value]="selectedTemplateId() ?? ''">
+              <option value="">Seleccionar plantilla</option>
+              @for (template of templateOptions(); track template.id) {
+                <option [value]="template.id">{{ template.name }}</option>
+              }
+            </select>
+            <button
+              type="button"
+              class="btn-apply-template"
+              [disabled]="!selectedTemplateId() || isApplyingTemplate()"
+              (click)="applySelectedTemplate()">
+              @if (isApplyingTemplate()) {
+                <span>Aplicando…</span>
+              } @else {
+                <span>Aplicar plantilla</span>
+              }
+            </button>
+          </div>
+        </div>
+
         @for (descripcion of sections(); track descripcion.id; let idx = $index) {
           <div class="description-edit-item">
             <div class="description-edit-header">

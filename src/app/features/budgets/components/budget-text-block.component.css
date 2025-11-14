@@ -98,6 +98,28 @@
   letter-spacing: 0.05em;
 }
 
+.template-selector {
+  @apply mb-4 p-3 bg-white border border-dashed border-gray-300;
+}
+
+.template-label {
+  @apply text-xs font-medium text-gray-600 mb-2 block uppercase;
+  letter-spacing: 0.05em;
+}
+
+.template-controls {
+  @apply flex gap-3 flex-wrap;
+}
+
+.template-select {
+  @apply flex-1 border border-gray-300 px-3 py-2 text-sm font-light focus:outline-none focus:border-gray-800;
+  min-width: 220px;
+}
+
+.btn-apply-template {
+  @apply px-4 py-2 bg-gray-900 text-white text-sm font-light uppercase tracking-[0.05em] disabled:opacity-60 disabled:cursor-not-allowed;
+}
+
 .description-edit-item {
   @apply bg-white p-4 border border-gray-200 mb-3;
 }

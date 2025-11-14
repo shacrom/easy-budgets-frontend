@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BudgetTextBlock, DescriptionSection } from '../../../models/budget-text-block.model';
 import { SupabaseService } from '../../../services/supabase.service';
+import { TEXT_BLOCK_TEMPLATES, TextBlockTemplate } from '../templates/text-block-templates';
 
 /**
  * Component to display and edit a budget text block
@@ -35,6 +36,10 @@ export class BudgetTextBlockComponent {
 
   // Local state for sections (writable version)
   protected readonly sections = signal<DescriptionSection[]>([]);
+
+  protected readonly templateOptions = signal<TextBlockTemplate[]>(TEXT_BLOCK_TEMPLATES);
+  protected readonly selectedTemplateId = signal<string | null>(null);
+  protected readonly isApplyingTemplate = signal<boolean>(false);
 
   // Sync sections when block changes
   constructor() {
@@ -193,5 +198,71 @@ export class BudgetTextBlockComponent {
     };
 
     this.blockUpdated.emit(updatedBlock);
+  }
+
+  protected onTemplateChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value || null;
+    this.selectedTemplateId.set(value);
+  }
+
+  protected async applySelectedTemplate(): Promise<void> {
+    const templateId = this.selectedTemplateId();
+    const blockId = this.block().id;
+
+    if (!templateId || !blockId) {
+      return;
+    }
+
+    const template = this.templateOptions().find(t => t.id === templateId);
+    if (!template) {
+      return;
+    }
+
+    const confirmed = confirm('Aplicar una plantilla reemplazará las secciones actuales. ¿Deseas continuar?');
+    if (!confirmed) {
+      return;
+    }
+
+    this.isApplyingTemplate.set(true);
+
+    try {
+      // Delete existing sections
+      const existingSections = this.sections();
+      await Promise.all(
+        existingSections
+          .filter(section => !!section.id)
+          .map(section => this.supabase.deleteTextBlockSection(section.id as string))
+      );
+
+      // Create sections from template sequentially to preserve order
+      const createdSections: DescriptionSection[] = [];
+      for (let index = 0; index < template.sections.length; index += 1) {
+        const sectionTemplate = template.sections[index];
+        const createdSection = await this.supabase.addSectionToTextBlock({
+          textBlockId: blockId,
+          orderIndex: index,
+          title: sectionTemplate.title,
+          text: sectionTemplate.text
+        });
+        createdSections.push(createdSection);
+      }
+
+      this.sections.set(createdSections);
+
+      if (template.heading) {
+        const updatedBlock: BudgetTextBlock = {
+          ...this.block(),
+          heading: template.heading
+        };
+        this.blockUpdated.emit(updatedBlock);
+      }
+
+      this.selectedTemplateId.set(null);
+    } catch (error) {
+      console.error('Error applying template:', error);
+    } finally {
+      this.isApplyingTemplate.set(false);
+    }
   }
 }
