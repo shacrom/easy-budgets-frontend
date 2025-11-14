@@ -249,6 +249,15 @@ export class SupabaseService {
     return data;
   }
 
+  async deleteBudget(id: string) {
+    const { error } = await this.supabase
+      .from('Budgets')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
   // ============================================
   // TEXT BLOCKS
   // ============================================

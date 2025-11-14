@@ -30,6 +30,7 @@ export class BudgetsListComponent implements OnInit {
   protected readonly budgets = signal<BudgetListItem[]>([]);
   protected readonly isLoading = signal<boolean>(false);
   protected readonly isCreating = signal<boolean>(false);
+  protected readonly deletingBudgetId = signal<string | null>(null);
   protected readonly errorMessage = signal<string | null>(null);
 
   ngOnInit(): void {
@@ -81,5 +82,36 @@ export class BudgetsListComponent implements OnInit {
 
   protected openBudget(budgetId: string): void {
     this.router.navigate(['/presupuestos', budgetId]);
+  }
+
+  protected async deleteBudget(budget: BudgetListItem): Promise<void> {
+    const firstConfirmation = window.confirm(
+      `¿Quieres eliminar el presupuesto ${budget.budgetNumber}?`
+    );
+
+    if (!firstConfirmation) {
+      return;
+    }
+
+    const secondConfirmation = window.confirm(
+      'Esta acción es permanente y eliminará todos los datos asociados. ¿Confirmas la eliminación definitiva?'
+    );
+
+    if (!secondConfirmation) {
+      return;
+    }
+
+    this.deletingBudgetId.set(budget.id);
+    this.errorMessage.set(null);
+
+    try {
+      await this.supabase.deleteBudget(budget.id);
+      this.budgets.update(items => items.filter(item => item.id !== budget.id));
+    } catch (error) {
+      console.error('Error deleting budget:', error);
+      this.errorMessage.set('No se pudo eliminar el presupuesto. Inténtalo de nuevo.');
+    } finally {
+      this.deletingBudgetId.set(null);
+    }
   }
 }
