@@ -8,6 +8,10 @@ export const routes: Routes = [
   },
   {
     path: 'presupuestos',
+    loadComponent: () => import('./features/budgets/components/budgets-list.component').then(m => m.BudgetsListComponent)
+  },
+  {
+    path: 'presupuestos/:id',
     loadComponent: () => import('./features/budget-editor/components/budget-editor.component').then(m => m.BudgetEditorComponent)
   },
   {

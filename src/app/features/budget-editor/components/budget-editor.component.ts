@@ -6,6 +6,8 @@ import { GeneralConditionsComponent } from '../../conditions/components/general-
 import { BudgetTextBlock } from '../../../models/budget-text-block.model';
 import { Material } from '../../../models/material.model';
 import { SupabaseService } from '../../../services/supabase.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-budget-editor',
@@ -20,6 +22,9 @@ import { SupabaseService } from '../../../services/supabase.service';
 })
 export class BudgetEditorComponent {
   private readonly supabase = inject(SupabaseService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly routeParams = toSignal(this.route.paramMap);
 
   // Budget ID - will be initialized on component creation
   protected readonly currentBudgetId = signal<string>('');
@@ -34,53 +39,26 @@ export class BudgetEditorComponent {
   protected readonly materials = signal<Material[]>([]);
 
   constructor() {
-    // Initialize budget on component creation
-    this.initializeBudget();
-  }
-
-  /**
-   * Initialize or create a test budget
-   * TODO: Replace this with proper routing/budget selection
-   */
-  private async initializeBudget(): Promise<void> {
-    try {
-      // Check if there's a budget ID in localStorage (for development)
-      const storedBudgetId = localStorage.getItem('currentBudgetId');
-      
-      if (storedBudgetId) {
-        // Verify it exists in the database
-        try {
-          await this.supabase.getBudget(storedBudgetId);
-          this.currentBudgetId.set(storedBudgetId);
-          this.isInitialized.set(true);
-          console.log('Loaded existing budget:', storedBudgetId);
-          return;
-        } catch (error) {
-          console.log('Stored budget not found, creating new one...');
-          localStorage.removeItem('currentBudgetId');
-        }
+    effect(() => {
+      const id = this.routeParams()?.get('id');
+      if (!id) {
+        this.isInitialized.set(false);
+        return;
       }
 
-      // Create a new test budget
-      const budgetNumber = `TEST-${Date.now()}`;
-      const newBudget = await this.supabase.createBudget({
-        budgetNumber: budgetNumber,
-        customerId: null, // TODO: Add customer selection
-        title: 'Presupuesto de prueba',
-        status: 'draft',
-        subtotal: 0,
-        taxPercentage: 21,
-        taxAmount: 0,
-        total: 0,
-        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 30 días, formato YYYY-MM-DD
-      });
+      this.loadBudget(id);
+    });
+  }
 
-      this.currentBudgetId.set(newBudget.id);
-      localStorage.setItem('currentBudgetId', newBudget.id);
+  private async loadBudget(id: string): Promise<void> {
+    this.isInitialized.set(false);
+    try {
+      await this.supabase.getBudget(id);
+      this.currentBudgetId.set(id);
       this.isInitialized.set(true);
-      console.log('Created new budget:', newBudget.id);
     } catch (error) {
-      console.error('Error initializing budget:', error);
+      console.error('No se pudo cargar el presupuesto seleccionado:', error);
+      this.router.navigate(['/presupuestos']);
     }
   }
 

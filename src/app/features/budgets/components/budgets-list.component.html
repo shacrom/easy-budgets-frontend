@@ -1,0 +1,77 @@
+<section class="budgets-list-container">
+  <header class="list-header">
+    <div>
+      <h1>Presupuestos</h1>
+      <p class="subtitle">Selecciona un presupuesto existente o crea uno nuevo.</p>
+    </div>
+    <div class="header-actions">
+      <button
+        type="button"
+        class="btn-refresh"
+        [disabled]="isLoading()"
+        (click)="loadBudgets()">
+        Actualizar
+      </button>
+      <button
+        type="button"
+        class="btn-primary"
+        [disabled]="isCreating()"
+        (click)="createBudget()">
+        @if (isCreating()) {
+          <span>Creando...</span>
+        } @else {
+          <span>Nuevo Presupuesto</span>
+        }
+      </button>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  @if (isLoading()) {
+    <div class="loading-state">Cargando presupuestos...</div>
+  } @else if (budgets().length === 0) {
+    <div class="empty-state">
+      <p>No hay presupuestos creados. Haz clic en "Nuevo Presupuesto" para comenzar.</p>
+    </div>
+  } @else {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Nº Presupuesto</th>
+            <th>Título</th>
+            <th>Cliente</th>
+            <th>Estado</th>
+            <th>Total</th>
+            <th>Creado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (budget of budgets(); track budget.id) {
+            <tr>
+              <td class="mono">{{ budget.budgetNumber }}</td>
+              <td>{{ budget.title }}</td>
+              <td>{{ budget.customer?.name || 'Sin cliente' }}</td>
+              <td>
+                <span [class]="'status-chip status-' + budget.status">
+                  {{ budget.status | titlecase }}
+                </span>
+              </td>
+              <td class="mono">{{ budget.total | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
+              <td>{{ budget.createdAt | date:'shortDate' }}</td>
+              <td>
+                <button type="button" class="btn-secondary" (click)="openBudget(budget.id)">
+                  Abrir
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

@@ -27,6 +27,9 @@ export class BudgetTextBlocksComponent {
   // Loading state
   protected readonly isLoading = signal<boolean>(false);
 
+  // Creating state
+  protected readonly isCreating = signal<boolean>(false);
+
   // Edit mode
   protected readonly editMode = signal<boolean>(true);
 
@@ -76,12 +79,22 @@ export class BudgetTextBlocksComponent {
    * Adds a new empty block
    */
   protected async addNewBlock(): Promise<void> {
-    const currentBlocks = this.blocks();
-    const nextOrderIndex = currentBlocks.length;
+    const budgetId = this.budgetId();
+    if (!budgetId) {
+      console.error('No budgetId available to create a text block.');
+      return;
+    }
 
+    const nextOrderIndex = this.blocks().length;
+
+    if (this.isCreating()) {
+      return;
+    }
+
+    this.isCreating.set(true);
     try {
-      const newBlock = await this.supabase.addTextBlockToBudget({
-        budgetId: this.budgetId(),
+      await this.supabase.addTextBlockToBudget({
+        budgetId,
         orderIndex: nextOrderIndex,
         heading: '',
         link: '',
@@ -89,9 +102,11 @@ export class BudgetTextBlocksComponent {
         subtotal: 0
       });
 
-      this.blocks.update(blocks => [...blocks, newBlock]);
+      await this.loadBlocks(budgetId);
     } catch (error) {
       console.error('Error adding text block:', error);
+    } finally {
+      this.isCreating.set(false);
     }
   }
 

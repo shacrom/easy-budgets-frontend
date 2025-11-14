@@ -148,7 +148,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('Customers')
       .select('*')
-      .eq('Id', id)
+        .eq('id', id)
       .single();
 
     if (error) throw error;
@@ -170,7 +170,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('Customers')
       .update(updates)
-      .eq('Id', id)
+        .eq('id', id)
       .select()
       .single();
 
@@ -208,7 +208,7 @@ export class SupabaseService {
         materials:BudgetMaterials(*),
         additionalLines:BudgetAdditionalLines(*)
       `)
-      .eq('Id', id)
+        .eq('id', id)
       .single();
 
     if (error) throw error;
@@ -241,7 +241,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('Budgets')
       .update(updates)
-      .eq('Id', id)
+        .eq('id', id)
       .select()
       .single();
 
@@ -391,7 +391,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('BudgetMaterials')
       .update(updates)
-      .eq('Id', id)
+        .eq('id', id)
       .select()
       .single();
 
@@ -403,7 +403,7 @@ export class SupabaseService {
     const { error } = await this.supabase
       .from('BudgetMaterials')
       .delete()
-      .eq('Id', id);
+      .eq('id', id);
 
     if (error) throw error;
   }
@@ -427,7 +427,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('BudgetAdditionalLines')
       .update(updates)
-      .eq('Id', id)
+        .eq('id', id)
       .select()
       .single();
 
@@ -439,7 +439,7 @@ export class SupabaseService {
     const { error } = await this.supabase
       .from('BudgetAdditionalLines')
       .delete()
-      .eq('Id', id);
+      .eq('id', id);
 
     if (error) throw error;
   }
@@ -484,7 +484,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('GeneralConditions')
       .update(updates)
-      .eq('Id', id)
+      .eq('id', id)
       .select()
       .single();
 

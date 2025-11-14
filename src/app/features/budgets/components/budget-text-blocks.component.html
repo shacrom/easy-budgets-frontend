@@ -16,8 +16,13 @@
         <button
           (click)="addNewBlock()"
           class="btn-add-block"
-          type="button">
-          Añadir Bloque
+          type="button"
+          [disabled]="isCreating()">
+          @if (isCreating()) {
+            <span>Creando...</span>
+          } @else {
+            <span>Añadir Bloque</span>
+          }
         </button>
       }
     </div>
