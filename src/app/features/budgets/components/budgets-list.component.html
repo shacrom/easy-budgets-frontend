@@ -66,7 +66,6 @@
               <td class="actions-cell">
                 <button type="button" class="btn-secondary" (click)="openBudget(budget.id)">
                   <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-                  <span>Editar</span>
                 </button>
                 <button
                   type="button"
@@ -75,10 +74,9 @@
                   (click)="deleteBudget(budget)"
                 >
                   @if (deletingBudgetId() === budget.id) {
-                    <span>Eliminando...</span>
+                    <span class="material-symbols-outlined loading-icon" aria-hidden="true">autorenew</span>
                   } @else {
                     <span class="material-symbols-outlined" aria-hidden="true">delete</span>
-                    <span>Eliminar</span>
                   }
                 </button>
               </td>

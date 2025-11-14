@@ -93,14 +93,6 @@ export class BudgetsListComponent implements OnInit {
       return;
     }
 
-    const secondConfirmation = window.confirm(
-      'Esta acción es permanente y eliminará todos los datos asociados. ¿Confirmas la eliminación definitiva?'
-    );
-
-    if (!secondConfirmation) {
-      return;
-    }
-
     this.deletingBudgetId.set(budget.id);
     this.errorMessage.set(null);
 
