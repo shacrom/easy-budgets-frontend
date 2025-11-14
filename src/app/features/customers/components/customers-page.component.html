@@ -1,0 +1,157 @@
+<section class="customers-page">
+  <div class="page-header-card">
+    <div class="header-grid">
+      <div class="header-cell">
+        <span class="header-label">CLIENTES TOTALES</span>
+        <span class="header-value">{{ totalCustomers() }}</span>
+      </div>
+      <div class="header-cell">
+        <span class="header-label">ÚLTIMA ACTUALIZACIÓN</span>
+        <span class="header-value">{{ lastUpdated() ? (lastUpdated() | date:'dd/MM/yyyy HH:mm') : 'SIN REGISTRO' }}</span>
+      </div>
+      <div class="header-cell">
+        <span class="header-label">CIUDADES DIFERENTES</span>
+        <span class="header-value">{{ uniqueCities() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-bar">
+    <div class="search-field">
+      <label for="customer-search">Buscar</label>
+      <input
+        id="customer-search"
+        type="text"
+        placeholder="Nombre, ciudad, email o DNI"
+        (input)="onSearch($event)"
+      >
+    </div>
+    <div class="actions-buttons">
+      <button
+        type="button"
+        class="btn ghost"
+        [disabled]="isLoading()"
+        (click)="loadCustomers()">
+        Actualizar
+      </button>
+      <button
+        type="button"
+        class="btn dark"
+        (click)="openCreateForm()">
+        Nuevo Cliente
+      </button>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert error">{{ errorMessage() }}</div>
+  }
+
+  @if (successMessage()) {
+    <div class="alert success">{{ successMessage() }}</div>
+  }
+
+  <div class="customers-layout">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>DNI</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Ciudad</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading()) {
+            <tr>
+              <td colspan="6" class="mono text-center">Cargando clientes...</td>
+            </tr>
+          } @else if (filteredCustomers().length === 0) {
+            <tr>
+              <td colspan="6" class="mono text-center">No hay clientes que coincidan con tu búsqueda.</td>
+            </tr>
+          } @else {
+            @for (customer of filteredCustomers(); track customer.id) {
+              <tr>
+                <td>
+                  <div class="customer-name">{{ customer.name }}</div>
+                  @if (customer.address) {
+                    <div class="customer-address">{{ customer.address }}</div>
+                  }
+                </td>
+                <td>{{ customer.dni || '—' }}</td>
+                <td>{{ customer.phone || '—' }}</td>
+                <td>{{ customer.email || '—' }}</td>
+                <td>{{ customer.city || '—' }}</td>
+                <td class="actions-cell">
+                  <button type="button" class="btn icon" (click)="openEditForm(customer)">
+                    <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+                  </button>
+                  <button type="button" class="btn icon danger" (click)="deleteCustomer(customer)">
+                    <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (showForm()) {
+      <div class="form-panel">
+        <div class="form-header">
+          <h3>{{ isEditing() ? 'Editar cliente' : 'Nuevo cliente' }}</h3>
+          <button type="button" class="btn ghost" (click)="cancelForm()">Cerrar</button>
+        </div>
+
+        <div class="form-grid">
+          <label class="form-field">
+            <span>Nombre *</span>
+            <input type="text" [value]="formData().name" (input)="updateFormField('name', $event)">
+          </label>
+          <label class="form-field">
+            <span>DNI</span>
+            <input type="text" [value]="formData().dni || ''" (input)="updateFormField('dni', $event)">
+          </label>
+          <label class="form-field">
+            <span>Teléfono</span>
+            <input type="text" [value]="formData().phone || ''" (input)="updateFormField('phone', $event)">
+          </label>
+          <label class="form-field">
+            <span>Email</span>
+            <input type="email" [value]="formData().email || ''" (input)="updateFormField('email', $event)">
+          </label>
+          <label class="form-field">
+            <span>Ciudad</span>
+            <input type="text" [value]="formData().city || ''" (input)="updateFormField('city', $event)">
+          </label>
+          <label class="form-field">
+            <span>Código Postal</span>
+            <input type="text" [value]="formData().postalCode || ''" (input)="updateFormField('postalCode', $event)">
+          </label>
+          <label class="form-field full">
+            <span>Dirección</span>
+            <input type="text" [value]="formData().address || ''" (input)="updateFormField('address', $event)">
+          </label>
+          <label class="form-field full">
+            <span>Notas</span>
+            <textarea rows="3" [value]="formData().notes || ''" (input)="updateFormField('notes', $event)"></textarea>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn dark" (click)="saveCustomer()">
+            {{ isEditing() ? 'Guardar cambios' : 'Crear cliente' }}
+          </button>
+          <button type="button" class="btn ghost" (click)="cancelForm()">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</section>

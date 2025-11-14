@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
+import { Customer } from '../models/customer.model';
 
 @Injectable({
   providedIn: 'root'
@@ -134,17 +135,17 @@ export class SupabaseService {
   // CUSTOMERS
   // ============================================
 
-  async getCustomers() {
+  async getCustomers(): Promise<Customer[]> {
     const { data, error } = await this.supabase
       .from('Customers')
       .select('*')
       .order('name');
 
     if (error) throw error;
-    return data;
+    return (data ?? []) as Customer[];
   }
 
-  async getCustomer(id: string) {
+  async getCustomer(id: string): Promise<Customer | null> {
     const { data, error } = await this.supabase
       .from('Customers')
       .select('*')
@@ -152,10 +153,10 @@ export class SupabaseService {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Customer;
   }
 
-  async createCustomer(customer: any) {
+  async createCustomer(customer: Partial<Customer>) {
     const { data, error } = await this.supabase
       .from('Customers')
       .insert([customer])
@@ -163,10 +164,10 @@ export class SupabaseService {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Customer;
   }
 
-  async updateCustomer(id: string, updates: any) {
+  async updateCustomer(id: string, updates: Partial<Customer>) {
     const { data, error } = await this.supabase
       .from('Customers')
       .update(updates)
@@ -175,7 +176,16 @@ export class SupabaseService {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as Customer;
+  }
+
+  async deleteCustomer(id: string) {
+    const { error } = await this.supabase
+      .from('Customers')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   }
 
   // ============================================

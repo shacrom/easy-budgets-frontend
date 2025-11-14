@@ -55,6 +55,7 @@ CREATE TABLE "Customers" (
   "name" VARCHAR(200) NOT NULL,
   "email" VARCHAR(255) UNIQUE,
   "phone" VARCHAR(50),
+  "dni" VARCHAR(50),
   "address" TEXT,
   "city" VARCHAR(100),
   "postalCode" VARCHAR(20),
@@ -190,11 +191,11 @@ CREATE TRIGGER "update_GeneralConditions_updatedAt" BEFORE UPDATE ON "GeneralCon
 
 -- Insertar algunas condiciones generales por defecto
 INSERT INTO "GeneralConditions" ("name", "content", "isDefault") VALUES
-('Condiciones Estándar', 
+('Condiciones Estándar',
 '1. Los precios incluyen IVA.
 2. El presupuesto es válido por 30 días.
 3. Forma de pago: 50% al inicio, 50% a la finalización.
-4. Los materiales especificados pueden variar según disponibilidad.', 
+4. Los materiales especificados pueden variar según disponibilidad.',
 true);
 
 -- Insertar algunos productos de ejemplo
@@ -300,7 +301,7 @@ INSERT INTO "Products" ("reference", "description", "manufacturer", "unitPrice",
 ('REF-099', 'Barbacoa carbón', 'Fabricante BQ', 120.00, 'Exterior'),
 ('REF-100', 'Caseta jardín resina', 'Fabricante BR', 390.00, 'Exterior');
 ```
-  
+
 
 4. Haz clic en "Run" (o presiona Ctrl+Enter)
 5. Verifica que aparezca "Success. No rows returned"
@@ -363,14 +364,14 @@ export class SupabaseService {
   // ============================================
   // PRODUCTOS
   // ============================================
-  
+
   async getProducts() {
     const { data, error } = await this.supabase
       .from('products')
       .select('*')
       .eq('is_active', true)
       .order('description');
-    
+
     if (error) throw error;
     return data;
   }
@@ -381,7 +382,7 @@ export class SupabaseService {
       .select('*')
       .eq('reference', reference)
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -392,7 +393,7 @@ export class SupabaseService {
       .insert([product])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -404,7 +405,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -412,13 +413,13 @@ export class SupabaseService {
   // ============================================
   // CLIENTES
   // ============================================
-  
+
   async getCustomers() {
     const { data, error } = await this.supabase
       .from('customers')
       .select('*')
       .order('name');
-    
+
     if (error) throw error;
     return data;
   }
@@ -429,7 +430,7 @@ export class SupabaseService {
       .select('*')
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -440,7 +441,7 @@ export class SupabaseService {
       .insert([customer])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -452,7 +453,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -460,7 +461,7 @@ export class SupabaseService {
   // ============================================
   // PRESUPUESTOS
   // ============================================
-  
+
   async getBudgets() {
     const { data, error } = await this.supabase
       .from('budgets')
@@ -469,7 +470,7 @@ export class SupabaseService {
         customer:customers(*)
       `)
       .order('created_at', { ascending: false });
-    
+
     if (error) throw error;
     return data;
   }
@@ -486,7 +487,7 @@ export class SupabaseService {
       `)
       .eq('id', id)
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -497,7 +498,7 @@ export class SupabaseService {
       .insert([budget])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -509,7 +510,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -517,14 +518,14 @@ export class SupabaseService {
   // ============================================
   // MATERIALES DEL PRESUPUESTO
   // ============================================
-  
+
   async addMaterialToBudget(material: any) {
     const { data, error } = await this.supabase
       .from('budget_materials')
       .insert([material])
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -536,7 +537,7 @@ export class SupabaseService {
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
     return data;
   }
@@ -546,7 +547,7 @@ export class SupabaseService {
       .from('budget_materials')
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
   }
 }
@@ -625,7 +626,7 @@ async searchCustomer(email: string) {
       .select('*')
       .eq('email', email)
       .single();
-    
+
     if (data) {
       // Rellenar automáticamente los campos del formulario
       this.customerForm.patchValue({
