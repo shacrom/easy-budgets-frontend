@@ -187,12 +187,35 @@ export class SupabaseService {
       .from('Budgets')
       .select(`
         *,
-        customer:Customers(*)
+        customer:Customers(*),
+        textBlocks:BudgetTextBlocks(subtotal),
+        materials:BudgetMaterials(totalPrice,unitPrice,quantity)
       `)
       .order('createdAt', { ascending: false });
 
     if (error) throw error;
-    return data;
+
+    return data.map((budget: any) => {
+      const totalBlocks = budget.textBlocks?.reduce(
+        (sum: number, block: { subtotal?: number }) => sum + (block?.subtotal ?? 0),
+        0
+      ) ?? 0;
+
+      const totalMaterials = budget.materials?.reduce(
+        (sum: number, material: { totalPrice?: number; unitPrice?: number; quantity?: number }) =>
+          sum + (material?.totalPrice ?? ((material?.unitPrice ?? 0) * (material?.quantity ?? 0))),
+        0
+      ) ?? 0;
+
+      const { textBlocks, materials, ...rest } = budget;
+
+      return {
+        ...rest,
+        totalBlocks,
+        totalMaterials,
+        total: totalBlocks + totalMaterials
+      };
+    });
   }
 
   async getBudget(id: string) {

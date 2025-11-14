@@ -9,6 +9,8 @@ interface BudgetListItem {
   title: string;
   status: string;
   total: number;
+  totalBlocks?: number;
+  totalMaterials?: number;
   createdAt: string;
   customer?: {
     name?: string;
