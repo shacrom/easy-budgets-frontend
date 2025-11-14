@@ -194,6 +194,7 @@ export class BudgetTextBlockComponent {
 
     const updatedBlock: BudgetTextBlock = {
       ...this.block(),
+      descriptions: this.sections(),
       [field]: value
     };
 
@@ -250,13 +251,13 @@ export class BudgetTextBlockComponent {
 
       this.sections.set(createdSections);
 
-      if (template.heading) {
-        const updatedBlock: BudgetTextBlock = {
-          ...this.block(),
-          heading: template.heading
-        };
-        this.blockUpdated.emit(updatedBlock);
-      }
+      const updatedBlock: BudgetTextBlock = {
+        ...this.block(),
+        descriptions: createdSections,
+        heading: template.heading ?? this.block().heading
+      };
+
+      this.blockUpdated.emit(updatedBlock);
 
       this.selectedTemplateId.set(null);
     } catch (error) {
