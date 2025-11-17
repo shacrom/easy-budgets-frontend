@@ -1,21 +1,4 @@
 <section class="customers-page">
-  <div class="page-header-card">
-    <div class="header-grid">
-      <div class="header-cell">
-        <span class="header-label">CLIENTES TOTALES</span>
-        <span class="header-value">{{ totalCustomers() }}</span>
-      </div>
-      <div class="header-cell">
-        <span class="header-label">ÚLTIMA ACTUALIZACIÓN</span>
-        <span class="header-value">{{ lastUpdated() ? (lastUpdated() | date:'dd/MM/yyyy HH:mm') : 'SIN REGISTRO' }}</span>
-      </div>
-      <div class="header-cell">
-        <span class="header-label">CIUDADES DIFERENTES</span>
-        <span class="header-value">{{ uniqueCities() }}</span>
-      </div>
-    </div>
-  </div>
-
   <div class="actions-bar">
     <div class="search-field">
       <label for="customer-search">Buscar</label>
