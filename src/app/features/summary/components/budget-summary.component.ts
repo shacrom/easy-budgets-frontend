@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, input, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, signal, computed, effect, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SummaryLine } from '../../../models/budget-summary.model';
+import { BudgetSummary, SummaryLine } from '../../../models/budget-summary.model';
 import { BudgetTextBlock } from '../../../models/budget-text-block.model';
 import { Material, MaterialTable } from '../../../models/material.model';
 
@@ -30,6 +30,32 @@ export class BudgetSummaryComponent {
   protected readonly vatPercentage = signal<number>(21);
   protected readonly editMode = signal<boolean>(false);
   protected readonly additionalLines = signal<SummaryLine[]>([]);
+
+  readonly summaryChanged = output<BudgetSummary>();
+  readonly vatPercentageChanged = output<number>();
+  readonly additionalLinesChanged = output<SummaryLine[]>();
+
+  constructor() {
+    effect(() => {
+      this.summaryChanged.emit({
+        totalBlocks: this.totalBlocks(),
+        totalMaterials: this.totalMaterials(),
+        subtotal: this.subtotal(),
+        vat: this.vat(),
+        vatPercentage: this.vatPercentage(),
+        grandTotal: this.grandTotal(),
+        additionalLines: this.additionalLines()
+      });
+    });
+
+    effect(() => {
+      this.vatPercentageChanged.emit(this.vatPercentage());
+    });
+
+    effect(() => {
+      this.additionalLinesChanged.emit(this.additionalLines());
+    });
+  }
 
   // Dropdown states (expanded by default)
   protected readonly blocksExpanded = signal<boolean>(true);
@@ -105,6 +131,14 @@ export class BudgetSummaryComponent {
    */
   protected deleteAdditionalLine(lineId: string): void {
     this.additionalLines.update(lines => lines.filter(line => line.id !== lineId));
+  }
+
+  protected updateVatPercentage(value: string | number | null): void {
+    const parsed = typeof value === 'number' ? value : parseFloat(value ?? '0');
+    if (!Number.isFinite(parsed)) {
+      return;
+    }
+    this.vatPercentage.set(Math.max(0, parsed));
   }
 
   /**

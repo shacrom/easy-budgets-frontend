@@ -7,7 +7,10 @@ import { CustomerSelectorComponent } from '../../customers/components/customer-s
 import { BudgetTextBlock } from '../../../models/budget-text-block.model';
 import { Material, MaterialTable } from '../../../models/material.model';
 import { Customer } from '../../../models/customer.model';
+import { BudgetSummary } from '../../../models/budget-summary.model';
+import { Condition } from '../../../models/conditions.model';
 import { SupabaseService } from '../../../services/supabase.service';
+import { PdfExportService, BudgetPdfPayload, BudgetPdfMetadata } from '../../../services/pdf-export.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -25,6 +28,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 })
 export class BudgetEditorComponent {
   private readonly supabase = inject(SupabaseService);
+  private readonly pdfExport = inject(PdfExportService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly routeParams = toSignal(this.route.paramMap);
@@ -46,6 +50,11 @@ export class BudgetEditorComponent {
   protected readonly updatingCustomer = signal<boolean>(false);
   protected readonly customerError = signal<string | null>(null);
   protected readonly selectedCustomerId = signal<string | null>(null);
+  protected readonly budgetMeta = signal<BudgetPdfMetadata | null>(null);
+  protected readonly summarySnapshot = signal<BudgetSummary | null>(null);
+  protected readonly conditionsTitle = signal<string>('Condiciones generales');
+  protected readonly conditionsList = signal<Condition[]>([]);
+  protected readonly pdfGenerating = signal<boolean>(false);
   protected readonly selectedCustomer = computed(() => {
     const id = this.selectedCustomerId();
     if (!id) {
@@ -72,6 +81,15 @@ export class BudgetEditorComponent {
     try {
       const budget = await this.supabase.getBudget(id);
       this.currentBudgetId.set(id);
+
+      this.budgetMeta.set({
+        id,
+        budgetNumber: budget?.budgetNumber ?? null,
+        title: budget?.title ?? null,
+        status: budget?.status ?? null,
+        validUntil: budget?.validUntil ?? null,
+        createdAt: budget?.createdAt ?? null
+      });
 
       const customerId = budget?.customer?.id ?? budget?.customerId ?? null;
       this.selectedCustomerId.set(customerId);
@@ -173,5 +191,45 @@ export class BudgetEditorComponent {
 
   protected onTablesChanged(tables: MaterialTable[]): void {
     this.materialTables.set(tables);
+  }
+
+  protected onSummaryChanged(summary: BudgetSummary): void {
+    this.summarySnapshot.set(summary);
+  }
+
+  protected onConditionsTitleChanged(title: string): void {
+    this.conditionsTitle.set(title);
+  }
+
+  protected onConditionsChanged(conditions: Condition[]): void {
+    this.conditionsList.set(conditions);
+  }
+
+  protected async exportBudgetPdf(): Promise<void> {
+    if (!this.currentBudgetId() || this.pdfGenerating()) {
+      return;
+    }
+
+    this.pdfGenerating.set(true);
+
+    const payload: BudgetPdfPayload = {
+      metadata: this.budgetMeta(),
+      customer: this.selectedCustomer(),
+      blocks: this.blocks(),
+      materials: this.materials(),
+      materialTables: this.materialTables(),
+      summary: this.summarySnapshot(),
+      conditionsTitle: this.conditionsTitle(),
+      conditions: this.conditionsList(),
+      generatedAt: new Date().toISOString()
+    };
+
+    try {
+      await this.pdfExport.generateBudgetPdf(payload);
+    } catch (error) {
+      console.error('Error al generar el PDF del presupuesto:', error);
+    } finally {
+      this.pdfGenerating.set(false);
+    }
   }
 }

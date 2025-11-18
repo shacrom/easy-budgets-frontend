@@ -1,0 +1,396 @@
+import { Injectable } from '@angular/core';
+import pdfMake from 'pdfmake/build/pdfmake';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+import type { Content, TableCell, TDocumentDefinitions, TableLayout } from 'pdfmake/interfaces';
+import { Customer } from '../models/customer.model';
+import { BudgetTextBlock } from '../models/budget-text-block.model';
+import { Material, MaterialTable } from '../models/material.model';
+import { BudgetSummary } from '../models/budget-summary.model';
+import { Condition } from '../models/conditions.model';
+
+export interface BudgetPdfMetadata {
+  id: string;
+  budgetNumber?: string | null;
+  title?: string | null;
+  status?: string | null;
+  validUntil?: string | null;
+  createdAt?: string | null;
+}
+
+export interface BudgetPdfPayload {
+  metadata: BudgetPdfMetadata | null;
+  customer: Customer | null;
+  blocks: BudgetTextBlock[];
+  materials: Material[];
+  materialTables: MaterialTable[];
+  summary: BudgetSummary | null;
+  conditionsTitle?: string;
+  conditions?: Condition[];
+  generatedAt: string;
+}
+
+@Injectable({ providedIn: 'root' })
+export class PdfExportService {
+  private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR'
+  });
+  private fontsRegistered = false;
+
+  async generateBudgetPdf(payload: BudgetPdfPayload): Promise<void> {
+    if (typeof window === 'undefined') {
+      console.warn('La generación de PDF solo está disponible en el navegador.');
+      return;
+    }
+
+    this.ensureFontsRegistered();
+
+    const definition = await this.buildDocumentDefinition(payload);
+    const fileName = this.buildFileName(payload);
+
+    await new Promise<void>((resolve, reject) => {
+      try {
+        pdfMake.createPdf(definition).download(fileName, () => resolve());
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  private ensureFontsRegistered(): void {
+    if (this.fontsRegistered) {
+      return;
+    }
+
+    const fonts = pdfFonts as unknown as { pdfMake?: { vfs?: unknown } };
+    const vfs = fonts?.pdfMake?.vfs;
+
+    if (!vfs) {
+      console.warn('No se pudieron cargar las fuentes embebidas de pdfMake.');
+      return;
+    }
+
+    (pdfMake as unknown as { vfs: unknown }).vfs = vfs;
+    this.fontsRegistered = true;
+  }
+
+  private async buildDocumentDefinition(payload: BudgetPdfPayload): Promise<TDocumentDefinitions> {
+    const content: Content[] = [
+      ...this.compactContent([
+        this.buildCustomerSection(payload.customer),
+        ...this.buildTextBlocksSection(payload.blocks),
+        ...this.buildMaterialsSection(payload.materialTables, payload.materials),
+        this.buildSummarySection(payload.summary),
+        this.buildConditionsSection(payload.conditionsTitle, payload.conditions)
+      ])
+    ];
+
+    return {
+      pageSize: 'A4',
+      pageMargins: [40, 100, 40, 80],
+      header: (currentPage, pageCount) => this.buildHeader(payload, currentPage, pageCount),
+      footer: (currentPage, pageCount) => this.buildFooter(payload, currentPage, pageCount),
+      content,
+      defaultStyle: {
+        fontSize: 10,
+        color: '#1f2933'
+      },
+      styles: {
+        title: {
+          fontSize: 20,
+          bold: true,
+          color: '#111827'
+        },
+        sectionHeader: {
+          fontSize: 12,
+          bold: true,
+          color: '#0f172a',
+          margin: [0, 12, 0, 8] as [number, number, number, number]
+        },
+        blockHeading: {
+          fontSize: 11,
+          bold: true,
+          color: '#111827'
+        },
+        box: {
+          margin: [0, 0, 0, 12] as [number, number, number, number]
+        },
+        muted: {
+          color: '#6b7280'
+        },
+        tableHeader: {
+          bold: true,
+          color: '#111827'
+        }
+      }
+    };
+  }
+
+  private buildHeader(payload: BudgetPdfPayload, currentPage: number, pageCount: number): Content {
+    const title = payload.metadata?.title ?? 'Presupuesto';
+    const budgetNumber = payload.metadata?.budgetNumber ?? payload.metadata?.id ?? '';
+
+    return {
+  margin: [40, 20, 40, 0] as [number, number, number, number],
+      columns: [
+        {
+          width: '*',
+          stack: this.compactContent([
+            { text: title, style: 'title', margin: [0, 0, 0, 2] as [number, number, number, number] },
+            budgetNumber ? { text: `Referencia: ${budgetNumber}`, style: 'muted' } : null
+          ])
+        },
+        {
+          alignment: 'right',
+          stack: [
+            { text: 'Entrecuines Dos S.L.', bold: true },
+            { text: 'www.entrecuines.com' },
+            { text: 'info@entrecuines.com' },
+            { text: `Página ${currentPage} de ${pageCount}`, style: 'muted', margin: [0, 4, 0, 0] as [number, number, number, number] }
+          ]
+        }
+      ]
+    };
+  }
+
+  private buildFooter(payload: BudgetPdfPayload, currentPage: number, pageCount: number): Content {
+    const generatedAt = this.formatDate(payload.generatedAt);
+
+    return {
+  margin: [40, 0, 40, 30] as [number, number, number, number],
+      columns: [
+        {
+          text: 'Entrecuines Dos S.L. · CIF B12345678 · Barcelona',
+          style: 'muted'
+        },
+        {
+          text: `Generado el ${generatedAt}`,
+          alignment: 'right',
+          style: 'muted'
+        }
+      ]
+    };
+  }
+
+  private buildCustomerSection(customer: Customer | null): Content | null {
+    if (!customer) {
+      return null;
+    }
+
+    const details = [
+      `Nombre: ${customer.name}`,
+      customer.email ? `Email: ${customer.email}` : null,
+      customer.phone ? `Teléfono: ${customer.phone}` : null,
+      customer.address ? `Dirección: ${customer.address}` : null,
+      customer.city ? `Ciudad: ${customer.city}` : null,
+      customer.postalCode ? `Código Postal: ${customer.postalCode}` : null,
+      customer.taxId ? `CIF/NIF: ${customer.taxId}` : null
+    ].filter(Boolean) as string[];
+
+    return {
+      style: 'box',
+      stack: [
+  { text: 'Datos del cliente', style: 'sectionHeader', margin: [0, 0, 0, 6] as [number, number, number, number] },
+        {
+          ul: details,
+          margin: [0, 0, 0, 4] as [number, number, number, number]
+        }
+      ]
+    };
+  }
+
+  private buildTextBlocksSection(blocks: BudgetTextBlock[]): Content[] {
+    if (!blocks?.length) {
+      return [];
+    }
+
+    return [
+      { text: 'Detalles del proyecto', style: 'sectionHeader' },
+      ...blocks.map(block => {
+        const stack: Content[] = [];
+
+        stack.push({
+          text: block.heading,
+          style: 'blockHeading',
+          margin: [0, 0, 0, 4] as [number, number, number, number]
+        });
+
+        for (const section of block.descriptions ?? []) {
+          stack.push({
+            text: `${section.title ? `${section.title}: ` : ''}${section.text}`,
+            margin: [0, 2, 0, 0] as [number, number, number, number]
+          });
+        }
+
+        if (block.link) {
+          stack.push({
+            text: block.link,
+            link: block.link,
+            color: '#2563eb',
+            margin: [0, 6, 0, 0] as [number, number, number, number]
+          });
+        }
+
+        stack.push({
+          text: `Subtotal del bloque: ${this.formatCurrency(block.subtotal)}`,
+          alignment: 'right',
+          bold: true,
+          margin: [0, 8, 0, 0] as [number, number, number, number]
+        });
+
+        return {
+          style: 'box',
+          margin: [0, 0, 0, 8] as [number, number, number, number],
+          stack
+        };
+      })
+    ];
+  }
+
+  private buildMaterialsSection(tables: MaterialTable[], standaloneMaterials: Material[]): Content[] {
+    const content: Content[] = [];
+
+    if (tables?.length) {
+      for (const table of tables) {
+        const rows = table.rows ?? [];
+        const total = rows.reduce((sum, row) => sum + (row.totalPrice ?? 0), 0);
+
+        content.push({
+          style: 'box',
+          stack: [
+            { text: table.title, style: 'blockHeading', margin: [0, 0, 0, 8] as [number, number, number, number] },
+            this.buildMaterialsTable(rows),
+            {
+              text: `Total del grupo: ${this.formatCurrency(total)}`,
+              alignment: 'right',
+              bold: true,
+              margin: [0, 6, 0, 0] as [number, number, number, number]
+            }
+          ]
+        });
+      }
+    }
+
+    const filteredStandalone = standaloneMaterials?.filter(material => !tables?.some(table => table.rows?.some(row => row.id === material.id)));
+    if (filteredStandalone?.length) {
+      content.push({
+        style: 'box',
+        stack: [
+          { text: 'Materiales adicionales', style: 'blockHeading', margin: [0, 0, 0, 8] as [number, number, number, number] },
+          this.buildMaterialsTable(filteredStandalone)
+        ]
+      });
+    }
+
+    return content;
+  }
+
+  private buildMaterialsTable(materials: Material[]): Content {
+    const body: TableCell[][] = [
+      [
+        { text: 'Referencia', style: 'tableHeader' },
+        { text: 'Descripción', style: 'tableHeader' },
+        { text: 'Fabricante', style: 'tableHeader' },
+        { text: 'Cantidad', style: 'tableHeader' },
+        { text: 'Precio unitario', style: 'tableHeader' },
+        { text: 'Total', style: 'tableHeader' }
+      ],
+      ...materials.map(material => [
+        material.reference,
+        material.description,
+        material.manufacturer,
+        material.quantity?.toString() ?? '—',
+        this.formatCurrency(material.unitPrice),
+        this.formatCurrency(material.totalPrice)
+      ])
+    ];
+
+    return {
+      table: {
+        widths: ['auto', '*', '*', 'auto', 'auto', 'auto'],
+        body
+      },
+      layout: 'lightHorizontalLines'
+    };
+  }
+
+  private buildSummarySection(summary: BudgetSummary | null): Content | null {
+    if (!summary) {
+      return null;
+    }
+
+    const rows: TableCell[][] = [
+      ['Total bloques', this.formatCurrency(summary.totalBlocks)],
+      ['Total materiales', this.formatCurrency(summary.totalMaterials)],
+      ['Subtotal', this.formatCurrency(summary.subtotal)],
+      [`IVA (${summary.vatPercentage}%)`, this.formatCurrency(summary.vat)],
+      ['Total general', this.formatCurrency(summary.grandTotal)]
+    ];
+
+    if (summary.additionalLines?.length) {
+      for (const line of summary.additionalLines) {
+        rows.splice(rows.length - 1, 0, [line.concept, this.formatCurrency(line.amount)]);
+      }
+    }
+
+    return {
+      style: 'box',
+      stack: [
+  { text: 'Resumen económico', style: 'sectionHeader', margin: [0, 0, 0, 8] as [number, number, number, number] },
+        {
+          table: {
+            widths: ['*', 'auto'],
+            body: rows
+          },
+          layout: this.stripedLayout()
+        }
+      ]
+    };
+  }
+
+  private buildConditionsSection(title = 'Condiciones generales', conditions?: Condition[] | null): Content | null {
+    if (!conditions?.length) {
+      return null;
+    }
+
+    return {
+      stack: [
+  { text: title, style: 'sectionHeader', margin: [0, 12, 0, 8] as [number, number, number, number] },
+        {
+          ol: conditions.map(condition => ({
+            stack: this.compactContent([
+              condition.title ? { text: condition.title, bold: true, margin: [0, 0, 0, 2] as [number, number, number, number] } : null,
+              { text: condition.text }
+            ])
+          }))
+        }
+      ]
+    };
+  }
+
+  private buildFileName(payload: BudgetPdfPayload): string {
+    const slug = payload.metadata?.budgetNumber ?? payload.metadata?.id ?? 'presupuesto';
+    return `${slug}.pdf`;
+  }
+
+  private formatCurrency(value?: number | null): string {
+    return this.currencyFormatter.format(value ?? 0);
+  }
+
+  private formatDate(value?: string | null): string {
+    if (!value) {
+      return new Date().toLocaleDateString('es-ES');
+    }
+    return new Date(value).toLocaleDateString('es-ES');
+  }
+
+  private stripedLayout(): TableLayout {
+    return {
+      fillColor: (rowIndex: number) => (rowIndex > 0 && rowIndex % 2 === 0 ? '#f9fafb' : null)
+    };
+  }
+
+  private compactContent<T extends Content>(values: Array<T | null | undefined>): T[] {
+    return values.filter((value): value is T => value !== null && value !== undefined);
+  }
+}

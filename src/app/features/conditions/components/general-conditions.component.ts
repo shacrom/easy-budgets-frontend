@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, effect, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Condition, DEFAULT_CONDITIONS, CONDITION_TEMPLATES, TemplateType } from '../../../models/conditions.model';
@@ -29,6 +29,20 @@ export class GeneralConditionsComponent {
 
   // Available templates
   protected readonly templates = CONDITION_TEMPLATES;
+
+  // Outputs to notify parent components
+  readonly titleChanged = output<string>();
+  readonly conditionsChanged = output<Condition[]>();
+
+  constructor() {
+    effect(() => {
+      this.titleChanged.emit(this.title());
+    });
+
+    effect(() => {
+      this.conditionsChanged.emit(this.conditions());
+    });
+  }
 
   /**
    * Toggles edit mode

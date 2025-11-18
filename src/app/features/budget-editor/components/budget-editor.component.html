@@ -1,6 +1,17 @@
 <div class="app-container">
-  <header class="app-header flex flex-col items-center text-center">
-    <h1>Creador de Presupuestos</h1>
+  <header class="app-header">
+    <div class="header-content">
+      <h1>Creador de Presupuestos</h1>
+      <p>Genera un documento profesional con todos los apartados.</p>
+    </div>
+    <button
+      type="button"
+      class="export-btn"
+      (click)="exportBudgetPdf()"
+      [disabled]="!isInitialized() || pdfGenerating()">
+      <span class="material-symbols-rounded" aria-hidden="true">picture_as_pdf</span>
+      <span>{{ pdfGenerating() ? 'Generando...' : 'Descargar PDF' }}</span>
+    </button>
   </header>
 
   <main class="app-main">
@@ -47,13 +58,16 @@
           [totalMaterials]="totalMaterials()"
           [blocks]="blocks()"
           [materials]="materials()"
-          [materialTables]="materialTables()">
+          [materialTables]="materialTables()"
+          (summaryChanged)="onSummaryChanged($event)">
         </app-budget-summary>
       </section>
 
       <!-- Section 4: General Conditions -->
       <section class="section-divider">
-        <app-general-conditions></app-general-conditions>
+        <app-general-conditions
+          (titleChanged)="onConditionsTitleChanged($event)"
+          (conditionsChanged)="onConditionsChanged($event)"></app-general-conditions>
       </section>
     }
   </main>
