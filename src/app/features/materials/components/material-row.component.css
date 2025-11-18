@@ -1,10 +1,4 @@
 @import "tailwindcss";
-
-:host {
-  /* Ensure the component host doesn't create an extra box between <tbody> and <tr> */
-  display: contents;
-}
-
 .material-row {
   @apply border-b border-gray-200 hover:bg-gray-50 transition-colors;
 }
@@ -16,7 +10,6 @@
 .material-cell {
   @apply px-4 py-3 text-sm font-light;
 }
-
 
 .material-cell.descripcion,
 .material-cell.description,
@@ -30,10 +23,7 @@
   @apply text-center;
 }
 
-.material-cell.precio {
-  @apply text-right font-normal;
-}
-
+.material-cell.precio,
 .material-cell.precio-total {
   @apply text-right font-normal;
 }
@@ -43,9 +33,16 @@
 }
 
 .input-field {
-  @apply w-full px-2 py-1 border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors text-sm font-light;
+  @apply w-full border border-gray-300 px-2 py-1 text-sm font-light uppercase tracking-[0.05em] focus:border-gray-900 focus:outline-none;
 }
 
+.btn-delete-row {
+  @apply inline-flex items-center gap-2 border border-red-600 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-red-600 transition-colors hover:bg-red-50;
+}
+
+.btn-delete-row .material-symbols-rounded {
+  font-size: 1rem;
+}
 .btn-delete-row {
   @apply inline-flex items-center gap-1 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-700 transition-colors hover:bg-red-100;
 }

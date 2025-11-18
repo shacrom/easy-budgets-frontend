@@ -1,47 +1,47 @@
 @import "tailwindcss";
 
 .summary-module {
-  @apply max-w-6xl mx-auto space-y-6 px-6 py-8;
+  @apply max-w-6xl mx-auto space-y-6 px-6 py-6;
 }
 
 .summary-header {
-  @apply flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-6;
+  @apply flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 pb-4;
 }
 
 .summary-header h2 {
-  @apply text-3xl font-light text-slate-900;
+  @apply text-2xl font-semibold text-gray-900;
 }
 
 .summary-header p {
-  @apply text-base text-slate-600;
+  @apply text-sm text-gray-600;
 }
 
 .summary-kicker {
-  @apply text-xs font-semibold uppercase tracking-[0.3em] text-slate-500;
+  @apply text-xs font-semibold uppercase tracking-[0.3em] text-gray-500;
 }
 
 .btn {
-  @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors;
+  @apply inline-flex items-center gap-2 border px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-gray-800 transition-colors;
 }
 
 .btn.ghost {
-  @apply border-slate-300 text-slate-700 hover:border-slate-500 hover:text-slate-900;
+  @apply border-gray-300 hover:bg-gray-100;
 }
 
 .summary-card {
-  @apply space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm;
+  @apply space-y-5 border border-gray-200 bg-white p-6 shadow-sm;
 }
 
 .accordion {
-  @apply space-y-2;
+  @apply space-y-1;
 }
 
 .accordion-item {
-  @apply rounded-2xl border border-slate-100 bg-slate-50;
+  @apply border border-gray-200 bg-white;
 }
 
 .accordion-trigger {
-  @apply flex w-full items-center justify-between gap-4 rounded-2xl px-5 py-4 text-left transition-colors hover:bg-white;
+  @apply flex w-full items-center justify-between gap-4 border-b border-gray-200 px-4 py-3 text-left;
 }
 
 .trigger-label {
@@ -49,47 +49,47 @@
 }
 
 .trigger-label .material-symbols-rounded {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
 }
 
 .trigger-title {
-  @apply block text-base font-semibold text-slate-900;
+  @apply text-base font-semibold uppercase tracking-[0.15em] text-gray-900;
 }
 
 .trigger-label small {
-  @apply text-xs font-medium uppercase tracking-[0.3em] text-slate-500;
+  @apply text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-gray-500;
 }
 
 .trigger-value {
-  @apply flex items-center gap-2 text-lg font-semibold text-slate-900;
+  @apply flex items-center gap-2 text-lg font-semibold text-gray-900;
 }
 
 .accordion-panel {
-  @apply border-t border-slate-100 px-5 py-4;
+  @apply px-4 py-4;
 }
 
 .detail-row {
-  @apply flex items-start justify-between gap-4 border-b border-dashed border-slate-200 py-3 last:border-b-0;
+  @apply flex items-start justify-between gap-4 border-b border-dashed border-gray-200 py-3 last:border-b-0;
 }
 
 .detail-title {
-  @apply text-base font-medium text-slate-800;
+  @apply text-base font-semibold text-gray-900 uppercase tracking-[0.05em];
 }
 
 .detail-subtitle {
-  @apply text-sm text-slate-500;
+  @apply text-xs text-gray-500 uppercase tracking-[0.2em];
 }
 
 .detail-value {
-  @apply text-base font-semibold text-slate-900;
+  @apply text-base font-semibold text-gray-900;
 }
 
 .summary-row.subtotal {
-  @apply flex items-center justify-between rounded-2xl bg-slate-900 px-5 py-4 text-white;
+  @apply flex items-center justify-between border border-gray-900 px-4 py-3 text-gray-900;
 }
 
 .extras {
-  @apply space-y-3 rounded-2xl border border-slate-100 bg-slate-50 p-5;
+  @apply space-y-3 border border-gray-200 bg-gray-50 p-5;
 }
 
 .extras-header {
@@ -97,15 +97,15 @@
 }
 
 .extras-header > div {
-  @apply flex items-center gap-2 text-slate-700;
+  @apply flex items-center gap-2 text-gray-700;
 }
 
 .extra-row {
-  @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 py-3 last:border-b-0;
+  @apply flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 py-3 last:border-b-0;
 }
 
 .extra-row strong {
-  @apply text-lg font-semibold text-slate-900;
+  @apply text-base font-semibold text-gray-900;
 }
 
 .extra-row strong.negative {
@@ -113,23 +113,23 @@
 }
 
 .extra-row.total {
-  @apply border-t border-slate-200 pt-4 text-slate-900;
+  @apply border-t border-gray-300 pt-4 text-gray-900;
 }
 
 .input-field {
-  @apply flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800 focus:border-slate-500 focus:outline-none;
+  @apply flex-1 border border-gray-300 px-3 py-2 text-sm font-semibold uppercase tracking-[0.1em] text-gray-800 focus:border-gray-900 focus:outline-none;
 }
 
 .input-field.amount {
-  @apply flex-none w-32 text-right;
+  @apply flex-none w-28 text-right;
 }
 
 .icon-button {
-  @apply inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-600 transition-colors hover:border-red-200 hover:text-red-600;
+  @apply inline-flex items-center justify-center border border-gray-300 px-3 py-2 text-gray-800 transition-colors hover:bg-gray-100;
 }
 
 .taxes {
-  @apply rounded-2xl border border-slate-100 bg-white p-5 shadow-inner;
+  @apply border border-gray-200 bg-white p-5;
 }
 
 .tax-row {
@@ -137,21 +137,21 @@
 }
 
 .tax-row > div {
-  @apply flex items-center gap-2 text-slate-700;
+  @apply flex items-center gap-2 text-gray-700;
 }
 
 .tax-controls {
-  @apply flex items-center gap-3 text-slate-900;
+  @apply flex items-center gap-3 text-gray-900;
 }
 
 .grand-total {
-  @apply flex items-center justify-between rounded-2xl bg-slate-900 px-6 py-5 text-white shadow-lg;
+  @apply flex items-center justify-between border border-gray-900 bg-gray-900 px-5 py-4 text-white;
 }
 
 .grand-total > div {
-  @apply flex items-center gap-3 text-white;
+  @apply flex items-center gap-2;
 }
 
 .grand-total strong {
-  @apply text-3xl font-bold;
+  @apply text-3xl font-semibold;
 }
