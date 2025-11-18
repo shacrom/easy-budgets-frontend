@@ -15,10 +15,10 @@ import { Material, MaterialTable } from '../../../models/material.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MaterialsTableComponent {
-  private readonly initialTableTitle = 'Materiales';
+  private readonly defaultTableTitle = 'Título';
 
   // List of material tables
-  protected readonly tables = signal<MaterialTable[]>([this.createTable(this.initialTableTitle)]);
+  protected readonly tables = signal<MaterialTable[]>([]);
 
   // Edit mode
   protected readonly editMode = signal<boolean>(true);
@@ -45,8 +45,7 @@ export class MaterialsTableComponent {
    * Adds a new table
    */
   protected addTable(): void {
-    const nextIndex = this.tables().length + 1;
-    const newTitle = nextIndex === 2 ? 'Electrodomésticos' : nextIndex === 3 ? 'Iluminación' : `Tabla ${nextIndex}`;
+  const newTitle = this.defaultTableTitle;
 
     this.tables.update(tables => [...tables, this.createTable(newTitle)]);
     this.emitChanges();
@@ -56,13 +55,7 @@ export class MaterialsTableComponent {
    * Removes a table or clears it when it is the last one
    */
   protected deleteTable(tableId: string): void {
-    if (this.tables().length === 1) {
-      this.tables.update(tables =>
-        tables.map(table => table.id === tableId ? { ...table, rows: [] } : table)
-      );
-    } else {
-      this.tables.update(tables => tables.filter(table => table.id !== tableId));
-    }
+    this.tables.update(tables => tables.filter(table => table.id !== tableId));
     this.emitChanges();
   }
 

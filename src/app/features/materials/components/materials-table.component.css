@@ -56,6 +56,19 @@
   @apply flex flex-col gap-6;
 }
 
+.tables-empty {
+  @apply flex flex-col items-center justify-center gap-2 border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center text-gray-500;
+}
+
+.tables-empty .material-symbols-rounded {
+  font-size: 2.25rem;
+  color: #9ca3af;
+}
+
+.tables-empty .hint {
+  @apply text-xs font-semibold uppercase tracking-[0.2em] text-gray-400;
+}
+
 .materials-card {
   @apply border border-gray-200 bg-white shadow-sm;
 }

@@ -25,7 +25,16 @@
   </header>
 
   <div class="tables-grid">
-    @for (table of tables(); track table.id; let index = $index) {
+    @if (tables().length === 0) {
+      <div class="tables-empty">
+        <span class="material-symbols-rounded" aria-hidden="true">grid_on</span>
+        <p>Añade tu primera tabla para empezar a desglosar materiales.</p>
+        @if (editMode()) {
+          <p class="hint">Utiliza “Nueva tabla” para crear el bloque inicial.</p>
+        }
+      </div>
+    } @else {
+      @for (table of tables(); track table.id; let index = $index) {
       <article class="materials-card">
         <div class="card-header">
           <div class="title-group">
@@ -37,15 +46,11 @@
                 placeholder="Título de la tabla"
                 (input)="updateTableTitle(table.id, $event)">
             } @else {
-              <h3>{{ table.title || ('Tabla ' + (index + 1)) }}</h3>
+              <h3>{{ table.title || 'Título' }}</h3>
             }
             <p class="card-subtitle">Bloque {{ index + 1 }}</p>
           </div>
           <div class="card-actions">
-            <div class="card-total">
-              <span>Total</span>
-              <strong>{{ tableTotal(table) | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
-            </div>
             @if (editMode()) {
               <button type="button" class="btn icon" (click)="addNewMaterial(table.id)">
                 <span class="material-symbols-rounded" aria-hidden="true">add</span>
@@ -54,7 +59,6 @@
               <button
                 type="button"
                 class="btn icon danger"
-                [disabled]="tables().length === 1"
                 (click)="deleteTable(table.id)">
                 <span class="material-symbols-rounded" aria-hidden="true">delete</span>
                 <span>Tabla</span>
@@ -121,6 +125,7 @@
           </table>
         </div>
       </article>
+      }
     }
   </div>
 
