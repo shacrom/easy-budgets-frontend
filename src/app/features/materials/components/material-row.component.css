@@ -1,4 +1,8 @@
 @import "tailwindcss";
+
+:host {
+  display: contents;
+}
 .material-row {
   @apply border-b border-gray-200 hover:bg-gray-50 transition-colors;
 }
