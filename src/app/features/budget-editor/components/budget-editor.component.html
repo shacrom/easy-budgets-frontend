@@ -9,6 +9,19 @@
         <p class="text-gray-500 text-center">Inicializando presupuesto...</p>
       </div>
     } @else {
+      <!-- Section 0: Customer selection -->
+      <section class="section-divider">
+        <app-customer-selector
+          [customers]="customers()"
+          [selectedCustomerId]="selectedCustomerId()"
+          [selectedCustomer]="selectedCustomer()"
+          [loading]="customersLoading()"
+          [updating]="updatingCustomer()"
+          [errorMessage]="customerError()"
+          (customerSelected)="onCustomerSelected($event)">
+        </app-customer-selector>
+      </section>
+
       <!-- Section 1: Text Blocks -->
       <section class="section-divider">
         <app-budget-text-blocks

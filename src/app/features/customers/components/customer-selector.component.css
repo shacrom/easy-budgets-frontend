@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+.customer-selector {
+  @apply border border-gray-200 bg-white shadow-sm;
+}
+
+.selector-header {
+  @apply flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 p-5;
+}
+
+.kicker {
+  @apply text-xs font-semibold uppercase tracking-[0.3em] text-gray-400;
+}
+
+.selector-header h2 {
+  @apply text-2xl font-semibold text-gray-900;
+}
+
+.customer-meta {
+  @apply text-sm text-gray-500;
+}
+
+.selector-actions .btn {
+  @apply inline-flex items-center gap-2 border border-gray-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-700 hover:bg-gray-100 disabled:opacity-50;
+}
+
+.selector-body {
+  @apply p-5 space-y-4;
+}
+
+.input-wrapper {
+  @apply flex items-center gap-2 border border-gray-300 px-3 py-2;
+}
+
+.input-wrapper input {
+  @apply w-full border-none bg-transparent text-sm focus:outline-none;
+}
+
+.error-message {
+  @apply text-sm text-red-600;
+}
+
+.loading-message,
+.empty-message {
+  @apply text-sm text-gray-500;
+}
+
+.customers-grid {
+  @apply grid gap-3 md:grid-cols-2 lg:grid-cols-3;
+}
+
+.customer-card {
+  @apply w-full border border-gray-200 p-3 text-left transition-colors hover:border-gray-900;
+}
+
+.customer-card.selected {
+  @apply border-gray-900 bg-gray-50;
+}
+
+.card-header {
+  @apply flex items-center justify-between gap-2;
+}
+
+.card-header h3 {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.card-meta {
+  @apply text-xs uppercase tracking-[0.2em] text-gray-500;
+}
+
+.card-address {
+  @apply text-sm text-gray-600;
+}
+
+.badge {
+  @apply rounded-full border border-gray-300 px-2 py-0.5 text-xs text-gray-600;
+}

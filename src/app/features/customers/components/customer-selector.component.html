@@ -1,0 +1,66 @@
+<section class="customer-selector">
+  <header class="selector-header">
+    <div>
+      <p class="kicker">Cliente asociado</p>
+      <h2>{{ selectedCustomer()?.name || 'Selecciona un cliente' }}</h2>
+      @if (selectedCustomer()) {
+        <p class="customer-meta">
+          {{ selectedCustomer()?.city || 'Ciudad no disponible' }} ·
+          {{ selectedCustomer()?.phone || 'Teléfono no disponible' }}
+        </p>
+      }
+    </div>
+    <div class="selector-actions">
+      <button type="button" class="btn ghost" (click)="clearSelection()" [disabled]="!selectedCustomerId() || updating()">
+        <span class="material-symbols-rounded" aria-hidden="true">close</span>
+        Quitar cliente
+      </button>
+    </div>
+  </header>
+
+  <div class="selector-body">
+    <div class="input-wrapper">
+      <span class="material-symbols-rounded" aria-hidden="true">search</span>
+      <input
+        type="text"
+        placeholder="Buscar por nombre, email, ciudad o DNI"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)"
+        [disabled]="loading()">
+    </div>
+
+    @if (errorMessage()) {
+      <p class="error-message">{{ errorMessage() }}</p>
+    }
+
+    @if (loading()) {
+      <p class="loading-message">Cargando clientes...</p>
+    } @else if (!hasCustomers()) {
+      <p class="empty-message">No hay clientes registrados todavía.</p>
+    } @else {
+      <div class="customers-grid">
+        @for (customer of filteredCustomers(); track customer.id) {
+          <button
+            type="button"
+            class="customer-card"
+            [class.selected]="customer.id === selectedCustomerId()"
+            (click)="selectCustomer(customer.id)"
+            [disabled]="updating()">
+            <div class="card-header">
+              <h3>{{ customer.name }}</h3>
+              @if (customer.city) {
+                <span class="badge">{{ customer.city }}</span>
+              }
+            </div>
+            <p class="card-meta">
+              {{ customer.email || 'Sin email' }} · {{ customer.phone || 'Sin teléfono' }}
+            </p>
+            @if (customer.address) {
+              <p class="card-address">{{ customer.address }}</p>
+            }
+          </button>
+        }
+      </div>
+    }
+  </div>
+</section>
