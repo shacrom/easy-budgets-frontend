@@ -1,1 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@200;300;400;500&display=swap');
 @import "tailwindcss";
+
+.material-symbols-rounded {
+	font-family: 'Material Symbols Rounded', 'Material Icons', sans-serif;
+	font-weight: 400;
+	font-style: normal;
+	font-size: 20px;
+	line-height: 1;
+	letter-spacing: normal;
+	text-transform: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}

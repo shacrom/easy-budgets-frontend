@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BudgetSummary, SummaryLine } from '../../../models/budget-summary.model';
+import { SummaryLine } from '../../../models/budget-summary.model';
 import { BudgetTextBlock } from '../../../models/budget-text-block.model';
-import { Material } from '../../../models/material.model';
+import { Material, MaterialTable } from '../../../models/material.model';
 
 /**
  * Component to display the budget summary
@@ -24,6 +24,7 @@ export class BudgetSummaryComponent {
   // Inputs: data arrays to show details
   blocks = input<BudgetTextBlock[]>([]);
   materials = input<Material[]>([]);
+  materialTables = input<MaterialTable[]>([]);
 
   // Local state for configuration
   protected readonly vatPercentage = signal<number>(21);
@@ -33,6 +34,7 @@ export class BudgetSummaryComponent {
   // Dropdown states (expanded by default)
   protected readonly blocksExpanded = signal<boolean>(true);
   protected readonly materialsExpanded = signal<boolean>(true);
+  protected readonly hasMaterialTables = computed(() => this.materialTables().length > 0);
 
   // Derived calculations
   protected readonly subtotal = computed(() => {
@@ -110,5 +112,17 @@ export class BudgetSummaryComponent {
    */
   private generateId(): string {
     return `line-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  }
+
+  protected tableSubtotal(table: MaterialTable): number {
+    return table.rows.reduce((sum, material) => sum + material.totalPrice, 0);
+  }
+
+  protected tableRowsLabel(table: MaterialTable): string {
+    const count = table.rows.length;
+    if (count === 0) {
+      return 'Sin partidas';
+    }
+    return count === 1 ? '1 partida' : `${count} partidas`;
   }
 }

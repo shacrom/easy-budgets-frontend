@@ -5,8 +5,15 @@
 export interface Material {
   id: string;
   description: string;
+  reference: string;
   manufacturer: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number; // calculado: cantidad * precioUnitario
+}
+
+export interface MaterialTable {
+  id: string;
+  title: string;
+  rows: Material[];
 }

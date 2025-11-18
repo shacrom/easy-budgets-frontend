@@ -1,75 +1,156 @@
 @import "tailwindcss";
 
-.materials-table-container {
-  @apply max-w-6xl mx-auto px-8 py-6;
+.materials-module {
+  @apply max-w-6xl mx-auto space-y-8 px-6 py-8;
 }
 
-.header {
-  @apply flex justify-between items-center mb-6 pb-4 border-b border-gray-300;
+.module-header {
+  @apply flex flex-wrap items-start justify-between gap-6 border-b border-slate-200 pb-6;
+}
+
+.module-title {
+  @apply max-w-xl space-y-2;
+}
+
+.module-title h2 {
+  @apply text-3xl font-light text-slate-900;
+}
+
+.module-title p {
+  @apply text-base text-slate-600;
+}
+
+.module-kicker {
+  @apply text-xs font-semibold uppercase tracking-[0.3em] text-slate-500;
 }
 
 .header-actions {
-  @apply flex gap-3;
+  @apply flex flex-wrap gap-3;
 }
 
-.btn-toggle-edit {
-  @apply px-5 py-2 bg-gray-800 text-white hover:bg-gray-900 transition-colors font-light uppercase;
-  letter-spacing: 0.1em;
+.btn {
+  @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors;
 }
 
-.btn-add-material {
-  @apply px-5 py-2 bg-gray-700 text-white hover:bg-gray-800 transition-colors font-light uppercase;
-  letter-spacing: 0.1em;
+.btn .material-symbols-rounded {
+  font-size: 1.25rem;
+}
+
+.btn.solid {
+  @apply border-slate-900 bg-slate-900 text-white hover:bg-slate-800;
+}
+
+.btn.ghost {
+  @apply border-slate-300 text-slate-700 hover:border-slate-500 hover:text-slate-900;
+}
+
+.btn.icon {
+  @apply border-slate-200 bg-white text-slate-700 hover:border-slate-400;
+}
+
+.btn.danger {
+  @apply border-red-200 text-red-600 hover:border-red-400 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40;
+}
+
+.tables-grid {
+  @apply flex flex-col gap-8;
+}
+
+.materials-card {
+  @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+}
+
+.card-header {
+  @apply flex flex-wrap items-center justify-between gap-6 border-b border-slate-100 p-6;
+}
+
+.title-group {
+  @apply flex min-w-[16rem] flex-col gap-1;
+}
+
+.title-group h3 {
+  @apply text-2xl font-light text-slate-900;
+}
+
+.table-title-input {
+  @apply w-full border-none bg-transparent text-2xl font-light text-slate-900 placeholder:text-slate-400 focus:outline-none;
+}
+
+.card-subtitle {
+  @apply text-xs font-medium uppercase tracking-[0.3em] text-slate-400;
+}
+
+.card-actions {
+  @apply flex flex-wrap items-center gap-3;
+}
+
+.card-total {
+  @apply rounded-full bg-slate-50 px-5 py-2 text-right;
+}
+
+.card-total span {
+  @apply text-xs font-semibold uppercase tracking-[0.3em] text-slate-500;
+}
+
+.card-total strong {
+  @apply block text-lg font-semibold text-slate-900;
 }
 
 .table-wrapper {
-  @apply bg-white shadow-sm overflow-hidden border border-gray-200;
+  @apply overflow-hidden;
 }
 
 .materials-table {
-  @apply w-full border-collapse;
-  table-layout: fixed;
+  @apply w-full border-collapse text-sm;
 }
 
-.table-header {
-  @apply bg-gray-50 border-b border-gray-300;
+.materials-table thead {
+  @apply bg-slate-50 text-xs uppercase tracking-[0.3em] text-slate-500;
 }
 
-.header-cell {
-  @apply px-4 py-3 text-left text-xs font-light text-gray-700 uppercase;
-  letter-spacing: 0.1em;
+.materials-table th,
+.materials-table td {
+  @apply border-b border-slate-100 px-4 py-3 text-left;
 }
 
-.header-cell.cantidad {
+.materials-table th:nth-child(4),
+.materials-table td:nth-child(4) {
   @apply text-center;
 }
 
-.header-cell.precio,
-.header-cell.precio-total {
+.materials-table th:nth-child(5),
+.materials-table th:nth-child(6),
+.materials-table td:nth-child(5),
+.materials-table td:nth-child(6) {
   @apply text-right;
 }
 
-.header-cell.acciones {
+.materials-table th:last-child,
+.materials-table td:last-child {
   @apply text-center;
 }
 
 .empty-state {
-  @apply bg-gray-50 border-none;
+  @apply flex flex-col items-center gap-3 bg-slate-50 py-10 text-center text-slate-500;
 }
 
-.table-footer {
-  @apply bg-gray-50 border-t-2 border-gray-800;
+.empty-state .material-symbols-rounded {
+  font-size: 2rem;
+  color: rgb(148 163 184);
 }
 
-.footer-cell {
-  @apply px-4 py-4 text-sm font-light;
+.footer-label {
+  @apply bg-slate-50 text-right font-semibold uppercase tracking-[0.3em] text-slate-600;
 }
 
-.footer-cell.total-label {
-  @apply text-right text-gray-900 text-base uppercase;
-  letter-spacing: 0.05em;
+.footer-amount {
+  @apply bg-slate-50 text-right text-lg font-semibold text-slate-900;
 }
 
-.footer-cell.total-amount {
-  @apply text-right text-gray-900 text-lg font-normal;
+.module-footer {
+  @apply flex items-center justify-end border-t border-slate-200 pt-6;
+}
+
+.module-footer h3 {
+  @apply text-3xl font-semibold text-slate-900;
 }

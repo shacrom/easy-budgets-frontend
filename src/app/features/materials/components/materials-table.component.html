@@ -1,80 +1,133 @@
-<div class="materials-table-container">
-  <div class="header">
-    <h2 class="text-2xl font-light text-gray-900 uppercase" style="letter-spacing: 0.15em;">Listado de Materiales</h2>
+<section class="materials-module">
+  <header class="module-header">
+    <div class="module-title">
+      <p class="module-kicker">Gestión de costes</p>
+      <h2>Tablas personalizables de materiales</h2>
+      <p>Divide los conceptos en bloques (materiales, electrodomésticos, iluminación…) y mantén cada total bajo control.</p>
+    </div>
     <div class="header-actions">
-      <button
-        (click)="toggleEditMode()"
-        class="btn-toggle-edit"
-        type="button">
+      <button type="button" class="btn ghost" (click)="toggleEditMode()">
         @if (editMode()) {
-          <span>Vista Previa</span>
+          <span class="material-symbols-rounded" aria-hidden="true">visibility</span>
+          <span>Vista previa</span>
         } @else {
-          <span>Modo Edición</span>
+          <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+          <span>Modo edición</span>
         }
       </button>
       @if (editMode()) {
-        <button
-          (click)="addNewMaterial()"
-          class="btn-add-material"
-          type="button">
-          Añadir Material
+        <button type="button" class="btn solid" (click)="addTable()">
+          <span class="material-symbols-rounded" aria-hidden="true">post_add</span>
+          <span>Nueva tabla</span>
         </button>
       }
     </div>
+  </header>
+
+  <div class="tables-grid">
+    @for (table of tables(); track table.id; let index = $index) {
+      <article class="materials-card">
+        <div class="card-header">
+          <div class="title-group">
+            @if (editMode()) {
+              <input
+                class="table-title-input"
+                [value]="table.title"
+                type="text"
+                placeholder="Título de la tabla"
+                (input)="updateTableTitle(table.id, $event)">
+            } @else {
+              <h3>{{ table.title || ('Tabla ' + (index + 1)) }}</h3>
+            }
+            <p class="card-subtitle">Bloque {{ index + 1 }}</p>
+          </div>
+          <div class="card-actions">
+            <div class="card-total">
+              <span>Total</span>
+              <strong>{{ tableTotal(table) | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+            </div>
+            @if (editMode()) {
+              <button type="button" class="btn icon" (click)="addNewMaterial(table.id)">
+                <span class="material-symbols-rounded" aria-hidden="true">add</span>
+                <span>Fila</span>
+              </button>
+              <button
+                type="button"
+                class="btn icon danger"
+                [disabled]="tables().length === 1"
+                (click)="deleteTable(table.id)">
+                <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+                <span>Tabla</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="materials-table">
+            <colgroup>
+              <col style="width: 24%;">
+              <col style="width: 14%;">
+              <col style="width: 16%;">
+              <col style="width: 10%;">
+              <col style="width: 14%;">
+              <col style="width: 14%;">
+              <col style="width: 8%;">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Descripción</th>
+                <th>Referencia</th>
+                <th>Fabricante</th>
+                <th>Cantidad</th>
+                <th>Precio unit.</th>
+                <th>Precio total</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (table.rows.length === 0) {
+                <tr>
+                  <td colspan="7" class="empty-state">
+                    <span class="material-symbols-rounded" aria-hidden="true">table_rows_narrow</span>
+                    <p>Este bloque aún no tiene conceptos.</p>
+                    @if (editMode()) {
+                      <button type="button" class="btn ghost" (click)="addNewMaterial(table.id)">
+                        <span class="material-symbols-rounded" aria-hidden="true">add</span>
+                        <span>Añadir fila</span>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              } @else {
+                @for (material of table.rows; track material.id) {
+                  <app-material-row
+                    [material]="material"
+                    [editMode]="editMode()"
+                    (materialUpdated)="updateMaterial(table.id, $event)"
+                    (materialDeleted)="deleteMaterial(table.id, $event)">
+                  </app-material-row>
+                }
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="5" class="footer-label">Subtotal</td>
+                <td colspan="2" class="footer-amount">
+                  {{ tableTotal(table) | currency:'EUR':'symbol':'1.2-2':'es' }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </article>
+    }
   </div>
 
-  <div class="table-wrapper">
-    <table class="materials-table">
-      <colgroup>
-        <col style="width: 25%;">
-        <col style="width: 20%;">
-        <col style="width: 12%;">
-        <col style="width: 15%;">
-        <col style="width: 15%;">
-        <col style="width: 13%;">
-      </colgroup>
-      <thead class="table-header">
-        <tr>
-          <th class="header-cell descripcion">Descripción</th>
-          <th class="header-cell fabricante">Fabricante</th>
-          <th class="header-cell cantidad">Cantidad</th>
-          <th class="header-cell precio">Precio Unitario</th>
-          <th class="header-cell precio-total">Precio Total</th>
-          <th class="header-cell acciones">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        @if (materials().length === 0) {
-          <tr>
-            <td colspan="6" class="empty-state">
-              <p class="text-gray-500 text-center py-8">
-                No hay materiales añadidos. Haz clic en "Añadir Material" para empezar.
-              </p>
-            </td>
-          </tr>
-        } @else {
-          @for (material of materials(); track material.id) {
-            <app-material-row
-              [material]="material"
-              [editMode]="editMode()"
-              (materialUpdated)="updateMaterial($event)"
-              (materialDeleted)="deleteMaterial($event)">
-            </app-material-row>
-          }
-        }
-      </tbody>
-      @if (materials().length > 0) {
-        <tfoot class="table-footer">
-          <tr>
-            <td colspan="5" class="footer-cell total-label">
-              <strong>Total Materiales:</strong>
-            </td>
-            <td class="footer-cell total-amount">
-              <strong>{{ totalMaterials() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
-            </td>
-          </tr>
-        </tfoot>
-      }
-    </table>
-  </div>
-</div>
+  <footer class="module-footer">
+    <div>
+      <p class="module-kicker">Total acumulado</p>
+      <h3>{{ totalMaterials() | currency:'EUR':'symbol':'1.2-2':'es' }}</h3>
+    </div>
+  </footer>
+</section>

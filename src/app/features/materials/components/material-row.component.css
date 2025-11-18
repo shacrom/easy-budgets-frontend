@@ -17,11 +17,12 @@
   @apply px-4 py-3 text-sm font-light;
 }
 
-.material-cell.descripcion {
-  @apply text-left;
-}
 
-.material-cell.fabricante {
+.material-cell.descripcion,
+.material-cell.description,
+.material-cell.reference,
+.material-cell.fabricante,
+.material-cell.manufacturer {
   @apply text-left;
 }
 
@@ -46,6 +47,9 @@
 }
 
 .btn-delete-row {
-  @apply px-3 py-1 bg-red-50 text-red-700 hover:bg-red-100 transition-colors text-xs font-light uppercase;
-  letter-spacing: 0.05em;
+  @apply inline-flex items-center gap-1 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-700 transition-colors hover:bg-red-100;
+}
+
+.btn-delete-row .material-symbols-rounded {
+  font-size: 1rem;
 }

@@ -4,7 +4,7 @@ import { MaterialsTableComponent } from '../../materials/components/materials-ta
 import { BudgetSummaryComponent } from '../../summary/components/budget-summary.component';
 import { GeneralConditionsComponent } from '../../conditions/components/general-conditions.component';
 import { BudgetTextBlock } from '../../../models/budget-text-block.model';
-import { Material } from '../../../models/material.model';
+import { Material, MaterialTable } from '../../../models/material.model';
 import { SupabaseService } from '../../../services/supabase.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -37,6 +37,7 @@ export class BudgetEditorComponent {
   // Data arrays
   protected readonly blocks = signal<BudgetTextBlock[]>([]);
   protected readonly materials = signal<Material[]>([]);
+  protected readonly materialTables = signal<MaterialTable[]>([]);
 
   constructor() {
     effect(() => {
@@ -88,5 +89,9 @@ export class BudgetEditorComponent {
    */
   protected onMaterialsChanged(materials: Material[]): void {
     this.materials.set(materials);
+  }
+
+  protected onTablesChanged(tables: MaterialTable[]): void {
+    this.materialTables.set(tables);
   }
 }

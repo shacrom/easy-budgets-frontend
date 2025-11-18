@@ -2,6 +2,7 @@
   <!-- Read-only view -->
   <tr class="material-row">
     <td class="material-cell description">{{ material().description }}</td>
+    <td class="material-cell reference">{{ material().reference || '—' }}</td>
     <td class="material-cell manufacturer">{{ material().manufacturer }}</td>
     <td class="material-cell quantity">{{ material().quantity }}</td>
     <td class="material-cell price">
@@ -22,6 +23,14 @@
         (ngModelChange)="onValueChange()"
         class="input-field"
         placeholder="Descripción del material">
+    </td>
+    <td class="material-cell reference">
+      <input
+        type="text"
+        [(ngModel)]="material().reference"
+        (ngModelChange)="onValueChange()"
+        class="input-field"
+        placeholder="Referencia">
     </td>
     <td class="material-cell manufacturer">
       <input
@@ -62,7 +71,8 @@
         class="btn-delete-row"
         type="button"
         title="Eliminar material">
-        Eliminar
+        <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+        <span>Eliminar</span>
       </button>
     </td>
   </tr>

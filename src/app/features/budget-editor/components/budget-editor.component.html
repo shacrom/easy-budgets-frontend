@@ -22,7 +22,8 @@
       <section class="section-divider">
         <app-materials-table
           (totalChanged)="onTotalMaterialsChanged($event)"
-          (materialsChanged)="onMaterialsChanged($event)">
+          (materialsChanged)="onMaterialsChanged($event)"
+          (tablesChanged)="onTablesChanged($event)">
         </app-materials-table>
       </section>
 
@@ -32,7 +33,8 @@
           [totalBlocks]="totalBlocks()"
           [totalMaterials]="totalMaterials()"
           [blocks]="blocks()"
-          [materials]="materials()">
+          [materials]="materials()"
+          [materialTables]="materialTables()">
         </app-budget-summary>
       </section>
 
