@@ -69,6 +69,17 @@
                 </button>
                 <button
                   type="button"
+                  class="btn-neutral"
+                  [disabled]="duplicatingBudgetId() === budget.id"
+                  (click)="duplicateBudget(budget)">
+                  @if (duplicatingBudgetId() === budget.id) {
+                    <span class="material-symbols-outlined loading-icon" aria-hidden="true">autorenew</span>
+                  } @else {
+                    <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+                  }
+                </button>
+                <button
+                  type="button"
                   class="btn-danger"
                   [disabled]="deletingBudgetId() === budget.id"
                   (click)="deleteBudget(budget)"

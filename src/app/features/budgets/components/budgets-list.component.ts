@@ -33,6 +33,7 @@ export class BudgetsListComponent implements OnInit {
   protected readonly isLoading = signal<boolean>(false);
   protected readonly isCreating = signal<boolean>(false);
   protected readonly deletingBudgetId = signal<string | null>(null);
+  protected readonly duplicatingBudgetId = signal<string | null>(null);
   protected readonly errorMessage = signal<string | null>(null);
 
   ngOnInit(): void {
@@ -106,6 +107,25 @@ export class BudgetsListComponent implements OnInit {
       this.errorMessage.set('No se pudo eliminar el presupuesto. Inténtalo de nuevo.');
     } finally {
       this.deletingBudgetId.set(null);
+    }
+  }
+
+  protected async duplicateBudget(budget: BudgetListItem): Promise<void> {
+    if (this.duplicatingBudgetId()) {
+      return;
+    }
+
+    this.duplicatingBudgetId.set(budget.id);
+    this.errorMessage.set(null);
+
+    try {
+      await this.supabase.duplicateBudget(budget.id);
+      await this.loadBudgets();
+    } catch (error) {
+      console.error('Error duplicating budget:', error);
+      this.errorMessage.set('No se pudo duplicar el presupuesto. Inténtalo de nuevo.');
+    } finally {
+      this.duplicatingBudgetId.set(null);
     }
   }
 }

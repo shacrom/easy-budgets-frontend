@@ -55,6 +55,11 @@ button:disabled {
   color: #111827;
 }
 
+.btn-neutral {
+  background-color: #e5e7eb;
+  color: #0f172a;
+}
+
 .btn-danger {
   background-color: #fee2e2;
   color: #b91c1c;

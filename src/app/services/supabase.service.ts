@@ -291,6 +291,121 @@ export class SupabaseService {
     if (error) throw error;
   }
 
+  async duplicateBudget(budgetId: string) {
+    const original = await this.getBudget(budgetId);
+
+    if (!original) {
+      throw new Error('Presupuesto no encontrado');
+    }
+
+    const {
+      textBlocks = [],
+      materials = [],
+      additionalLines = [],
+      customer,
+      id: _originalId,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+      ...budgetData
+    } = original;
+
+    const numberPrefix = (budgetData.budgetNumber ?? 'BUD').split('-')[0];
+    const newBudgetNumber = `${numberPrefix}-${Date.now()}`;
+    const newBudgetPayload: Record<string, any> = {
+      ...budgetData,
+      budgetNumber: newBudgetNumber,
+      title: `${budgetData.title ?? 'Presupuesto'} (Copia)`
+    };
+
+    const { data: newBudget, error: insertBudgetError } = await this.supabase
+      .from('Budgets')
+      .insert([newBudgetPayload])
+      .select()
+      .single();
+
+    if (insertBudgetError || !newBudget) {
+      throw insertBudgetError ?? new Error('No se pudo crear la copia del presupuesto');
+    }
+
+    const newBudgetId = newBudget.id;
+
+    for (const block of textBlocks ?? []) {
+      const blockPayload: Record<string, any> = {
+        budgetId: newBudgetId,
+        orderIndex: block.orderIndex,
+        heading: block.heading,
+        link: block.link,
+        imageUrl: block.imageUrl,
+        subtotal: block.subtotal ?? 0
+      };
+
+      const { data: newBlock, error: blockError } = await this.supabase
+        .from('BudgetTextBlocks')
+        .insert([blockPayload])
+        .select()
+        .single();
+
+      if (blockError || !newBlock) {
+        throw blockError ?? new Error('No se pudo clonar un bloque de texto');
+      }
+
+      if (block.descriptions?.length) {
+        const sectionPayloads = block.descriptions.map((section: any) => ({
+          textBlockId: newBlock.id,
+          orderIndex: section.orderIndex,
+          title: section.title,
+          text: section.text
+        }));
+
+        const { error: sectionsError } = await this.supabase
+          .from('BudgetTextBlockSections')
+          .insert(sectionPayloads);
+
+        if (sectionsError) {
+          throw sectionsError;
+        }
+      }
+    }
+
+    if (materials?.length) {
+      const materialPayloads = materials.map((material: any) => {
+        const { id, budgetId: _oldBudgetId, createdAt, updatedAt, ...rest } = material;
+        return {
+          ...rest,
+          budgetId: newBudgetId
+        };
+      });
+
+      const { error: materialsError } = await this.supabase
+        .from('BudgetMaterials')
+        .insert(materialPayloads);
+
+      if (materialsError) {
+        throw materialsError;
+      }
+    }
+
+    if (additionalLines?.length) {
+      const additionalPayloads = additionalLines.map((line: any) => {
+        const { id, budgetId: _oldBudgetId, createdAt, updatedAt, ...rest } = line;
+        return {
+          ...rest,
+          budgetId: newBudgetId
+        };
+      });
+
+      const { error: additionalError } = await this.supabase
+        .from('BudgetAdditionalLines')
+        .insert(additionalPayloads);
+
+      if (additionalError) {
+        throw additionalError;
+      }
+    }
+
+    return newBudget;
+  }
+
   // ============================================
   // TEXT BLOCKS
   // ============================================
