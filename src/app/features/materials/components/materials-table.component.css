@@ -54,6 +54,7 @@
 
 .tables-grid {
   @apply flex flex-col gap-6;
+  overflow: visible !important;
 }
 
 .tables-empty {
@@ -71,6 +72,9 @@
 
 .materials-card {
   @apply border border-gray-200 bg-white shadow-sm;
+  position: relative;
+  overflow: visible !important;
+  z-index: 1;
 }
 
 .card-header {
@@ -110,12 +114,16 @@
 }
 
 .table-wrapper {
-  @apply overflow-x-auto;
+  @apply w-full;
+  overflow: visible !important;
+  position: static;
 }
 
 .materials-table {
   @apply w-full border border-gray-200 text-sm;
   border-spacing: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .materials-table thead {

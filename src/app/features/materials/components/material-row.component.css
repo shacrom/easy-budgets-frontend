@@ -50,9 +50,26 @@
 }
 
 .reference-dropdown {
-  @apply absolute left-0 right-0 z-20 mt-2 rounded-2xl border border-gray-200 bg-white p-3 shadow-2xl;
-  max-height: 16rem;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: max-content;
+  min-width: 450px;
+  max-width: 600px;
+  max-height: 400px;
   overflow-y: auto;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  z-index: 9999;
+}
+
+@media (max-width: 768px) {
+  .reference-dropdown {
+    min-width: 1000px;
+    max-width: 90vw;
+  }
 }
 
 .reference-helper {
