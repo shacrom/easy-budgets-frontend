@@ -68,8 +68,8 @@
         <div class="table-wrapper">
           <table class="materials-table">
             <colgroup>
-              <col style="width: 24%;">
               <col style="width: 14%;">
+              <col style="width: 24%;">
               <col style="width: 16%;">
               <col style="width: 10%;">
               <col style="width: 14%;">
@@ -78,8 +78,8 @@
             </colgroup>
             <thead>
               <tr>
-                <th>Descripción</th>
                 <th>Referencia</th>
+                <th>Descripción</th>
                 <th>Fabricante</th>
                 <th>Cantidad</th>
                 <th>Precio unit.</th>
@@ -106,6 +106,7 @@
                   <app-material-row
                     [material]="material"
                     [editMode]="editMode()"
+                    [products]="products()"
                     (materialUpdated)="updateMaterial(table.id, $event)"
                     (materialDeleted)="deleteMaterial(table.id, $event)">
                   </app-material-row>

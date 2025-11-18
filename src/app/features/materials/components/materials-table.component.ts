@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, signal, computed, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, computed, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialRowComponent } from './material-row.component';
 import { Material, MaterialTable } from '../../../models/material.model';
+import { Product } from '../../../models/product.model';
+import { SupabaseService } from '../../../services/supabase.service';
 
 /**
  * Container component for the materials table
@@ -16,9 +18,14 @@ import { Material, MaterialTable } from '../../../models/material.model';
 })
 export class MaterialsTableComponent {
   private readonly defaultTableTitle = 'Título';
+  private readonly supabase = inject(SupabaseService);
 
   // List of material tables
   protected readonly tables = signal<MaterialTable[]>([]);
+
+  // Catalog products used for reference search
+  protected readonly products = signal<Product[]>([]);
+  protected readonly loadingProducts = signal<boolean>(false);
 
   // Edit mode
   protected readonly editMode = signal<boolean>(true);
@@ -39,6 +46,7 @@ export class MaterialsTableComponent {
 
   constructor() {
     this.emitChanges();
+    void this.loadProducts();
   }
 
   /**
@@ -176,5 +184,17 @@ export class MaterialsTableComponent {
 
   private flattenMaterials(tables: MaterialTable[]): Material[] {
     return tables.flatMap(table => table.rows);
+  }
+
+  private async loadProducts(): Promise<void> {
+    this.loadingProducts.set(true);
+    try {
+      const catalog = await this.supabase.getProducts();
+      this.products.set(catalog);
+    } catch (error) {
+      console.error('No se pudo cargar el catálogo de productos', error);
+    } finally {
+      this.loadingProducts.set(false);
+    }
   }
 }

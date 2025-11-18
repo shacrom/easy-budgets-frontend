@@ -1,8 +1,8 @@
 @if (!editMode()) {
   <!-- Read-only view -->
   <tr class="material-row">
-    <td class="material-cell description">{{ material().description }}</td>
     <td class="material-cell reference">{{ material().reference || '—' }}</td>
+    <td class="material-cell description">{{ material().description }}</td>
     <td class="material-cell manufacturer">{{ material().manufacturer }}</td>
     <td class="material-cell quantity">{{ material().quantity }}</td>
     <td class="material-cell price">
@@ -16,29 +16,61 @@
 } @else {
   <!-- Edit view -->
   <tr class="material-row edit-mode">
+    <td class="material-cell reference">
+      <div class="reference-field">
+        <input
+          type="text"
+          [(ngModel)]="material().reference"
+          (ngModelChange)="onReferenceChange($event)"
+          (focus)="openReferenceDropdown()"
+          (blur)="closeReferenceDropdown()"
+          autocomplete="off"
+          class="input-field"
+          placeholder="Buscar referencia">
+        @if (referenceDropdownOpen()) {
+          <div class="reference-dropdown" role="listbox">
+            @if (products().length === 0) {
+              <p class="reference-empty">
+                Catálogo no disponible
+              </p>
+            } @else if (referenceMatches().length === 0) {
+              <p class="reference-empty">
+                Sin coincidencias
+              </p>
+            } @else {
+              <p class="reference-helper">Coincidencias del catálogo</p>
+              <div class="reference-list">
+                @for (product of referenceMatches(); track product.id ?? product.reference) {
+                  <button
+                    type="button"
+                    class="reference-suggestion"
+                    (mousedown)="applyProductFromSuggestion($event, product)"
+                    role="option">
+                    <span class="suggestion-reference">{{ product.reference }}</span>
+                    <span class="suggestion-description">{{ product.description }}</span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </td>
     <td class="material-cell description">
       <input
         type="text"
         [(ngModel)]="material().description"
         (ngModelChange)="onValueChange()"
         class="input-field"
-        placeholder="Descripción del material">
-    </td>
-    <td class="material-cell reference">
-      <input
-        type="text"
-        [(ngModel)]="material().reference"
-        (ngModelChange)="onValueChange()"
-        class="input-field"
-        placeholder="Referencia">
+        (focus)="$event.target.select()"
+        style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
     </td>
     <td class="material-cell manufacturer">
       <input
         type="text"
         [(ngModel)]="material().manufacturer"
         (ngModelChange)="onValueChange()"
-        class="input-field"
-        placeholder="Fabricante">
+        class="input-field">
     </td>
     <td class="material-cell quantity">
       <input
