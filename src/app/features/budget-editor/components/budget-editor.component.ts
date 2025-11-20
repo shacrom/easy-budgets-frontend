@@ -13,6 +13,8 @@ import { SupabaseService } from '../../../services/supabase.service';
 import { PdfExportService, BudgetPdfPayload, BudgetPdfMetadata } from '../../../services/pdf-export.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { CountertopEditorComponent } from '../../countertop/components/countertop-editor.component';
+import { Countertop } from '../../../models/countertop.model';
 
 @Component({
   selector: 'app-budget-editor',
@@ -20,6 +22,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
     CustomerSelectorComponent,
     BudgetTextBlocksComponent,
     MaterialsTableComponent,
+    CountertopEditorComponent,
     BudgetSummaryComponent,
     GeneralConditionsComponent
   ],
@@ -40,6 +43,7 @@ export class BudgetEditorComponent {
   // Totals from each section
   protected readonly totalBlocks = signal<number>(0);
   protected readonly totalMaterials = signal<number>(0);
+  protected readonly totalCountertop = signal<number>(0);
 
   // Data arrays
   protected readonly blocks = signal<BudgetTextBlock[]>([]);
@@ -55,6 +59,7 @@ export class BudgetEditorComponent {
   protected readonly conditionsTitle = signal<string>('Condiciones generales');
   protected readonly conditionsList = signal<Condition[]>([]);
   protected readonly pdfGenerating = signal<boolean>(false);
+  protected readonly countertopData = signal<Countertop | null>(null);
   protected readonly selectedCustomer = computed(() => {
     const id = this.selectedCustomerId();
     if (!id) {
@@ -175,6 +180,14 @@ export class BudgetEditorComponent {
     this.totalMaterials.set(total);
   }
 
+  protected onTotalCountertopChanged(total: number) {
+    this.totalCountertop.set(total);
+  }
+
+  protected onCountertopChanged(countertop: Countertop | null) {
+    this.countertopData.set(countertop);
+  }
+
   /**
    * Updates the blocks
    */
@@ -218,6 +231,7 @@ export class BudgetEditorComponent {
       blocks: this.blocks(),
       materials: this.materials(),
       materialTables: this.materialTables(),
+      countertop: this.countertopData(),
       summary: this.summarySnapshot(),
       conditionsTitle: this.conditionsTitle(),
       conditions: this.conditionsList(),

@@ -51,11 +51,21 @@
         </app-materials-table>
       </section>
 
+      <!-- Section 2.5: Countertop -->
+      <section class="section-divider">
+        <app-countertop-editor
+          [budgetId]="currentBudgetId()"
+          (totalChanged)="onTotalCountertopChanged($event)"
+          (countertopChanged)="onCountertopChanged($event)">
+        </app-countertop-editor>
+      </section>
+
       <!-- Section 3: Budget Summary -->
       <section class="section-divider">
         <app-budget-summary
           [totalBlocks]="totalBlocks()"
           [totalMaterials]="totalMaterials()"
+          [totalCountertop]="totalCountertop()"
           [blocks]="blocks()"
           [materials]="materials()"
           [materialTables]="materialTables()"

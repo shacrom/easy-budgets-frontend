@@ -648,4 +648,30 @@ export class SupabaseService {
     if (error) throw error;
     return data;
   }
+
+  // ============================================
+  // COUNTERTOPS
+  // ============================================
+
+  async getCountertopForBudget(budgetId: string) {
+    const { data, error } = await this.supabase
+      .from('BudgetCountertops')
+      .select('*')
+      .eq('budgetId', budgetId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async upsertCountertop(countertop: any) {
+    const { data, error } = await this.supabase
+      .from('BudgetCountertops')
+      .upsert(countertop)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
 }

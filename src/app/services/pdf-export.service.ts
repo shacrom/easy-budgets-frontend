@@ -7,6 +7,7 @@ import { BudgetTextBlock } from '../models/budget-text-block.model';
 import { Material, MaterialTable } from '../models/material.model';
 import { BudgetSummary } from '../models/budget-summary.model';
 import { Condition } from '../models/conditions.model';
+import { Countertop } from '../models/countertop.model';
 
 export interface BudgetPdfMetadata {
   id: string;
@@ -23,6 +24,7 @@ export interface BudgetPdfPayload {
   blocks: BudgetTextBlock[];
   materials: Material[];
   materialTables: MaterialTable[];
+  countertop: Countertop | null;
   summary: BudgetSummary | null;
   conditionsTitle?: string;
   conditions?: Condition[];
@@ -76,10 +78,20 @@ export class PdfExportService {
   }
 
   private async buildDocumentDefinition(payload: BudgetPdfPayload): Promise<TDocumentDefinitions> {
+    // Pre-process countertop image if present
+    let countertop = payload.countertop;
+    if (countertop?.imageUrl) {
+      const base64Image = await this.convertImageToBase64(countertop.imageUrl);
+      if (base64Image) {
+        countertop = { ...countertop, imageUrl: base64Image };
+      }
+    }
+
     const content: Content[] = [
       ...this.compactContent([
         ...this.buildTextBlocksSection(payload.blocks),
         ...this.buildMaterialsSection(payload.materialTables, payload.materials),
+        this.buildCountertopSection(countertop),
         this.buildSummarySection(payload.summary),
         this.buildConditionsSection(payload.conditionsTitle, payload.conditions)
       ])
@@ -395,6 +407,63 @@ export class PdfExportService {
     };
   }
 
+  private buildCountertopSection(countertop: Countertop | null): Content | null {
+    if (!countertop) return null;
+
+    const stack: Content[] = [
+      { text: 'ENCIMERA', style: 'sectionHeader' }
+    ];
+
+    // Model
+    if (countertop.model) {
+      stack.push({
+        text: [
+          { text: 'MODELO ENCIMERA: ', bold: true },
+          { text: countertop.model.toUpperCase() }
+        ],
+        margin: [0, 0, 0, 8] as [number, number, number, number],
+        style: 'box'
+      });
+    }
+
+    // Description
+    if (countertop.description) {
+      stack.push({
+        text: countertop.description.toUpperCase(),
+        margin: [0, 0, 0, 8] as [number, number, number, number],
+        style: 'box'
+      });
+    }
+
+    // Image
+    if (countertop.imageUrl) {
+      stack.push({
+        image: countertop.imageUrl,
+        width: 200,
+        alignment: 'center',
+        margin: [0, 10, 0, 10] as [number, number, number, number]
+      });
+    }
+
+    // Price
+    if (countertop.price) {
+      stack.push({
+        text: [
+          { text: 'TOTAL PRECIO: ', bold: true },
+          { text: this.formatCurrency(countertop.price) }
+        ],
+        alignment: 'right',
+        margin: [0, 10, 0, 0] as [number, number, number, number]
+      });
+    }
+
+    return {
+      stack,
+      margin: [0, 0, 0, 20] as [number, number, number, number],
+      unbreakable: true
+    };
+  }
+
   private buildSummarySection(summary: BudgetSummary | null): Content | null {
     if (!summary) {
       return null;
@@ -484,5 +553,19 @@ export class PdfExportService {
     return values.filter((value): value is T => value !== null && value !== undefined);
   }
 
-
+  private async convertImageToBase64(url: string): Promise<string | null> {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.warn('Error loading image:', error);
+      return null;
+    }
+  }
 }

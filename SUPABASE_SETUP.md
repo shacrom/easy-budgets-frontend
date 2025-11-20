@@ -163,6 +163,23 @@ CREATE TABLE "GeneralConditions" (
 );
 
 -- ============================================
+-- 8. TABLA: BudgetCountertops
+-- ============================================
+CREATE TABLE "BudgetCountertops" (
+  "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  "budgetId" UUID NOT NULL REFERENCES "Budgets"("id") ON DELETE CASCADE,
+  "model" TEXT NOT NULL DEFAULT '',
+  "description" TEXT NOT NULL DEFAULT '',
+  "price" DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  "imageUrl" TEXT,
+  "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Índices
+CREATE INDEX "idx_BudgetCountertops_budgetId" ON "BudgetCountertops"("budgetId");
+
+-- ============================================
 -- TRIGGERS para updatedAt automático
 -- ============================================
 CREATE OR REPLACE FUNCTION "updateUpdatedAtColumn"()
@@ -183,6 +200,9 @@ CREATE TRIGGER "update_Budgets_updatedAt" BEFORE UPDATE ON "Budgets"
   FOR EACH ROW EXECUTE FUNCTION "updateUpdatedAtColumn"();
 
 CREATE TRIGGER "update_GeneralConditions_updatedAt" BEFORE UPDATE ON "GeneralConditions"
+  FOR EACH ROW EXECUTE FUNCTION "updateUpdatedAtColumn"();
+
+CREATE TRIGGER "update_BudgetCountertops_updatedAt" BEFORE UPDATE ON "BudgetCountertops"
   FOR EACH ROW EXECUTE FUNCTION "updateUpdatedAtColumn"();
 
 -- ============================================

@@ -13,6 +13,7 @@ export interface SummaryLine {
 export interface BudgetSummary {
   totalBlocks: number;
   totalMaterials: number;
+  totalCountertop?: number;
   subtotal: number;
   vat: number;
   vatPercentage: number;

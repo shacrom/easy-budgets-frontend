@@ -20,6 +20,7 @@ export class BudgetSummaryComponent {
   // Inputs: totals from each section
   totalBlocks = input<number>(0);
   totalMaterials = input<number>(0);
+  totalCountertop = input<number>(0);
 
   // Inputs: data arrays to show details
   blocks = input<BudgetTextBlock[]>([]);
@@ -40,6 +41,7 @@ export class BudgetSummaryComponent {
       this.summaryChanged.emit({
         totalBlocks: this.totalBlocks(),
         totalMaterials: this.totalMaterials(),
+        totalCountertop: this.totalCountertop(),
         subtotal: this.subtotal(),
         vat: this.vat(),
         vatPercentage: this.vatPercentage(),
@@ -62,9 +64,13 @@ export class BudgetSummaryComponent {
   protected readonly materialsExpanded = signal<boolean>(true);
   protected readonly hasMaterialTables = computed(() => this.materialTables().length > 0);
 
-  // Derived calculations
+  // Computed values
   protected readonly subtotal = computed(() => {
-    return this.totalBlocks() + this.totalMaterials();
+    const blocks = this.totalBlocks();
+    const materials = this.totalMaterials();
+    const countertop = this.totalCountertop();
+    const additional = this.additionalLines().reduce((sum, line) => sum + line.amount, 0);
+    return blocks + materials + countertop + additional;
   });
 
   protected readonly totalAdditionalLines = computed(() => {
