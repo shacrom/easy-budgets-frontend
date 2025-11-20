@@ -389,7 +389,7 @@ export class PdfExportService {
         }
 
         stack.push({
-          text: `Subtotal del bloque: ${this.formatCurrency(block.subtotal)}`,
+          text: `Subtotal del mobiliario ${this.formatCurrency(block.subtotal)}`,
           alignment: 'right',
           bold: true,
           color: this.accentColor,
