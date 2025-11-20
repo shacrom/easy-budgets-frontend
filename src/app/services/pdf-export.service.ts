@@ -344,6 +344,8 @@ export class PdfExportService {
       return [];
     }
 
+    const totalMobiliario = blocks.reduce((sum, block) => sum + (block.subtotal || 0), 0);
+
     return [
       { text: 'MOBILIARIO', style: 'sectionHeader' },
       ...blocks.map(block => {
@@ -401,7 +403,16 @@ export class PdfExportService {
           margin: [0, 0, 0, 8] as [number, number, number, number],
           stack
         };
-      })
+      }),
+      {
+        text: `TOTAL MOBILIARIO: ${this.formatCurrency(totalMobiliario)}`,
+        alignment: 'right',
+        bold: true,
+        fontSize: 11,
+        color: this.accentColor,
+        margin: [0, 10, 0, 20] as [number, number, number, number],
+        decoration: 'underline'
+      }
     ];
   }
 
