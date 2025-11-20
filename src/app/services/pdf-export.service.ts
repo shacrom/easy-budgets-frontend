@@ -497,13 +497,23 @@ export class PdfExportService {
       return null;
     }
 
-    const rows: TableCell[][] = [
-      ['Total bloques', this.formatCurrency(summary.totalBlocks)],
-      ['Total materiales', this.formatCurrency(summary.totalMaterials)],
-      ['Subtotal', this.formatCurrency(summary.subtotal)],
-      [`IVA (${summary.vatPercentage}%)`, this.formatCurrency(summary.vat)],
-      ['Total general', this.formatCurrency(summary.grandTotal)]
-    ];
+    const rows: TableCell[][] = [];
+
+    if (summary.totalBlocks > 0) {
+      rows.push(['Total bloques', this.formatCurrency(summary.totalBlocks)]);
+    }
+
+    if (summary.totalMaterials > 0) {
+      rows.push(['Total materiales', this.formatCurrency(summary.totalMaterials)]);
+    }
+
+    if (summary.totalCountertop && summary.totalCountertop > 0) {
+      rows.push(['Total encimera', this.formatCurrency(summary.totalCountertop)]);
+    }
+
+    rows.push(['Subtotal', this.formatCurrency(summary.subtotal)]);
+    rows.push([`IVA (${summary.vatPercentage}%)`, this.formatCurrency(summary.vat)]);
+    rows.push(['Total general', this.formatCurrency(summary.grandTotal)]);
 
     if (summary.additionalLines?.length) {
       for (const line of summary.additionalLines) {
