@@ -31,6 +31,7 @@ export interface BudgetPdfPayload {
 
 @Injectable({ providedIn: 'root' })
 export class PdfExportService {
+  private readonly accentColor = '#7a4d32';
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR'
@@ -77,7 +78,6 @@ export class PdfExportService {
   private async buildDocumentDefinition(payload: BudgetPdfPayload): Promise<TDocumentDefinitions> {
     const content: Content[] = [
       ...this.compactContent([
-        this.buildCustomerSection(payload.customer),
         ...this.buildTextBlocksSection(payload.blocks),
         ...this.buildMaterialsSection(payload.materialTables, payload.materials),
         this.buildSummarySection(payload.summary),
@@ -87,7 +87,7 @@ export class PdfExportService {
 
     return {
       pageSize: 'A4',
-      pageMargins: [40, 100, 40, 80],
+      pageMargins: [40, 130, 40, 80],
       header: (currentPage, pageCount) => this.buildHeader(payload, currentPage, pageCount),
       footer: (currentPage, pageCount) => this.buildFooter(payload, currentPage, pageCount),
       content,
@@ -99,18 +99,21 @@ export class PdfExportService {
         title: {
           fontSize: 20,
           bold: true,
-          color: '#111827'
+          color: this.accentColor,
+          decoration: 'underline'
         },
         sectionHeader: {
           fontSize: 12,
           bold: true,
-          color: '#0f172a',
-          margin: [0, 12, 0, 8] as [number, number, number, number]
+          color: this.accentColor,
+          margin: [0, 12, 0, 8] as [number, number, number, number],
+          decoration: 'underline'
         },
         blockHeading: {
           fontSize: 11,
           bold: true,
-          color: '#111827'
+          color: this.accentColor,
+          decoration: 'underline'
         },
         box: {
           margin: [0, 0, 0, 12] as [number, number, number, number]
@@ -120,36 +123,112 @@ export class PdfExportService {
         },
         tableHeader: {
           bold: true,
-          color: '#111827'
+          color: this.accentColor
         }
       }
     };
   }
 
   private buildHeader(payload: BudgetPdfPayload, currentPage: number, pageCount: number): Content {
-    const title = payload.metadata?.title ?? 'Presupuesto';
-    const budgetNumber = payload.metadata?.budgetNumber ?? payload.metadata?.id ?? '';
+    const budgetNumber = payload.metadata?.budgetNumber ?? payload.metadata?.id ?? '---';
+    const title = (payload.metadata?.title ?? 'PRESUPUESTO').toUpperCase();
+    const dateStr = this.formatDateLong(payload.generatedAt);
+    const customer = payload.customer;
 
     return {
-  margin: [40, 20, 40, 0] as [number, number, number, number],
-      columns: [
+      margin: [40, 20, 40, 0] as [number, number, number, number],
+      stack: [
+        // Row 1
         {
-          width: '*',
-          stack: this.compactContent([
-            { text: title, style: 'title', margin: [0, 0, 0, 2] as [number, number, number, number] },
-            budgetNumber ? { text: `Referencia: ${budgetNumber}`, style: 'muted' } : null
-          ])
+          columns: [
+            { text: `${title} Nº ${budgetNumber}`, bold: true, alignment: 'left', fontSize: 10 },
+            { text: `Valencia a ${dateStr}`, alignment: 'center', fontSize: 10 },
+            { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 10 }
+          ],
+          margin: [0, 0, 0, 5] as [number, number, number, number]
         },
+        // Solid Line
         {
-          alignment: 'right',
-          stack: [
-            { text: 'Entrecuines Dos S.L.', bold: true },
-            { text: 'www.entrecuines.com' },
-            { text: 'info@entrecuines.com' },
-            { text: `Página ${currentPage} de ${pageCount}`, style: 'muted', margin: [0, 4, 0, 0] as [number, number, number, number] }
-          ]
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1 }],
+          margin: [0, 0, 0, 5] as [number, number, number, number]
+        },
+        // Row 2: Name | DNI
+        {
+          columns: [
+            {
+              width: '*',
+              text: [
+                { text: 'Nombre.  ', bold: false },
+                { text: (customer?.name ?? '').toUpperCase() }
+              ]
+            },
+            {
+              width: 'auto',
+              text: [
+                { text: 'D.N.I.:  ', bold: false },
+                { text: customer?.taxId ?? '' }
+              ]
+            }
+          ],
+          margin: [0, 0, 0, 2] as [number, number, number, number]
+        },
+        // Dotted Line
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, dash: { length: 2, space: 2 } }],
+          margin: [0, 2, 0, 2] as [number, number, number, number]
+        },
+        // Row 3: Address | City
+        {
+          columns: [
+            {
+              width: '*',
+              text: [
+                { text: 'Dirección.  ', bold: false },
+                { text: customer?.address ?? '' }
+              ]
+            },
+            {
+              width: 'auto',
+              text: (customer?.city ?? '').toUpperCase()
+            }
+          ],
+          margin: [0, 0, 0, 2] as [number, number, number, number]
+        },
+        // Dotted Line
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, dash: { length: 2, space: 2 } }],
+          margin: [0, 2, 0, 2] as [number, number, number, number]
+        },
+        // Row 4: Phone | Email
+        {
+          columns: [
+            {
+              width: '*',
+              text: [
+                { text: 'Tl. Contacto  ', bold: false },
+                { text: customer?.phone ?? '' }
+              ]
+            },
+            {
+              width: 'auto',
+              text: [
+                { text: 'E-mail:  ', bold: false },
+                { text: customer?.email ?? '' }
+              ]
+            }
+          ],
+          margin: [0, 0, 0, 2] as [number, number, number, number]
+        },
+        // Solid Line
+        {
+          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1 }],
+          margin: [0, 2, 0, 0] as [number, number, number, number]
         }
-      ]
+      ],
+      style: {
+        fontSize: 10,
+        color: '#1f2933'
+      }
     };
   }
 
@@ -235,6 +314,7 @@ export class PdfExportService {
           text: `Subtotal del bloque: ${this.formatCurrency(block.subtotal)}`,
           alignment: 'right',
           bold: true,
+          color: this.accentColor,
           margin: [0, 8, 0, 0] as [number, number, number, number]
         });
 
@@ -264,6 +344,7 @@ export class PdfExportService {
               text: `Total del grupo: ${this.formatCurrency(total)}`,
               alignment: 'right',
               bold: true,
+              color: this.accentColor,
               margin: [0, 6, 0, 0] as [number, number, number, number]
             }
           ]
@@ -359,7 +440,7 @@ export class PdfExportService {
         {
           ol: conditions.map(condition => ({
             stack: this.compactContent([
-              condition.title ? { text: condition.title, bold: true, margin: [0, 0, 0, 2] as [number, number, number, number] } : null,
+              condition.title ? { text: condition.title, bold: true, margin: [0, 0, 0, 2] as [number, number, number, number], color: this.accentColor } : null,
               { text: condition.text }
             ])
           }))
@@ -384,6 +465,15 @@ export class PdfExportService {
     return new Date(value).toLocaleDateString('es-ES');
   }
 
+  private formatDateLong(value?: string | null): string {
+    const date = value ? new Date(value) : new Date();
+    return date.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
   private stripedLayout(): TableLayout {
     return {
       fillColor: (rowIndex: number) => (rowIndex > 0 && rowIndex % 2 === 0 ? '#f9fafb' : null)
@@ -393,4 +483,6 @@ export class PdfExportService {
   private compactContent<T extends Content>(values: Array<T | null | undefined>): T[] {
     return values.filter((value): value is T => value !== null && value !== undefined);
   }
+
+
 }
