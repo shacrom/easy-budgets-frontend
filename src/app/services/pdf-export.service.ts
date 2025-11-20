@@ -296,20 +296,28 @@ export class PdfExportService {
     }
 
     return [
-      { text: 'Detalles del proyecto', style: 'sectionHeader' },
+      { text: 'MOBILIARIO', style: 'sectionHeader' },
       ...blocks.map(block => {
         const stack: Content[] = [];
 
         stack.push({
           text: block.heading,
           style: 'blockHeading',
-          margin: [0, 0, 0, 4] as [number, number, number, number]
+          margin: [0, 0, 0, 8] as [number, number, number, number]
         });
 
         for (const section of block.descriptions ?? []) {
+          if (section.title) {
+            stack.push({
+              text: section.title,
+              bold: true,
+              margin: [0, 4, 0, 2] as [number, number, number, number]
+            });
+          }
+
           stack.push({
-            text: `${section.title ? `${section.title}: ` : ''}${section.text}`,
-            margin: [0, 2, 0, 0] as [number, number, number, number]
+            text: section.text,
+            margin: [0, 0, 0, 4] as [number, number, number, number]
           });
         }
 
