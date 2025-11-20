@@ -538,7 +538,7 @@ export class PdfExportService {
     const rows: TableCell[][] = [];
 
     if (summary.totalBlocks > 0) {
-      rows.push(['Total bloques', this.formatCurrency(summary.totalBlocks)]);
+      rows.push(['Total mobiliario', this.formatCurrency(summary.totalBlocks)]);
     }
 
     if (summary.totalMaterials > 0) {
