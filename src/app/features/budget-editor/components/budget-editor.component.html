@@ -122,11 +122,13 @@
       </section>
 
       <!-- Section 4: General Conditions -->
-      <section class="section-divider">
-        <app-general-conditions
-          (titleChanged)="onConditionsTitleChanged($event)"
-          (conditionsChanged)="onConditionsChanged($event)"></app-general-conditions>
-      </section>
+      @if (showConditions()) {
+        <section class="section-divider">
+          <app-general-conditions
+            (titleChanged)="onConditionsTitleChanged($event)"
+            (conditionsChanged)="onConditionsChanged($event)"></app-general-conditions>
+        </section>
+      }
     }
   </main>
 </div>
