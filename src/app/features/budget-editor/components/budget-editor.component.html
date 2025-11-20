@@ -33,32 +33,80 @@
         </app-customer-selector>
       </section>
 
-      <!-- Section 1: Text Blocks -->
-      <section class="section-divider">
-        <app-budget-text-blocks
-          [budgetId]="currentBudgetId()"
-          (totalChanged)="onTotalBlocksChanged($event)"
-          (blocksChanged)="onBlocksChanged($event)">
-        </app-budget-text-blocks>
+      <!-- Configuration Toolbar -->
+      <section class="config-toolbar mb-6 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+        <h3 class="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wide">Secciones visibles</h3>
+        <div class="flex flex-wrap gap-3">
+          <button
+            type="button"
+            class="toggle-btn"
+            [class.active]="showTextBlocks()"
+            (click)="toggleSection('textBlocks')">
+            <span class="material-symbols-rounded">layers</span>
+            <span>Bloques de texto</span>
+          </button>
+
+          <button
+            type="button"
+            class="toggle-btn"
+            [class.active]="showMaterials()"
+            (click)="toggleSection('materials')">
+            <span class="material-symbols-rounded">table_chart</span>
+            <span>Materiales</span>
+          </button>
+
+          <button
+            type="button"
+            class="toggle-btn"
+            [class.active]="showCountertop()"
+            (click)="toggleSection('countertop')">
+            <span class="material-symbols-rounded">countertops</span>
+            <span>Encimera</span>
+          </button>
+
+          <button
+            type="button"
+            class="toggle-btn"
+            [class.active]="showConditions()"
+            (click)="toggleSection('conditions')">
+            <span class="material-symbols-rounded">gavel</span>
+            <span>Condiciones</span>
+          </button>
+        </div>
       </section>
+
+      <!-- Section 1: Text Blocks -->
+      @if (showTextBlocks()) {
+        <section class="section-divider">
+          <app-budget-text-blocks
+            [budgetId]="currentBudgetId()"
+            (totalChanged)="onTotalBlocksChanged($event)"
+            (blocksChanged)="onBlocksChanged($event)">
+          </app-budget-text-blocks>
+        </section>
+      }
 
       <!-- Section 2: Materials Table -->
-      <section class="section-divider">
-        <app-materials-table
-          (totalChanged)="onTotalMaterialsChanged($event)"
-          (materialsChanged)="onMaterialsChanged($event)"
-          (tablesChanged)="onTablesChanged($event)">
-        </app-materials-table>
-      </section>
+      @if (showMaterials()) {
+        <section class="section-divider">
+          <app-materials-table
+            (totalChanged)="onTotalMaterialsChanged($event)"
+            (materialsChanged)="onMaterialsChanged($event)"
+            (tablesChanged)="onTablesChanged($event)">
+          </app-materials-table>
+        </section>
+      }
 
       <!-- Section 2.5: Countertop -->
-      <section class="section-divider">
-        <app-countertop-editor
-          [budgetId]="currentBudgetId()"
-          (totalChanged)="onTotalCountertopChanged($event)"
-          (countertopChanged)="onCountertopChanged($event)">
-        </app-countertop-editor>
-      </section>
+      @if (showCountertop()) {
+        <section class="section-divider">
+          <app-countertop-editor
+            [budgetId]="currentBudgetId()"
+            (totalChanged)="onTotalCountertopChanged($event)"
+            (countertopChanged)="onCountertopChanged($event)">
+          </app-countertop-editor>
+        </section>
+      }
 
       <!-- Section 3: Budget Summary -->
       <section class="section-divider">

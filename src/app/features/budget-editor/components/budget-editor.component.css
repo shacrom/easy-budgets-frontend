@@ -39,3 +39,15 @@
 .section-divider {
   @apply mb-16;
 }
+
+.toggle-btn {
+  @apply flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-gray-50 text-gray-600 text-sm font-medium transition-all duration-200 hover:bg-gray-100 hover:border-gray-300;
+}
+
+.toggle-btn.active {
+  @apply bg-amber-50 border-amber-200 text-amber-900 shadow-sm;
+}
+
+.toggle-btn .material-symbols-rounded {
+  @apply text-lg;
+}

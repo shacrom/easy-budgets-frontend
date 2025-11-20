@@ -60,6 +60,13 @@ export class BudgetEditorComponent {
   protected readonly conditionsList = signal<Condition[]>([]);
   protected readonly pdfGenerating = signal<boolean>(false);
   protected readonly countertopData = signal<Countertop | null>(null);
+
+  // Visibility signals
+  protected readonly showTextBlocks = signal<boolean>(true);
+  protected readonly showMaterials = signal<boolean>(true);
+  protected readonly showCountertop = signal<boolean>(false);
+  protected readonly showConditions = signal<boolean>(true);
+
   protected readonly selectedCustomer = computed(() => {
     const id = this.selectedCustomerId();
     if (!id) {
@@ -95,6 +102,11 @@ export class BudgetEditorComponent {
         validUntil: budget?.validUntil ?? null,
         createdAt: budget?.createdAt ?? null
       });
+
+      this.showTextBlocks.set(budget.showTextBlocks ?? true);
+      this.showMaterials.set(budget.showMaterials ?? true);
+      this.showCountertop.set(budget.showCountertop ?? false);
+      this.showConditions.set(budget.showConditions ?? true);
 
       const customerId = budget?.customer?.id ?? budget?.customerId ?? null;
       this.selectedCustomerId.set(customerId);
@@ -186,6 +198,24 @@ export class BudgetEditorComponent {
 
   protected onCountertopChanged(countertop: Countertop | null) {
     this.countertopData.set(countertop);
+    // If we receive data (even if empty but loaded), we might want to show it.
+    // But specifically, if it has content, we definitely show it.
+    // If it's null (deleted), we hide it.
+    if (countertop === null) {
+      this.showCountertop.set(false);
+    } else if (countertop.model || countertop.price > 0 || countertop.imageUrl) {
+      this.showCountertop.set(true);
+    }
+  }
+
+  protected onCountertopDeleted() {
+    this.showCountertop.set(false);
+    this.countertopData.set(null);
+    this.totalCountertop.set(0);
+  }
+
+  toggleCountertop() {
+    this.showCountertop.update(v => !v);
   }
 
   /**
@@ -228,13 +258,13 @@ export class BudgetEditorComponent {
     const payload: BudgetPdfPayload = {
       metadata: this.budgetMeta(),
       customer: this.selectedCustomer(),
-      blocks: this.blocks(),
-      materials: this.materials(),
-      materialTables: this.materialTables(),
-      countertop: this.countertopData(),
+      blocks: this.showTextBlocks() ? this.blocks() : [],
+      materials: this.showMaterials() ? this.materials() : [],
+      materialTables: this.showMaterials() ? this.materialTables() : [],
+      countertop: this.showCountertop() ? this.countertopData() : null,
       summary: this.summarySnapshot(),
       conditionsTitle: this.conditionsTitle(),
-      conditions: this.conditionsList(),
+      conditions: this.showConditions() ? this.conditionsList() : [],
       generatedAt: new Date().toISOString()
     };
 
@@ -244,6 +274,41 @@ export class BudgetEditorComponent {
       console.error('Error al generar el PDF del presupuesto:', error);
     } finally {
       this.pdfGenerating.set(false);
+    }
+  }
+
+  async toggleSection(section: 'textBlocks' | 'materials' | 'countertop' | 'conditions') {
+    const id = this.currentBudgetId();
+    if (!id) return;
+
+    let updates: any = {};
+    switch (section) {
+      case 'textBlocks':
+        const newTextBlocks = !this.showTextBlocks();
+        this.showTextBlocks.set(newTextBlocks);
+        updates = { showTextBlocks: newTextBlocks };
+        break;
+      case 'materials':
+        const newMaterials = !this.showMaterials();
+        this.showMaterials.set(newMaterials);
+        updates = { showMaterials: newMaterials };
+        break;
+      case 'countertop':
+        const newCountertop = !this.showCountertop();
+        this.showCountertop.set(newCountertop);
+        updates = { showCountertop: newCountertop };
+        break;
+      case 'conditions':
+        const newConditions = !this.showConditions();
+        this.showConditions.set(newConditions);
+        updates = { showConditions: newConditions };
+        break;
+    }
+
+    try {
+      await this.supabase.updateBudget(id, updates);
+    } catch (error) {
+      console.error('Error updating section visibility:', error);
     }
   }
 }

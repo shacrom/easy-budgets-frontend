@@ -674,4 +674,13 @@ export class SupabaseService {
     if (error) throw error;
     return data;
   }
+
+  async deleteCountertop(budgetId: string) {
+    const { error } = await this.supabase
+      .from('BudgetCountertops')
+      .delete()
+      .eq('budgetId', budgetId);
+
+    if (error) throw error;
+  }
 }

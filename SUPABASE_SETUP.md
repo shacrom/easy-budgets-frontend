@@ -85,6 +85,10 @@ CREATE TABLE "Budgets" (
   "validUntil" DATE,
   "notes" TEXT,
   "pdfUrl" TEXT,
+  "showTextBlocks" BOOLEAN DEFAULT true,
+  "showMaterials" BOOLEAN DEFAULT true,
+  "showCountertop" BOOLEAN DEFAULT false,
+  "showConditions" BOOLEAN DEFAULT true,
   "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

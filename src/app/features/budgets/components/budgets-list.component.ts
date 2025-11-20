@@ -71,7 +71,11 @@ export class BudgetsListComponent implements OnInit {
         taxPercentage: 21,
         taxAmount: 0,
         total: 0,
-        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        showTextBlocks: true,
+        showMaterials: true,
+        showCountertop: false,
+        showConditions: true
       });
 
       await this.router.navigate(['/presupuestos', newBudget.id]);

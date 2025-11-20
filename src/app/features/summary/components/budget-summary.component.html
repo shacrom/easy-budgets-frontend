@@ -17,96 +17,117 @@
   <div class="summary-card">
     <div class="accordion">
       <!-- Blocks accordion -->
-      <div class="accordion-item">
-        <button type="button" class="accordion-trigger" (click)="toggleBlocksExpanded()">
-          <div class="trigger-label">
-            <span class="material-symbols-rounded" aria-hidden="true">layers</span>
-            <div>
-              <span class="trigger-title">Bloques de texto</span>
-              <small>{{ blocks().length === 1 ? '1 bloque' : blocks().length + ' bloques' }}</small>
-            </div>
-          </div>
-          <div class="trigger-value">
-            <span>{{ totalBlocks() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-            <span class="material-symbols-rounded" aria-hidden="true">
-              {{ blocksExpanded() ? 'expand_less' : 'expand_more' }}
-            </span>
-          </div>
-        </button>
-        @if (blocksExpanded() && blocks().length > 0) {
-          <div class="accordion-panel">
-            @for (block of blocks(); track block.id) {
-              <div class="detail-row">
-                <div>
-                  <p class="detail-title">{{ block.heading || 'Bloque sin título' }}</p>
-                  <p class="detail-subtitle">
-                    {{ (block.descriptions?.length ?? 0) > 0 ? (block.descriptions?.length ?? 0) + ' secciones' : 'Sin secciones adicionales' }}
-                  </p>
-                </div>
-                <span class="detail-value">
-                  {{ block.subtotal | currency:'EUR':'symbol':'1.2-2':'es' }}
-                </span>
+      @if (totalBlocks() > 0) {
+        <div class="accordion-item">
+          <button type="button" class="accordion-trigger" (click)="toggleBlocksExpanded()">
+            <div class="trigger-label">
+              <span class="material-symbols-rounded" aria-hidden="true">layers</span>
+              <div>
+                <span class="trigger-title">Bloques de texto</span>
+                <small>{{ blocks().length === 1 ? '1 bloque' : blocks().length + ' bloques' }}</small>
               </div>
-            }
-          </div>
-        }
-      </div>
-
-      <!-- Materials accordion -->
-      <div class="accordion-item">
-        <button type="button" class="accordion-trigger" (click)="toggleMaterialsExpanded()">
-          <div class="trigger-label">
-            <span class="material-symbols-rounded" aria-hidden="true">table_chart</span>
-            <div>
-              <span class="trigger-title">Tablas de materiales</span>
-              <small>
-                @if (hasMaterialTables()) {
-                  {{ materialTables().length === 1 ? '1 tabla' : materialTables().length + ' tablas' }}
-                } @else {
-                  {{ materials().length === 1 ? '1 partida' : materials().length + ' partidas' }}
-                }
-              </small>
             </div>
-          </div>
-          <div class="trigger-value">
-            <span>{{ totalMaterials() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-            <span class="material-symbols-rounded" aria-hidden="true">
-              {{ materialsExpanded() ? 'expand_less' : 'expand_more' }}
-            </span>
-          </div>
-        </button>
-        @if (materialsExpanded() && (hasMaterialTables() || materials().length > 0)) {
-          <div class="accordion-panel">
-            @if (hasMaterialTables()) {
-              @for (table of materialTables(); track table.id) {
+            <div class="trigger-value">
+              <span>{{ totalBlocks() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              <span class="material-symbols-rounded" aria-hidden="true">
+                {{ blocksExpanded() ? 'expand_less' : 'expand_more' }}
+              </span>
+            </div>
+          </button>
+          @if (blocksExpanded() && blocks().length > 0) {
+            <div class="accordion-panel">
+              @for (block of blocks(); track block.id) {
                 <div class="detail-row">
                   <div>
-                    <p class="detail-title">{{ table.title || 'Tabla sin título' }}</p>
-                    <p class="detail-subtitle">{{ tableRowsLabel(table) }}</p>
-                  </div>
-                  <span class="detail-value">
-                    {{ tableSubtotal(table) | currency:'EUR':'symbol':'1.2-2':'es' }}
-                  </span>
-                </div>
-              }
-            } @else {
-              @for (material of materials(); track material.id) {
-                <div class="detail-row">
-                  <div>
-                    <p class="detail-title">{{ material.description || 'Material sin descripción' }}</p>
+                    <p class="detail-title">{{ block.heading || 'Bloque sin título' }}</p>
                     <p class="detail-subtitle">
-                      {{ material.manufacturer || 'Fabricante no definido' }} | Ref: {{ material.reference || '—' }}
+                      {{ (block.descriptions?.length ?? 0) > 0 ? (block.descriptions?.length ?? 0) + ' secciones' : 'Sin secciones adicionales' }}
                     </p>
                   </div>
                   <span class="detail-value">
-                    {{ material.totalPrice | currency:'EUR':'symbol':'1.2-2':'es' }}
+                    {{ block.subtotal | currency:'EUR':'symbol':'1.2-2':'es' }}
                   </span>
                 </div>
               }
-            }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Materials accordion -->
+      @if (totalMaterials() > 0) {
+        <div class="accordion-item">
+          <button type="button" class="accordion-trigger" (click)="toggleMaterialsExpanded()">
+            <div class="trigger-label">
+              <span class="material-symbols-rounded" aria-hidden="true">table_chart</span>
+              <div>
+                <span class="trigger-title">Tablas de materiales</span>
+                <small>
+                  @if (hasMaterialTables()) {
+                    {{ materialTables().length === 1 ? '1 tabla' : materialTables().length + ' tablas' }}
+                  } @else {
+                    {{ materials().length === 1 ? '1 partida' : materials().length + ' partidas' }}
+                  }
+                </small>
+              </div>
+            </div>
+            <div class="trigger-value">
+              <span>{{ totalMaterials() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              <span class="material-symbols-rounded" aria-hidden="true">
+                {{ materialsExpanded() ? 'expand_less' : 'expand_more' }}
+              </span>
+            </div>
+          </button>
+          @if (materialsExpanded() && (hasMaterialTables() || materials().length > 0)) {
+            <div class="accordion-panel">
+              @if (hasMaterialTables()) {
+                @for (table of materialTables(); track table.id) {
+                  <div class="detail-row">
+                    <div>
+                      <p class="detail-title">{{ table.title || 'Tabla sin título' }}</p>
+                      <p class="detail-subtitle">{{ tableRowsLabel(table) }}</p>
+                    </div>
+                    <span class="detail-value">
+                      {{ tableSubtotal(table) | currency:'EUR':'symbol':'1.2-2':'es' }}
+                    </span>
+                  </div>
+                }
+              } @else {
+                @for (material of materials(); track material.id) {
+                  <div class="detail-row">
+                    <div>
+                      <p class="detail-title">{{ material.description || 'Material sin descripción' }}</p>
+                      <p class="detail-subtitle">
+                        {{ material.manufacturer || 'Fabricante no definido' }} | Ref: {{ material.reference || '—' }}
+                      </p>
+                    </div>
+                    <span class="detail-value">
+                      {{ material.totalPrice | currency:'EUR':'symbol':'1.2-2':'es' }}
+                    </span>
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Countertop section -->
+      @if (totalCountertop() > 0) {
+        <div class="accordion-item">
+          <div class="accordion-trigger" style="cursor: default;">
+            <div class="trigger-label">
+              <span class="material-symbols-rounded" aria-hidden="true">countertops</span>
+              <div>
+                <span class="trigger-title">Encimera</span>
+              </div>
+            </div>
+            <div class="trigger-value">
+              <span>{{ totalCountertop() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+            </div>
           </div>
-        }
-      </div>
+        </div>
+      }
 
       <div class="summary-row subtotal">
         <span>Subtotal</span>
