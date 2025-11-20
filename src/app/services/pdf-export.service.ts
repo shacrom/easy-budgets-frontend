@@ -87,9 +87,20 @@ export class PdfExportService {
       }
     }
 
+    // Pre-process blocks images
+    const blocks = await Promise.all(payload.blocks.map(async block => {
+      if (block.imageUrl) {
+        const base64Image = await this.convertImageToBase64(block.imageUrl);
+        if (base64Image) {
+          return { ...block, imageUrl: base64Image };
+        }
+      }
+      return block;
+    }));
+
     const content: Content[] = [
       ...this.compactContent([
-        ...this.buildTextBlocksSection(payload.blocks),
+        ...this.buildTextBlocksSection(blocks),
         ...this.buildMaterialsSection(payload.materialTables, payload.materials),
         this.buildCountertopSection(countertop),
         this.buildSummarySection(payload.summary),
@@ -318,6 +329,15 @@ export class PdfExportService {
           stack.push({
             text: section.text,
             margin: [0, 0, 0, 4] as [number, number, number, number]
+          });
+        }
+
+        if (block.imageUrl) {
+          stack.push({
+            image: block.imageUrl,
+            width: 200,
+            alignment: 'center',
+            margin: [0, 10, 0, 10] as [number, number, number, number]
           });
         }
 
