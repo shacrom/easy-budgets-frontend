@@ -60,6 +60,44 @@ export class PdfExportService {
     });
   }
 
+  async openBudgetPdf(payload: BudgetPdfPayload): Promise<void> {
+    if (typeof window === 'undefined') {
+      console.warn('La generación de PDF solo está disponible en el navegador.');
+      return;
+    }
+
+    this.ensureFontsRegistered();
+
+    const definition = await this.buildDocumentDefinition(payload);
+
+    try {
+      pdfMake.createPdf(definition).open();
+    } catch (error) {
+      console.error('Error opening PDF:', error);
+    }
+  }
+
+  async getBudgetPdfBlobUrl(payload: BudgetPdfPayload): Promise<string> {
+    if (typeof window === 'undefined') {
+      return '';
+    }
+
+    this.ensureFontsRegistered();
+    const definition = await this.buildDocumentDefinition(payload);
+
+    return new Promise((resolve, reject) => {
+      try {
+        const pdfDocGenerator = pdfMake.createPdf(definition);
+        pdfDocGenerator.getBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          resolve(url);
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   private ensureFontsRegistered(): void {
     if (this.fontsRegistered) {
       return;

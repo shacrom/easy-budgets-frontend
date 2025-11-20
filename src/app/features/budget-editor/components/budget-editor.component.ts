@@ -1,4 +1,5 @@
-import { Component, signal, inject, effect, computed } from '@angular/core';
+import { Component, signal, inject, effect, computed, untracked } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { BudgetTextBlocksComponent } from '../../budgets/components/budget-text-blocks.component';
 import { MaterialsTableComponent } from '../../materials/components/materials-table.component';
 import { BudgetSummaryComponent } from '../../summary/components/budget-summary.component';
@@ -32,6 +33,7 @@ import { Countertop } from '../../../models/countertop.model';
 export class BudgetEditorComponent {
   private readonly supabase = inject(SupabaseService);
   private readonly pdfExport = inject(PdfExportService);
+  private readonly sanitizer = inject(DomSanitizer);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly routeParams = toSignal(this.route.paramMap);
@@ -67,6 +69,11 @@ export class BudgetEditorComponent {
   protected readonly showCountertop = signal<boolean>(false);
   protected readonly showConditions = signal<boolean>(true);
 
+  // PDF Preview
+  protected readonly showPdfPreview = signal<boolean>(false);
+  protected readonly pdfPreviewUrl = signal<SafeResourceUrl | null>(null);
+  protected readonly isPreviewLoading = signal<boolean>(false);
+
   protected readonly selectedCustomer = computed(() => {
     const id = this.selectedCustomerId();
     if (!id) {
@@ -86,6 +93,65 @@ export class BudgetEditorComponent {
 
       this.loadBudget(id);
     });
+
+    // Effect for PDF Preview
+    effect(() => {
+      if (this.showPdfPreview() && this.isInitialized()) {
+        // Register dependencies to trigger re-run
+        this.blocks();
+        this.materials();
+        this.materialTables();
+        this.countertopData();
+        this.summarySnapshot();
+        this.conditionsList();
+        this.selectedCustomer();
+        this.showTextBlocks();
+        this.showMaterials();
+        this.showCountertop();
+        this.showConditions();
+        this.budgetMeta();
+        this.conditionsTitle();
+
+        // Update preview
+        untracked(() => {
+          this.updatePdfPreview();
+        });
+      }
+    });
+  }
+
+  private buildPdfPayload(): BudgetPdfPayload {
+    return {
+      metadata: this.budgetMeta(),
+      customer: this.selectedCustomer(),
+      blocks: this.showTextBlocks() ? this.blocks() : [],
+      materials: this.showMaterials() ? this.materials() : [],
+      materialTables: this.showMaterials() ? this.materialTables() : [],
+      countertop: this.showCountertop() ? this.countertopData() : null,
+      summary: this.summarySnapshot(),
+      conditionsTitle: this.conditionsTitle(),
+      conditions: this.showConditions() ? this.conditionsList() : [],
+      generatedAt: new Date().toISOString()
+    };
+  }
+
+  async updatePdfPreview() {
+    if (this.isPreviewLoading()) return;
+
+    this.isPreviewLoading.set(true);
+    try {
+      const payload = this.buildPdfPayload();
+      const url = await this.pdfExport.getBudgetPdfBlobUrl(payload);
+      this.pdfPreviewUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
+    } catch (error) {
+      console.error('Error updating PDF preview:', error);
+    } finally {
+      this.isPreviewLoading.set(false);
+    }
+  }
+
+  togglePdfPreview() {
+    this.showPdfPreview.update(v => !v);
   }
 
   private async loadBudget(id: string): Promise<void> {
@@ -255,23 +321,28 @@ export class BudgetEditorComponent {
 
     this.pdfGenerating.set(true);
 
-    const payload: BudgetPdfPayload = {
-      metadata: this.budgetMeta(),
-      customer: this.selectedCustomer(),
-      blocks: this.showTextBlocks() ? this.blocks() : [],
-      materials: this.showMaterials() ? this.materials() : [],
-      materialTables: this.showMaterials() ? this.materialTables() : [],
-      countertop: this.showCountertop() ? this.countertopData() : null,
-      summary: this.summarySnapshot(),
-      conditionsTitle: this.conditionsTitle(),
-      conditions: this.showConditions() ? this.conditionsList() : [],
-      generatedAt: new Date().toISOString()
-    };
-
     try {
+      const payload = this.buildPdfPayload();
       await this.pdfExport.generateBudgetPdf(payload);
     } catch (error) {
       console.error('Error al generar el PDF del presupuesto:', error);
+    } finally {
+      this.pdfGenerating.set(false);
+    }
+  }
+
+  protected async previewBudgetPdf(): Promise<void> {
+    if (!this.currentBudgetId() || this.pdfGenerating()) {
+      return;
+    }
+
+    this.pdfGenerating.set(true);
+
+    try {
+      const payload = this.buildPdfPayload();
+      await this.pdfExport.openBudgetPdf(payload);
+    } catch (error) {
+      console.error('Error al previsualizar el PDF del presupuesto:', error);
     } finally {
       this.pdfGenerating.set(false);
     }

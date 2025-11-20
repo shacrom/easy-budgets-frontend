@@ -19,6 +19,23 @@
   max-width: 36rem;
 }
 
+.header-actions {
+  @apply flex flex-col md:flex-row gap-4;
+}
+
+.preview-btn {
+  @apply inline-flex items-center gap-3 text-sm font-semibold tracking-wide uppercase px-6 py-4 rounded-full transition duration-200 border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-400;
+  letter-spacing: 0.15em;
+}
+
+.preview-btn:disabled {
+  @apply opacity-40 cursor-not-allowed shadow-none;
+}
+
+.preview-btn .material-symbols-rounded {
+  @apply text-xl;
+}
+
 .export-btn {
   @apply inline-flex items-center gap-3 text-sm font-semibold tracking-wide uppercase px-6 py-4 rounded-full transition duration-200 border border-gray-900 bg-gray-900 text-white shadow-lg;
   letter-spacing: 0.15em;
@@ -48,6 +65,72 @@
   @apply bg-amber-50 border-amber-200 text-amber-900 shadow-sm;
 }
 
-.toggle-btn .material-symbols-rounded {
-  @apply text-lg;
+/* Layout for Split View */
+.editor-layout {
+  @apply w-full transition-all duration-300;
+}
+
+.editor-layout.split-view {
+  @apply flex flex-col xl:flex-row gap-8 px-6 pb-8;
+}
+
+.editor-layout.split-view .app-main {
+  @apply w-full xl:w-1/2 max-w-none mx-0 px-0;
+}
+
+.preview-sidebar {
+  @apply w-full xl:w-1/2 hidden;
+}
+
+.editor-layout.split-view .preview-sidebar {
+  @apply block;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.preview-sticky {
+  @apply sticky top-6 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col;
+  height: calc(100vh - 3rem);
+}
+
+.preview-header {
+  @apply px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50;
+}
+
+.preview-header h3 {
+  @apply font-medium text-gray-700 uppercase tracking-wide text-sm;
+}
+
+.loading-badge {
+  @apply text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-100 animate-pulse;
+}
+
+.preview-frame-container {
+  @apply flex-1 bg-gray-100 relative;
+}
+
+.pdf-iframe {
+  @apply w-full h-full border-0;
+}
+
+.preview-placeholder {
+  @apply absolute inset-0 flex flex-col items-center justify-center text-gray-400 gap-3;
+}
+
+.preview-placeholder .spin {
+  @apply text-4xl animate-spin;
+}
+
+.preview-btn.active {
+  @apply bg-gray-100 border-gray-400 text-gray-900;
 }

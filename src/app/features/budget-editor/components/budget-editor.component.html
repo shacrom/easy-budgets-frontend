@@ -4,17 +4,29 @@
       <h1>Creador de Presupuestos</h1>
       <p>Genera un documento profesional con todos los apartados.</p>
     </div>
-    <button
-      type="button"
-      class="export-btn"
-      (click)="exportBudgetPdf()"
-      [disabled]="!isInitialized() || pdfGenerating()">
-      <span class="material-symbols-rounded" aria-hidden="true">picture_as_pdf</span>
-      <span>{{ pdfGenerating() ? 'Generando...' : 'Descargar PDF' }}</span>
-    </button>
+    <div class="header-actions">
+      <button
+        type="button"
+        class="preview-btn"
+        [class.active]="showPdfPreview()"
+        (click)="togglePdfPreview()"
+        [disabled]="!isInitialized()">
+        <span class="material-symbols-rounded" aria-hidden="true">visibility</span>
+        <span>{{ showPdfPreview() ? 'Ocultar vista previa' : 'Vista previa' }}</span>
+      </button>
+      <button
+        type="button"
+        class="export-btn"
+        (click)="exportBudgetPdf()"
+        [disabled]="!isInitialized() || pdfGenerating()">
+        <span class="material-symbols-rounded" aria-hidden="true">picture_as_pdf</span>
+        <span>{{ pdfGenerating() ? 'Generando...' : 'Descargar PDF' }}</span>
+      </button>
+    </div>
   </header>
 
-  <main class="app-main">
+  <div class="editor-layout" [class.split-view]="showPdfPreview()">
+    <main class="app-main">
     @if (!isInitialized()) {
       <div class="loading-container">
         <p class="text-gray-500 text-center">Inicializando presupuesto...</p>
@@ -130,5 +142,29 @@
         </section>
       }
     }
-  </main>
+    </main>
+
+    @if (showPdfPreview()) {
+      <aside class="preview-sidebar">
+        <div class="preview-sticky">
+          <div class="preview-header">
+            <h3>Vista previa del documento</h3>
+            @if (isPreviewLoading()) {
+              <span class="loading-badge">Actualizando...</span>
+            }
+          </div>
+          <div class="preview-frame-container">
+            @if (pdfPreviewUrl()) {
+              <iframe [src]="pdfPreviewUrl()" class="pdf-iframe" title="Vista previa del presupuesto"></iframe>
+            } @else {
+              <div class="preview-placeholder">
+                <span class="material-symbols-rounded spin">sync</span>
+                <p>Generando vista previa...</p>
+              </div>
+            }
+          </div>
+        </div>
+      </aside>
+    }
+  </div>
 </div>
