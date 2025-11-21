@@ -219,8 +219,7 @@ export class SupabaseService {
       `email.ilike.${pattern}`,
       `phone.ilike.${pattern}`,
       `city.ilike.${pattern}`,
-      `dni.ilike.${pattern}`,
-      `taxId.ilike.${pattern}`
+      `dni.ilike.${pattern}`
     ].join(',');
 
     const { data, error } = await this.supabase

@@ -6,7 +6,6 @@ export interface Customer {
   address?: string | null;
   city?: string | null;
   postalCode?: string | null;
-  taxId?: string | null;
   dni?: string | null;
   notes?: string | null;
   createdAt?: string | null;

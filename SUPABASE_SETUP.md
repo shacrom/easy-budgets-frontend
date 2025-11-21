@@ -59,7 +59,6 @@ CREATE TABLE "Customers" (
   "address" TEXT,
   "city" VARCHAR(100),
   "postalCode" VARCHAR(20),
-  "taxId" VARCHAR(50),
   "notes" TEXT,
   "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()

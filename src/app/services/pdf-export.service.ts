@@ -329,10 +329,10 @@ export class PdfExportService {
       return '';
     }
 
-    return customer.dni || customer.taxId || '';
+  return customer.dni || '';
   }
 
-  private buildCustomerSection(customer: Customer | null): Content | null {
+  /* private buildCustomerSection(customer: Customer | null): Content | null {
     if (!customer) {
       return null;
     }
@@ -344,7 +344,7 @@ export class PdfExportService {
       customer.address ? `Dirección: ${customer.address}` : null,
       customer.city ? `Ciudad: ${customer.city}` : null,
       customer.postalCode ? `Código Postal: ${customer.postalCode}` : null,
-      customer.taxId ? `CIF/NIF: ${customer.taxId}` : null
+  null
     ].filter(Boolean) as string[];
 
     return {
@@ -357,7 +357,7 @@ export class PdfExportService {
         }
       ]
     };
-  }
+  } */
 
   private buildTextBlocksSection(blocks: BudgetTextBlock[]): Content[] {
     if (!blocks?.length) {

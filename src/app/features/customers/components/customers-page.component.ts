@@ -35,8 +35,7 @@ export class CustomersPageComponent implements OnInit {
         customer.email,
         customer.phone,
         customer.city,
-        customer.dni,
-        customer.taxId
+        customer.dni
       ]
         .filter((value): value is string => !!value)
         .map(value => value.toLowerCase());
@@ -106,7 +105,6 @@ export class CustomersPageComponent implements OnInit {
       address: customer.address ?? '',
       city: customer.city ?? '',
       postalCode: customer.postalCode ?? '',
-      taxId: customer.taxId ?? '',
       dni: customer.dni ?? '',
       notes: customer.notes ?? ''
     });
@@ -191,7 +189,6 @@ export class CustomersPageComponent implements OnInit {
       address: '',
       city: '',
       postalCode: '',
-      taxId: '',
       dni: '',
       notes: ''
     };
