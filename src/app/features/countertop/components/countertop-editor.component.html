@@ -37,7 +37,7 @@
       </div>
       <div *ngIf="countertop().imageUrl" class="image-preview-container">
         <img [src]="countertop().imageUrl" alt="Encimera" class="preview-image">
-        <button (click)="updateImageUrl('')" class="remove-image-btn">Cambiar imagen</button>
+        <button type="button" (click)="clearImageUrl()" class="remove-image-btn">Cambiar imagen</button>
       </div>
     </div>
 

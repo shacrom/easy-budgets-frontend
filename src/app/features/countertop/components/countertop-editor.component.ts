@@ -94,4 +94,9 @@ export class CountertopEditorComponent {
   updateImageUrl(value: string) {
     this.countertop.update(c => ({ ...c, imageUrl: value }));
   }
+
+  clearImageUrl() {
+    this.countertop.update(c => ({ ...c, imageUrl: undefined }));
+    this.save();
+  }
 }
