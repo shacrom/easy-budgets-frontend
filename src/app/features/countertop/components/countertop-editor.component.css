@@ -48,6 +48,22 @@
   @apply px-3 py-2 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 transition-colors flex items-center justify-center cursor-pointer;
 }
 
+.upload-image-btn {
+  @apply px-4 py-2 bg-amber-900 text-white text-sm uppercase tracking-wide rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2;
+}
+
+.image-preview-actions {
+  @apply flex gap-3 items-center;
+}
+
+.upload-error {
+  @apply mt-2 text-sm text-red-600;
+}
+
+.sr-only {
+  @apply sr-only;
+}
+
 .image-preview-container {
   @apply flex flex-col items-center gap-2;
 }

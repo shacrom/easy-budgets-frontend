@@ -399,6 +399,33 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key-aqui
 
 **⚠️ IMPORTANTE**: Añade `.env` a tu `.gitignore` para no subir las credenciales.
 
+---
+
+## Gestión de imágenes con Supabase Storage
+
+Las secciones de "Mobiliario" y "Encimera" ahora pueden subir sus propias imágenes para evitar bloqueos CORS. Sigue estos pasos:
+
+1. **Crear bucket público**
+  - Entra en *Storage → Create bucket* y llama al bucket, por ejemplo, `budget-assets`.
+  - Marca la casilla *Public bucket* para que las URLs se puedan consumir directamente desde el navegador.
+
+2. **Configurar Angular**
+  - Añade el nombre del bucket en `src/environments/environment.ts` y `environment.prod.ts` mediante la clave `supabaseStorageBucket`.
+  - Si necesitas otro bucket o diferentes carpetas, solo cambia ese valor.
+
+3. **Uso dentro de la app**
+  - En la sección de encimeras y en cada bloque de texto verás un botón “Subir archivo”.
+  - Al seleccionar una imagen se subirá automáticamente a `Supabase Storage` en una ruta como `countertops/{budgetId}/…` o `text-blocks/{budgetId}/…`.
+  - Tras completarse la subida, el campo URL se actualiza con la ruta pública del bucket.
+
+4. **Migrar imágenes antiguas**
+  - Descarga las imágenes que estuvieras enlazando desde otros dominios.
+  - Súbelas al bucket desde la consola de Supabase (o con `supabase.storage.from('budget-assets').upload(...)`).
+  - Copia la URL pública que ofrece Supabase y reemplázala en el presupuesto correspondiente dentro de la aplicación.
+  - A partir de ese momento, la exportación a PDF y la vista previa funcionarán sin bloqueos CORS.
+
+> Consejo: si prefieres automatizar la migración, puedes exportar los registros con `imageUrl` desde Supabase, subir los ficheros usando la CLI y ejecutar un `UPDATE` para cambiar las rutas. Mientras las nuevas URLs apunten al mismo presupuesto, pdfMake funcionará sin cambios adicionales.
+
 ### Paso 3: Crear el Servicio de Supabase
 
 Crea `src/app/services/supabase.service.ts`:

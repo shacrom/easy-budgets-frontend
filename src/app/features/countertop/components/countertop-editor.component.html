@@ -27,6 +27,13 @@
     </div>
 
     <div class="image-section">
+      <input
+        #countertopFileInput
+        type="file"
+        class="sr-only"
+        accept="image/*"
+        (change)="onImageFileSelected($event)">
+
       <div class="image-placeholder" *ngIf="!countertop().imageUrl">
         <span>FOTO ENCIMERA</span>
         <div class="url-input-group">
@@ -42,11 +49,34 @@
             <span class="material-symbols-rounded">add_photo_alternate</span>
           </button>
         </div>
+        <button
+          type="button"
+          class="upload-image-btn mt-2"
+          (click)="countertopFileInput.click()"
+          [disabled]="isUploadingImage()">
+          <span class="material-symbols-rounded" aria-hidden="true">file_upload</span>
+          {{ isUploadingImage() ? 'Subiendo...' : 'Subir imagen desde archivo' }}
+        </button>
       </div>
+
       <div *ngIf="countertop().imageUrl" class="image-preview-container">
         <img [src]="countertop().imageUrl" alt="Encimera" class="preview-image">
-        <button type="button" (click)="clearImageUrl()" class="remove-image-btn">Cambiar imagen</button>
+        <div class="image-preview-actions">
+          <button
+            type="button"
+            class="upload-image-btn"
+            (click)="countertopFileInput.click()"
+            [disabled]="isUploadingImage()">
+            <span class="material-symbols-rounded" aria-hidden="true">file_upload</span>
+            {{ isUploadingImage() ? 'Subiendo...' : 'Cambiar imagen' }}
+          </button>
+          <button type="button" (click)="clearImageUrl()" class="remove-image-btn">Quitar imagen</button>
+        </div>
       </div>
+
+      @if (imageUploadError()) {
+        <p class="upload-error">{{ imageUploadError() }}</p>
+      }
     </div>
 
     <div class="price-section">

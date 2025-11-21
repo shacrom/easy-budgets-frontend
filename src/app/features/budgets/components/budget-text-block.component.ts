@@ -40,6 +40,8 @@ export class BudgetTextBlockComponent {
   protected readonly templateOptions = signal<TextBlockTemplate[]>(TEXT_BLOCK_TEMPLATES);
   protected readonly selectedTemplateId = signal<string | null>(null);
   protected readonly isApplyingTemplate = signal<boolean>(false);
+  protected readonly isUploadingImage = signal<boolean>(false);
+  protected readonly imageUploadError = signal<string | null>(null);
 
   // Sync sections when block changes
   constructor() {
@@ -192,10 +194,14 @@ export class BudgetTextBlockComponent {
     const input = event.target as HTMLInputElement | HTMLTextAreaElement;
     const value = field === 'subtotal' ? parseFloat(input.value) || 0 : input.value;
 
+    this.emitBlockPatch({ [field]: value } as Partial<BudgetTextBlock>);
+  }
+
+  private emitBlockPatch(patch: Partial<BudgetTextBlock>): void {
     const updatedBlock: BudgetTextBlock = {
       ...this.block(),
       descriptions: this.sections(),
-      [field]: value
+      ...patch
     };
 
     this.blockUpdated.emit(updatedBlock);
@@ -264,6 +270,55 @@ export class BudgetTextBlockComponent {
       console.error('Error applying template:', error);
     } finally {
       this.isApplyingTemplate.set(false);
+    }
+  }
+
+  protected async onBlockImageSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const block = this.block();
+    if (!block?.id || !block?.budgetId) {
+      this.imageUploadError.set('No se encontró el bloque para asociar la imagen.');
+      input.value = '';
+      return;
+    }
+
+    this.imageUploadError.set(null);
+    this.isUploadingImage.set(true);
+
+    try {
+      const { publicUrl } = await this.supabase.uploadPublicAsset(file, {
+        folder: `text-blocks/${block.budgetId}`
+      });
+
+      const updatedBlock: BudgetTextBlock = {
+        ...block,
+        imageUrl: publicUrl,
+        descriptions: this.sections()
+      };
+
+      await this.supabase.updateBudgetTextBlock(block.id, {
+        heading: updatedBlock.heading,
+        link: updatedBlock.link,
+        imageUrl: updatedBlock.imageUrl,
+        orderIndex: updatedBlock.orderIndex,
+        subtotal: updatedBlock.subtotal
+      });
+
+      this.blockUpdated.emit(updatedBlock);
+    } catch (error) {
+      console.error('Error uploading block image:', error);
+      this.imageUploadError.set('No se pudo subir la imagen. Inténtalo de nuevo.');
+    } finally {
+      this.isUploadingImage.set(false);
+      if (input) {
+        input.value = '';
+      }
     }
   }
 }

@@ -149,3 +149,23 @@
 .empty-descriptions {
   @apply bg-white p-6 border-2 border-dashed border-gray-300;
 }
+
+.image-upload-actions {
+  @apply flex items-center gap-3 mt-2 flex-wrap;
+}
+
+.image-upload-btn {
+  @apply px-4 py-2 bg-amber-900 text-white text-xs font-medium uppercase tracking-wide rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2;
+}
+
+.image-upload-hint {
+  @apply text-xs text-gray-500;
+}
+
+.form-error {
+  @apply mt-2 text-sm text-red-600;
+}
+
+.sr-only {
+  @apply sr-only;
+}

@@ -174,7 +174,7 @@
 
       <div class="form-group">
         <label for="foto-{{ block().id }}" class="form-label">
-          URL de la foto (opcional)
+          Imagen (URL o archivo)
         </label>
         <input
           type="url"
@@ -183,6 +183,26 @@
           (input)="updateBlockField('imageUrl', $event)"
           class="form-input"
           placeholder="https://ejemplo.com/imagen.jpg">
+        <div class="image-upload-actions">
+          <input
+            #blockImageInput
+            type="file"
+            class="sr-only"
+            accept="image/*"
+            (change)="onBlockImageSelected($event)">
+          <button
+            type="button"
+            class="image-upload-btn"
+            (click)="blockImageInput.click()"
+            [disabled]="isUploadingImage()">
+            <span class="material-symbols-rounded" aria-hidden="true">file_upload</span>
+            {{ isUploadingImage() ? 'Subiendo...' : 'Subir archivo' }}
+          </button>
+          <span class="image-upload-hint">Puedes pegar una URL o subir una imagen JPG/PNG.</span>
+        </div>
+        @if (imageUploadError()) {
+          <p class="form-error">{{ imageUploadError() }}</p>
+        }
       </div>
 
       <div class="form-group">

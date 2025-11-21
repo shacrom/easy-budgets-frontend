@@ -9,6 +9,7 @@ import { MaterialTable } from '../models/material.model';
 })
 export class SupabaseService {
   private supabase: SupabaseClient;
+  private readonly storageBucket = environment.supabaseStorageBucket;
 
   constructor() {
     this.supabase = createClient(
@@ -19,6 +20,48 @@ export class SupabaseService {
 
   get client() {
     return this.supabase;
+  }
+
+  async uploadPublicAsset(file: File | Blob, options?: { folder?: string; fileName?: string }) {
+    if (!this.storageBucket) {
+      throw new Error('The Supabase storage bucket is not configured.');
+    }
+
+    const folder = options?.folder?.replace(/^\/+|\/+$/g, '') ?? '';
+    const originalName = options?.fileName || (file instanceof File ? file.name : 'asset');
+    const extension = originalName.includes('.') ? originalName.split('.').pop() : undefined;
+    const uniqueId = typeof crypto?.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const generatedName = extension ? `${uniqueId}.${extension}` : uniqueId;
+    const storagePath = folder ? `${folder}/${generatedName}` : generatedName;
+
+    const { error: uploadError } = await this.supabase
+      .storage
+      .from(this.storageBucket)
+      .upload(storagePath, file, {
+        upsert: true,
+        cacheControl: '3600',
+        contentType: file instanceof File ? file.type : undefined
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data } = this.supabase
+      .storage
+      .from(this.storageBucket)
+      .getPublicUrl(storagePath);
+
+    if (!data?.publicUrl) {
+      throw new Error('No se pudo obtener la URL pública de la imagen subida.');
+    }
+
+    return {
+      publicUrl: data.publicUrl,
+      path: storagePath
+    };
   }
 
   // ============================================

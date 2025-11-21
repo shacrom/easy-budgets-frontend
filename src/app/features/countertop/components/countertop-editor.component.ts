@@ -25,6 +25,8 @@ export class CountertopEditorComponent {
 
   protected readonly isLoading = signal<boolean>(false);
   protected readonly isSaving = signal<boolean>(false);
+  protected readonly isUploadingImage = signal<boolean>(false);
+  protected readonly imageUploadError = signal<string | null>(null);
 
   totalChanged = output<number>();
   countertopChanged = output<Countertop>();
@@ -104,5 +106,41 @@ export class CountertopEditorComponent {
   clearImageUrl() {
     this.countertop.update(c => ({ ...c, imageUrl: null }));
     this.save();
+  }
+
+  protected async onImageFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const budgetId = this.budgetId();
+    if (!budgetId) {
+      this.imageUploadError.set('No hay un presupuesto activo para asociar la imagen.');
+      input.value = '';
+      return;
+    }
+
+    this.imageUploadError.set(null);
+    this.isUploadingImage.set(true);
+
+    try {
+      const { publicUrl } = await this.supabase.uploadPublicAsset(file, {
+        folder: `countertops/${budgetId}`
+      });
+
+      this.countertop.update(c => ({ ...c, imageUrl: publicUrl }));
+      await this.save();
+    } catch (error) {
+      console.error('Error uploading countertop image:', error);
+      this.imageUploadError.set('No se pudo subir la imagen. Inténtalo de nuevo.');
+    } finally {
+      this.isUploadingImage.set(false);
+      if (input) {
+        input.value = '';
+      }
+    }
   }
 }
