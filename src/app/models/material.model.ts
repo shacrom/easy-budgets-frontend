@@ -4,6 +4,9 @@
  */
 export interface Material {
   id: string;
+  tableId?: string;
+  productId?: string;
+  orderIndex: number;
   description: string;
   reference: string;
   manufacturer: string;
@@ -14,6 +17,8 @@ export interface Material {
 
 export interface MaterialTable {
   id: string;
+  budgetId?: string;
+  orderIndex: number;
   title: string;
   rows: Material[];
 }

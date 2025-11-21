@@ -107,6 +107,7 @@ export class MaterialRowComponent {
 
     const updatedMaterial: Material = {
       ...currentMaterial,
+      productId: product.id ?? currentMaterial.productId,
       reference: product.reference,
       description: shouldReplaceDescription ? product.description : currentMaterial.description,
       manufacturer: shouldReplaceManufacturer ? product.manufacturer : currentMaterial.manufacturer,

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 import { Customer } from '../models/customer.model';
+import { MaterialTable } from '../models/material.model';
 
 @Injectable({
   providedIn: 'root'
@@ -199,7 +200,11 @@ export class SupabaseService {
         *,
         customer:Customers(*),
         textBlocks:BudgetTextBlocks(subtotal),
-        materials:BudgetMaterials(totalPrice,unitPrice,quantity)
+        materialTables:BudgetMaterialTables(
+          orderIndex,
+          title,
+          rows:BudgetMaterialTableRows(totalPrice,unitPrice,quantity)
+        )
       `)
       .order('createdAt', { ascending: false });
 
@@ -211,13 +216,18 @@ export class SupabaseService {
         0
       ) ?? 0;
 
-      const totalMaterials = budget.materials?.reduce(
-        (sum: number, material: { totalPrice?: number; unitPrice?: number; quantity?: number }) =>
-          sum + (material?.totalPrice ?? ((material?.unitPrice ?? 0) * (material?.quantity ?? 0))),
+      const totalFromTables = budget.materialTables?.reduce(
+        (tableSum: number, table: { rows?: Array<{ totalPrice?: number; unitPrice?: number; quantity?: number }> }) =>
+          tableSum + (table.rows ?? []).reduce(
+            (rowSum, row) => rowSum + (row?.totalPrice ?? ((row?.unitPrice ?? 0) * (row?.quantity ?? 0))),
+            0
+          ),
         0
       ) ?? 0;
 
-      const { textBlocks, materials, ...rest } = budget;
+      const totalMaterials = totalFromTables;
+
+      const { textBlocks, materialTables, ...rest } = budget;
 
       return {
         ...rest,
@@ -238,7 +248,10 @@ export class SupabaseService {
           *,
           descriptions:BudgetTextBlockSections(*)
         ),
-        materials:BudgetMaterials(*),
+        materialTables:BudgetMaterialTables(
+          *,
+          rows:BudgetMaterialTableRows(*)
+        ),
         additionalLines:BudgetAdditionalLines(*)
       `)
         .eq('id', id)
@@ -254,6 +267,18 @@ export class SupabaseService {
           ...block,
           descriptions: block.descriptions?.sort((a: any, b: any) => a.orderIndex - b.orderIndex) || []
         }));
+    }
+
+    if (data.materialTables) {
+      data.materialTables = data.materialTables
+        .sort((a: any, b: any) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
+        .map((table: any) => ({
+          ...table,
+          rows: (table.rows ?? [])
+            .sort((a: any, b: any) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
+        }));
+    } else {
+      data.materialTables = [];
     }
 
     return data;
@@ -300,7 +325,7 @@ export class SupabaseService {
 
     const {
       textBlocks = [],
-      materials = [],
+      materialTables = [],
       additionalLines = [],
       customer,
       id: _originalId,
@@ -367,22 +392,8 @@ export class SupabaseService {
       }
     }
 
-    if (materials?.length) {
-      const materialPayloads = materials.map((material: any) => {
-        const { id, budgetId: _oldBudgetId, createdAt, updatedAt, ...rest } = material;
-        return {
-          ...rest,
-          budgetId: newBudgetId
-        };
-      });
-
-      const { error: materialsError } = await this.supabase
-        .from('BudgetMaterials')
-        .insert(materialPayloads);
-
-      if (materialsError) {
-        throw materialsError;
-      }
+    if (materialTables?.length) {
+      await this.cloneMaterialTables(newBudgetId, materialTables);
     }
 
     if (additionalLines?.length) {
@@ -533,36 +544,98 @@ export class SupabaseService {
   // MATERIALS
   // ============================================
 
-  async addMaterialToBudget(material: any) {
-    const { data, error } = await this.supabase
-      .from('BudgetMaterials')
-      .insert([material])
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  async updateBudgetMaterial(id: string, updates: any) {
-    const { data, error } = await this.supabase
-      .from('BudgetMaterials')
-      .update(updates)
-        .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  async deleteBudgetMaterial(id: string) {
-    const { error } = await this.supabase
-      .from('BudgetMaterials')
+  async saveMaterialTables(budgetId: string, tables: MaterialTable[]) {
+    const { error: deleteError } = await this.supabase
+      .from('BudgetMaterialTables')
       .delete()
-      .eq('id', id);
+      .eq('budgetId', budgetId);
 
-    if (error) throw error;
+    if (deleteError) throw deleteError;
+
+    if (!tables.length) {
+      return;
+    }
+
+    const tablePayloads = tables.map(table => ({
+      id: table.id,
+      budgetId,
+      title: table.title ?? '',
+      orderIndex: table.orderIndex ?? 0
+    }));
+
+    const { error: insertTablesError } = await this.supabase
+      .from('BudgetMaterialTables')
+      .insert(tablePayloads);
+
+    if (insertTablesError) throw insertTablesError;
+
+    const rowsPayload = tables.flatMap(table =>
+      (table.rows ?? []).map(row => ({
+        id: row.id,
+        tableId: table.id,
+        productId: row.productId ?? null,
+        reference: row.reference ?? '',
+        description: row.description ?? '',
+        manufacturer: row.manufacturer ?? '',
+        quantity: row.quantity ?? 0,
+        unitPrice: row.unitPrice ?? 0,
+        totalPrice: row.totalPrice ?? ((row.unitPrice ?? 0) * (row.quantity ?? 0)),
+        orderIndex: row.orderIndex ?? 0
+      }))
+    );
+
+    if (!rowsPayload.length) {
+      return;
+    }
+
+    const { error: insertRowsError } = await this.supabase
+      .from('BudgetMaterialTableRows')
+      .insert(rowsPayload);
+
+    if (insertRowsError) throw insertRowsError;
+  }
+
+  private async cloneMaterialTables(budgetId: string, tables: MaterialTable[]) {
+    for (const [index, table] of tables.entries()) {
+      const { data: insertedTable, error: tableError } = await this.supabase
+        .from('BudgetMaterialTables')
+        .insert([{ budgetId, title: table.title ?? '', orderIndex: table.orderIndex ?? index }])
+        .select()
+        .single();
+
+      if (tableError || !insertedTable) {
+        throw tableError ?? new Error('No se pudo clonar una tabla de materiales');
+      }
+
+      if (table.rows?.length) {
+        const rowsPayload = table.rows.map((row, rowIndex) => ({
+          tableId: insertedTable.id,
+          productId: row.productId ?? null,
+          reference: row.reference ?? '',
+          description: row.description ?? '',
+          manufacturer: row.manufacturer ?? '',
+          quantity: row.quantity ?? 0,
+          unitPrice: row.unitPrice ?? 0,
+          totalPrice: row.totalPrice ?? ((row.unitPrice ?? 0) * (row.quantity ?? 0)),
+          orderIndex: row.orderIndex ?? rowIndex
+        }));
+
+        const { error: rowsError } = await this.supabase
+          .from('BudgetMaterialTableRows')
+          .insert(rowsPayload);
+
+        if (rowsError) {
+          throw rowsError;
+        }
+      }
+    }
+  }
+
+  private generateClientUuid(): string {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
 
   // ============================================

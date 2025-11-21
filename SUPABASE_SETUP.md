@@ -140,7 +140,47 @@ CREATE INDEX "idx_BudgetMaterials_productId" ON "BudgetMaterials"("productId");
 CREATE INDEX "idx_BudgetMaterials_orderIndex" ON "BudgetMaterials"("budgetId", "orderIndex");
 
 -- ============================================
--- 6. TABLA: BudgetAdditionalLines
+-- 6. TABLA: BudgetMaterialTables
+-- ============================================
+CREATE TABLE "BudgetMaterialTables" (
+  "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  "budgetId" UUID NOT NULL REFERENCES "Budgets"("id") ON DELETE CASCADE,
+  "title" VARCHAR(255) NOT NULL DEFAULT '',
+  "orderIndex" INTEGER NOT NULL DEFAULT 0,
+  "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Índices
+CREATE INDEX "idx_BudgetMaterialTables_budgetId" ON "BudgetMaterialTables"("budgetId");
+CREATE INDEX "idx_BudgetMaterialTables_orderIndex" ON "BudgetMaterialTables"("budgetId", "orderIndex");
+
+-- ============================================
+-- 7. TABLA: BudgetMaterialTableRows
+-- ============================================
+CREATE TABLE "BudgetMaterialTableRows" (
+  "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  "tableId" UUID NOT NULL REFERENCES "BudgetMaterialTables"("id") ON DELETE CASCADE,
+  "productId" UUID REFERENCES "Products"("id") ON DELETE SET NULL,
+  "reference" VARCHAR(100),
+  "description" TEXT NOT NULL DEFAULT '',
+  "manufacturer" VARCHAR(200),
+  "quantity" DECIMAL(10,2) NOT NULL DEFAULT 0,
+  "unitPrice" DECIMAL(10,2) NOT NULL DEFAULT 0,
+  "totalPrice" DECIMAL(10,2) NOT NULL DEFAULT 0,
+  "orderIndex" INTEGER NOT NULL DEFAULT 0,
+  "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Índices
+CREATE INDEX "idx_BudgetMaterialTableRows_tableId" ON "BudgetMaterialTableRows"("tableId");
+CREATE INDEX "idx_BudgetMaterialTableRows_orderIndex" ON "BudgetMaterialTableRows"("tableId", "orderIndex");
+
+> Estas dos tablas trabajan juntas para guardar tanto la configuración (nombre, orden y visibilidad) de cada bloque de materiales como las filas individuales. Al duplicar o cargar un presupuesto podemos reconstruir exactamente la misma estructura que se ve en la interfaz.
+
+💡 Si prefieres ejecutarlo automáticamente, en la carpeta `database/migrations` encontrarás el archivo `20251121_add_budget_material_table_rows.sql` con todo el DDL y la migración de datos legacy listo para copiar en el SQL Editor de Supabase.
+
+-- ============================================
+-- 8. TABLA: BudgetAdditionalLines
 -- ============================================
 CREATE TABLE "BudgetAdditionalLines" (
   "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -155,7 +195,7 @@ CREATE TABLE "BudgetAdditionalLines" (
 CREATE INDEX "idx_BudgetAdditionalLines_budgetId" ON "BudgetAdditionalLines"("budgetId");
 
 -- ============================================
--- 7. TABLA: GeneralConditions
+-- 9. TABLA: GeneralConditions
 -- ============================================
 CREATE TABLE "GeneralConditions" (
   "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -167,7 +207,7 @@ CREATE TABLE "GeneralConditions" (
 );
 
 -- ============================================
--- 8. TABLA: BudgetCountertops
+-- 10. TABLA: BudgetCountertops
 -- ============================================
 CREATE TABLE "BudgetCountertops" (
   "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -730,6 +770,8 @@ ALTER TABLE customers DISABLE ROW LEVEL SECURITY;
 ALTER TABLE budgets DISABLE ROW LEVEL SECURITY;
 ALTER TABLE budget_text_blocks DISABLE ROW LEVEL SECURITY;
 ALTER TABLE budget_materials DISABLE ROW LEVEL SECURITY;
+ALTER TABLE budget_material_tables DISABLE ROW LEVEL SECURITY;
+ALTER TABLE budget_material_table_rows DISABLE ROW LEVEL SECURITY;
 ALTER TABLE budget_additional_lines DISABLE ROW LEVEL SECURITY;
 ALTER TABLE general_conditions DISABLE ROW LEVEL SECURITY;
 ```

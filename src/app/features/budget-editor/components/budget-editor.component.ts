@@ -174,6 +174,11 @@ export class BudgetEditorComponent {
       this.showCountertop.set(budget.showCountertop ?? false);
       this.showConditions.set(budget.showConditions ?? true);
 
+      const relationalTables = Array.isArray(budget.materialTables) ? budget.materialTables : [];
+      this.materialTables.set(relationalTables);
+      this.materials.set(this.flattenMaterials(relationalTables));
+      this.totalMaterials.set(this.calculateMaterialsTotal(relationalTables));
+
       const customerId = budget?.customer?.id ?? budget?.customerId ?? null;
       this.selectedCustomerId.set(customerId);
       this.ensureCustomerInList(budget?.customer as Customer | null | undefined);
@@ -298,8 +303,17 @@ export class BudgetEditorComponent {
     this.materials.set(materials);
   }
 
-  protected onTablesChanged(tables: MaterialTable[]): void {
+  protected async onTablesChanged(tables: MaterialTable[]): Promise<void> {
     this.materialTables.set(tables);
+
+    const id = this.currentBudgetId();
+    if (id) {
+      try {
+        await this.supabase.saveMaterialTables(id, tables);
+      } catch (error) {
+        console.error('Error saving material tables:', error);
+      }
+    }
   }
 
   protected onSummaryChanged(summary: BudgetSummary): void {
@@ -346,6 +360,22 @@ export class BudgetEditorComponent {
     } finally {
       this.pdfGenerating.set(false);
     }
+  }
+
+  private flattenMaterials(tables: MaterialTable[]): Material[] {
+    return tables.flatMap(table =>
+      (table.rows ?? []).map((row, rowIndex) => ({
+        ...row,
+        tableId: row.tableId ?? table.id,
+        orderIndex: row.orderIndex ?? rowIndex
+      }))
+    );
+  }
+
+  private calculateMaterialsTotal(tables: MaterialTable[]): number {
+    return tables.reduce((tableSum, table) =>
+      tableSum + (table.rows ?? []).reduce((rowSum, row) => rowSum + (row.totalPrice ?? 0), 0),
+    0);
   }
 
   async toggleSection(section: 'textBlocks' | 'materials' | 'countertop' | 'conditions') {

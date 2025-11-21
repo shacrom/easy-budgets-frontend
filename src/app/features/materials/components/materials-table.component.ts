@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, computed, output, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, computed, output, inject, input, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialRowComponent } from './material-row.component';
 import { Material, MaterialTable } from '../../../models/material.model';
@@ -22,6 +22,7 @@ export class MaterialsTableComponent {
 
   // List of material tables
   protected readonly tables = signal<MaterialTable[]>([]);
+  readonly tablesInput = input<MaterialTable[]>([], { alias: 'tables' });
 
   // Catalog products used for reference search
   protected readonly products = signal<Product[]>([]);
@@ -45,7 +46,13 @@ export class MaterialsTableComponent {
   materialsChanged = output<Material[]>();
 
   constructor() {
-    this.emitChanges();
+    effect(() => {
+      const incomingTables = this.tablesInput() ?? [];
+      this.tables.set(this.prepareTables(incomingTables));
+      this.emitChanges({ skipTableOutput: true });
+    });
+
+    this.emitChanges({ skipTableOutput: true });
     void this.loadProducts();
   }
 
@@ -53,18 +60,14 @@ export class MaterialsTableComponent {
    * Adds a new table
    */
   protected addTable(): void {
-  const newTitle = this.defaultTableTitle;
-
-    this.tables.update(tables => [...tables, this.createTable(newTitle)]);
-    this.emitChanges();
+    this.mutateTables(tables => [...tables, this.createTable(this.defaultTableTitle, tables.length)]);
   }
 
   /**
    * Removes a table or clears it when it is the last one
    */
   protected deleteTable(tableId: string): void {
-    this.tables.update(tables => tables.filter(table => table.id !== tableId));
-    this.emitChanges();
+    this.mutateTables(tables => tables.filter(table => table.id !== tableId));
   }
 
   /**
@@ -72,57 +75,55 @@ export class MaterialsTableComponent {
    */
   protected updateTableTitle(tableId: string, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
-    this.tables.update(tables =>
+    this.mutateTables(tables =>
       tables.map(table => table.id === tableId ? { ...table, title: value } : table)
     );
-    this.emitChanges(false);
   }
 
   /**
    * Adds a new empty material inside a table
    */
   protected addNewMaterial(tableId: string): void {
-    this.tables.update(tables =>
+    this.mutateTables(tables =>
       tables.map(table =>
         table.id === tableId
-          ? { ...table, rows: [...table.rows, this.createMaterial()] }
+          ? { ...table, rows: [...table.rows, this.createMaterial(table.id, table.rows.length)] }
           : table
       )
     );
-    this.emitChanges();
   }
 
   /**
    * Updates an existing material
    */
   protected updateMaterial(tableId: string, updatedMaterial: Material): void {
-    this.tables.update(tables =>
+    this.mutateTables(tables =>
       tables.map(table =>
         table.id === tableId
           ? {
               ...table,
               rows: table.rows.map(material =>
-                material.id === updatedMaterial.id ? updatedMaterial : material
+                material.id === updatedMaterial.id
+                  ? { ...updatedMaterial, tableId: table.id }
+                  : material
               )
             }
           : table
       )
     );
-    this.emitChanges();
   }
 
   /**
    * Deletes a material by its ID
    */
   protected deleteMaterial(tableId: string, materialId: string): void {
-    this.tables.update(tables =>
+    this.mutateTables(tables =>
       tables.map(table =>
         table.id === tableId
           ? { ...table, rows: table.rows.filter(material => material.id !== materialId) }
           : table
       )
     );
-    this.emitChanges();
   }
 
   /**
@@ -142,33 +143,42 @@ export class MaterialsTableComponent {
   /**
    * Emits the current state
    */
-  private emitChanges(emitTotal = true): void {
-    if (emitTotal) {
-      this.totalChanged.emit(this.totalMaterials());
-    }
+  private emitChanges(options?: { skipTableOutput?: boolean }): void {
+    this.totalChanged.emit(this.totalMaterials());
     const tablesSnapshot = this.tables();
-    this.tablesChanged.emit(tablesSnapshot);
     this.materialsChanged.emit(this.flattenMaterials(tablesSnapshot));
+
+    if (!options?.skipTableOutput) {
+      this.tablesChanged.emit(tablesSnapshot);
+    }
   }
 
   /**
    * Generates a unique ID
    */
-  private generateId(prefix: string): string {
-    return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  private generateId(): string {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
 
-  private createTable(title: string): MaterialTable {
+  private createTable(title: string, orderIndex: number): MaterialTable {
+    const id = this.generateId();
     return {
-      id: this.generateId('table'),
+      id,
+      orderIndex,
       title,
       rows: []
     };
   }
 
-  private createMaterial(): Material {
+  private createMaterial(tableId: string, orderIndex: number): Material {
+    const id = this.generateId();
     return {
-      id: this.generateId('material'),
+      id,
+      tableId,
+      orderIndex,
       description: '',
       reference: '',
       manufacturer: '',
@@ -184,6 +194,36 @@ export class MaterialsTableComponent {
 
   private flattenMaterials(tables: MaterialTable[]): Material[] {
     return tables.flatMap(table => table.rows);
+  }
+
+  private cloneTables(tables: MaterialTable[]): MaterialTable[] {
+    return typeof structuredClone === 'function'
+      ? structuredClone(tables)
+      : JSON.parse(JSON.stringify(tables));
+  }
+
+  private normalizeTables(tables: MaterialTable[]): MaterialTable[] {
+    return tables.map((table, tableIndex) => ({
+      ...table,
+      orderIndex: tableIndex,
+      rows: (table.rows ?? []).map((row, rowIndex) => ({
+        ...row,
+        tableId: table.id,
+        orderIndex: rowIndex
+      }))
+    }));
+  }
+
+  private prepareTables(tables: MaterialTable[]): MaterialTable[] {
+    return this.normalizeTables(this.cloneTables(tables ?? []));
+  }
+
+  private mutateTables(
+    mutator: (tables: MaterialTable[]) => MaterialTable[],
+    options?: { skipTableOutput?: boolean }
+  ): void {
+    this.tables.update(current => this.normalizeTables(mutator(this.cloneTables(current))));
+    this.emitChanges(options);
   }
 
   private async loadProducts(): Promise<void> {
