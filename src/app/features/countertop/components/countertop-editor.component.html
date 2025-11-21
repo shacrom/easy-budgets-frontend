@@ -29,11 +29,19 @@
     <div class="image-section">
       <div class="image-placeholder" *ngIf="!countertop().imageUrl">
         <span>FOTO ENCIMERA</span>
-        <input type="text" placeholder="URL de la imagen"
-               [ngModel]="countertop().imageUrl"
-               (ngModelChange)="updateImageUrl($event)"
-               (blur)="save()"
-               class="url-input">
+        <div class="url-input-group">
+          <input #urlInput
+                 type="text"
+                 placeholder="URL de la imagen"
+                 (keydown.enter)="setImageUrl(urlInput.value)"
+                 class="url-input">
+          <button type="button"
+                  (click)="setImageUrl(urlInput.value)"
+                  class="add-image-btn"
+                  title="Añadir imagen">
+            <span class="material-symbols-rounded">add_photo_alternate</span>
+          </button>
+        </div>
       </div>
       <div *ngIf="countertop().imageUrl" class="image-preview-container">
         <img [src]="countertop().imageUrl" alt="Encimera" class="preview-image">

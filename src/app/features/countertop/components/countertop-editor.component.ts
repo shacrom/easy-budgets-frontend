@@ -91,12 +91,18 @@ export class CountertopEditorComponent {
     this.totalChanged.emit(value); // Emit immediately for UI update
   }
 
+  setImageUrl(value: string) {
+    if (!value) return;
+    this.updateImageUrl(value);
+    this.save();
+  }
+
   updateImageUrl(value: string) {
     this.countertop.update(c => ({ ...c, imageUrl: value }));
   }
 
   clearImageUrl() {
-    this.countertop.update(c => ({ ...c, imageUrl: undefined }));
+    this.countertop.update(c => ({ ...c, imageUrl: null }));
     this.save();
   }
 }

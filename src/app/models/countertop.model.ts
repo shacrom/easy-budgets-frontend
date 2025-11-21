@@ -4,7 +4,7 @@ export interface Countertop {
   model: string;
   description: string;
   price: number;
-  imageUrl?: string;
+  imageUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
