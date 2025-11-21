@@ -82,7 +82,6 @@ export class BudgetEditorComponent {
   private latestCustomerSearchId = 0;
 
   constructor() {
-    void this.performCustomerSearch('');
     effect(() => {
       const id = this.routeParams()?.get('id');
       if (!id) {
@@ -265,7 +264,7 @@ export class BudgetEditorComponent {
 
   private shouldExecuteCustomerSearch(term: string): boolean {
     const trimmed = term?.trim() ?? '';
-    return trimmed.length === 0 || trimmed.length >= 2;
+    return trimmed.length >= 2;
   }
 
   protected async onCustomerSelected(customerId: string | null): Promise<void> {

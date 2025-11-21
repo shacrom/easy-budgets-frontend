@@ -48,7 +48,7 @@
         class="icon-btn"
         aria-label="Actualizar resultados"
         (click)="retrySearch()"
-        [disabled]="loading()">
+        [disabled]="loading() || !meetsSearchThreshold()">
         <span class="material-symbols-rounded" aria-hidden="true">refresh</span>
       </button>
     </div>
@@ -76,7 +76,7 @@
           } @else if (searchTerm()) {
             Escribe al menos 2 caracteres para iniciar la búsqueda.
           } @else {
-            Empieza a escribir para ver resultados recientes.
+            Introduce al menos 2 caracteres para comenzar la búsqueda.
           }
         </p>
       </div>
