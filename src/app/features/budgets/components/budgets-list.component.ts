@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../../services/supabase.service';
+
+type SortField = 'createdAt' | 'updatedAt';
 
 interface BudgetListItem {
   id: string;
@@ -12,6 +14,7 @@ interface BudgetListItem {
   totalBlocks?: number;
   totalMaterials?: number;
   createdAt: string;
+  updatedAt?: string | null;
   customer?: {
     name?: string;
   } | null;
@@ -35,6 +38,47 @@ export class BudgetsListComponent implements OnInit {
   protected readonly deletingBudgetId = signal<string | null>(null);
   protected readonly duplicatingBudgetId = signal<string | null>(null);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly customerFilter = signal<string>('');
+  protected readonly startDateFilter = signal<string>('');
+  protected readonly endDateFilter = signal<string>('');
+  protected readonly sortField = signal<SortField>('createdAt');
+
+  protected readonly sortOptions: ReadonlyArray<{ value: SortField; label: string }> = [
+    { value: 'createdAt', label: 'Fecha de creación (más recientes)' },
+    { value: 'updatedAt', label: 'Última actualización (más recientes)' }
+  ];
+
+  protected readonly hasFilters = computed(() =>
+    Boolean(
+      this.customerFilter().trim() ||
+      this.startDateFilter() ||
+      this.endDateFilter() ||
+      this.sortField() !== 'createdAt'
+    )
+  );
+
+  protected readonly filteredBudgets = computed(() => {
+    const search = this.customerFilter().trim().toLowerCase();
+    const startDate = this.parseDateFilter(this.startDateFilter(), false);
+    const endDate = this.parseDateFilter(this.endDateFilter(), true);
+    const orderField = this.sortField();
+
+    return [...this.budgets()]
+      .filter(budget => {
+        if (!search) return true;
+        const customerName = budget.customer?.name?.toLowerCase() ?? '';
+        return customerName.includes(search);
+      })
+      .filter(budget => {
+        if (!startDate && !endDate) return true;
+        const createdAt = budget.createdAt ? new Date(budget.createdAt) : null;
+        if (!createdAt) return true;
+        if (startDate && createdAt < startDate) return false;
+        if (endDate && createdAt > endDate) return false;
+        return true;
+      })
+      .sort((a, b) => this.getBudgetDate(b, orderField) - this.getBudgetDate(a, orderField));
+  });
 
   ngOnInit(): void {
     this.loadBudgets();
@@ -131,5 +175,27 @@ export class BudgetsListComponent implements OnInit {
     } finally {
       this.duplicatingBudgetId.set(null);
     }
+  }
+
+  protected clearFilters(): void {
+    this.customerFilter.set('');
+    this.startDateFilter.set('');
+    this.endDateFilter.set('');
+    this.sortField.set('createdAt');
+  }
+
+  protected changeSortField(value: string): void {
+    this.sortField.set((value as SortField) ?? 'createdAt');
+  }
+
+  private parseDateFilter(value: string, endOfDay: boolean): Date | null {
+    if (!value) return null;
+    const suffix = endOfDay ? 'T23:59:59.999' : 'T00:00:00.000';
+    return new Date(`${value}${suffix}`);
+  }
+
+  private getBudgetDate(budget: BudgetListItem, field: SortField): number {
+    const value = field === 'createdAt' ? budget.createdAt : budget.updatedAt;
+    return value ? new Date(value).getTime() : 0;
   }
 }

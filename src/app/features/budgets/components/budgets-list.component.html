@@ -26,6 +26,59 @@
     </div>
   </header>
 
+  <section class="filters-panel">
+    <div class="filters-grid">
+      <label class="filter-group">
+        <span>Cliente</span>
+        <input
+          type="text"
+          placeholder="Busca por nombre de cliente"
+          [value]="customerFilter()"
+          (input)="customerFilter.set($any($event.target).value)"
+        />
+      </label>
+
+      <label class="filter-group">
+        <span>Fecha desde</span>
+        <input
+          type="date"
+          [value]="startDateFilter()"
+          (change)="startDateFilter.set($any($event.target).value)"
+        />
+      </label>
+
+      <label class="filter-group">
+        <span>Fecha hasta</span>
+        <input
+          type="date"
+          [value]="endDateFilter()"
+          (change)="endDateFilter.set($any($event.target).value)"
+        />
+      </label>
+
+      <label class="filter-group">
+        <span>Ordenar por</span>
+  <select [value]="sortField()" (change)="changeSortField($any($event.target).value)">
+          @for (option of sortOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+    </div>
+    <div class="filters-footer">
+      <span class="filters-count">
+        {{ filteredBudgets().length }} de {{ budgets().length }} resultados
+      </span>
+      <button
+        type="button"
+        class="btn-clear"
+        [disabled]="!hasFilters()"
+        (click)="clearFilters()">
+        Limpiar filtros
+      </button>
+    </div>
+  </section>
+
   @if (errorMessage()) {
     <div class="error-message">{{ errorMessage() }}</div>
   }
@@ -35,6 +88,11 @@
   } @else if (budgets().length === 0) {
     <div class="empty-state">
       <p>No hay presupuestos creados. Haz clic en "Nuevo Presupuesto" para comenzar.</p>
+    </div>
+  } @else if (filteredBudgets().length === 0) {
+    <div class="empty-state">
+      <p>No hay presupuestos que coincidan con los filtros aplicados.</p>
+      <button type="button" class="btn-clear" (click)="clearFilters()">Borrar filtros</button>
     </div>
   } @else {
     <div class="table-wrapper">
@@ -51,7 +109,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (budget of budgets(); track budget.id) {
+          @for (budget of filteredBudgets(); track budget.id) {
             <tr>
               <td class="mono">{{ budget.budgetNumber }}</td>
               <td>{{ budget.title }}</td>
