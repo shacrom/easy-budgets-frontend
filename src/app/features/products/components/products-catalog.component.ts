@@ -1,8 +1,6 @@
-import { ChangeDetectionStrategy, Component, signal, inject, ViewChild, AfterViewInit, effect, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { Product, CreateProductDto } from '../../../models/product.model';
 import { SupabaseService } from '../../../services/supabase.service';
 
@@ -14,26 +12,13 @@ import { SupabaseService } from '../../../services/supabase.service';
   selector: 'app-products-catalog',
   templateUrl: './products-catalog.component.html',
   styleUrls: ['./products-catalog.component.css'],
-  imports: [CommonModule, FormsModule, MatTableModule, MatPaginatorModule],
+  imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProductsCatalogComponent implements AfterViewInit {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-
-  // Angular Material Table config
-  protected readonly displayedColumns = [
-    'reference',
-    'description',
-    'manufacturer',
-    'category',
-    'basePrice',
-    'vatRate',
-    'finalPrice',
-    'active',
-    'actions'
-  ];
+export class ProductsCatalogComponent {
   protected readonly pageSizeOptions = [5, 10, 25, 50];
-  protected readonly dataSource = new MatTableDataSource<Product>();
+  protected readonly pageSize = signal<number>(this.pageSizeOptions[0]);
+  protected readonly currentPage = signal<number>(0);
 
   private readonly supabaseService = inject(SupabaseService);
 
@@ -62,31 +47,60 @@ export class ProductsCatalogComponent implements AfterViewInit {
   protected readonly searchTerm = signal<string>('');
   protected readonly isEditing = computed<boolean>(() => !!this.editingProduct());
   protected readonly formValues = computed<Product | CreateProductDto>(() => this.editingProduct() ?? this.newProduct());
+  protected readonly filteredProducts = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    const list = this.products();
+    if (!term) {
+      return list;
+    }
+
+    return list.filter(product => {
+      const values = [
+        product.reference,
+        product.description,
+        product.manufacturer,
+        product.category
+      ]
+        .filter((value): value is string => !!value)
+        .map(value => value.toLowerCase());
+      return values.some(value => value.includes(term));
+    });
+  });
+
+  protected readonly totalFilteredProducts = computed(() => this.filteredProducts().length);
+  protected readonly totalPages = computed(() => {
+    const total = this.totalFilteredProducts();
+    return total === 0 ? 1 : Math.ceil(total / this.pageSize());
+  });
+  protected readonly paginatedProducts = computed(() => {
+    const startIndex = this.currentPage() * this.pageSize();
+    return this.filteredProducts().slice(startIndex, startIndex + this.pageSize());
+  });
+
+  protected readonly paginationLabel = computed(() => {
+    const total = this.totalFilteredProducts();
+    if (total === 0) {
+      return 'Mostrando 0 de 0';
+    }
+
+    const start = this.currentPage() * this.pageSize() + 1;
+    const end = Math.min(start + this.pageSize() - 1, total);
+    return `Mostrando ${start} – ${end} de ${total}`;
+  });
+
+  protected readonly pagePosition = computed(() => {
+    const total = this.totalFilteredProducts();
+    if (total === 0) {
+      return 'Página 0 de 0';
+    }
+    return `Página ${this.currentPage() + 1} de ${this.totalPages()}`;
+  });
+
+  protected readonly isOnFirstPage = computed(() => this.currentPage() === 0);
+  protected readonly isOnLastPage = computed(() => this.currentPage() >= this.totalPages() - 1);
 
   constructor() {
     this.loadProducts();
-
-    // Effect para aplicar filtro cuando cambia el término de búsqueda
-    effect(() => {
-      const term = this.searchTerm();
-      this.dataSource.filter = term.trim().toLowerCase();
-    });
-  }
-
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-
-    // Configurar filtro personalizado para buscar en múltiples campos
-    this.dataSource.filterPredicate = (product: Product, filter: string) => {
-      const searchStr = filter.toLowerCase();
-      const includesText = (value?: string | null) => (value ?? '').toLowerCase().includes(searchStr);
-      return (
-        includesText(product.reference) ||
-        includesText(product.description) ||
-        includesText(product.manufacturer) ||
-        includesText(product.category)
-      );
-    };
   }
 
   /**
@@ -99,7 +113,6 @@ export class ProductsCatalogComponent implements AfterViewInit {
     try {
       const products = await this.supabaseService.getProducts();
       this.products.set(products);
-      this.dataSource.data = products;
     } catch (error) {
       this.errorMessage.set('Error al cargar los productos');
       console.error('Error loading products:', error);
@@ -152,9 +165,8 @@ export class ProductsCatalogComponent implements AfterViewInit {
     try {
       const newProduct = await this.supabaseService.createProduct(product);
       this.products.update(products => [...products, newProduct]);
-      this.dataSource.data = [...this.dataSource.data, newProduct];
-    this.successMessage.set('Producto añadido correctamente');
-    this.closeForm();
+      this.successMessage.set('Producto añadido correctamente');
+      this.closeForm();
 
       setTimeout(() => this.successMessage.set(''), 3000);
     } catch (error) {
@@ -199,7 +211,6 @@ export class ProductsCatalogComponent implements AfterViewInit {
       this.products.update(products =>
         products.map(p => p.id === updated.id ? updated : p)
       );
-      this.dataSource.data = this.dataSource.data.map(p => p.id === updated.id ? updated : p);
       this.successMessage.set('Producto actualizado correctamente');
       this.closeForm();
 
@@ -226,7 +237,6 @@ export class ProductsCatalogComponent implements AfterViewInit {
     try {
       await this.supabaseService.deleteProduct(productId);
       this.products.update(products => products.filter(p => p.id !== productId));
-      this.dataSource.data = this.dataSource.data.filter(p => p.id !== productId);
       if (this.editingProduct()?.id === productId) {
         this.closeForm();
       }
@@ -247,6 +257,7 @@ export class ProductsCatalogComponent implements AfterViewInit {
   protected updateSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.searchTerm.set(input.value);
+    this.currentPage.set(0);
   }
 
   /**
@@ -316,6 +327,32 @@ export class ProductsCatalogComponent implements AfterViewInit {
   private clearMessages(): void {
     this.errorMessage.set('');
     this.successMessage.set('');
+  }
+
+  protected onPageSizeChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.pageSize.set(Number(select.value));
+    this.currentPage.set(0);
+  }
+
+  protected goToFirstPage(): void {
+    if (this.isOnFirstPage()) return;
+    this.currentPage.set(0);
+  }
+
+  protected goToPreviousPage(): void {
+    if (this.isOnFirstPage()) return;
+    this.currentPage.update(page => Math.max(page - 1, 0));
+  }
+
+  protected goToNextPage(): void {
+    if (this.isOnLastPage()) return;
+    this.currentPage.update(page => Math.min(page + 1, this.totalPages() - 1));
+  }
+
+  protected goToLastPage(): void {
+    if (this.isOnLastPage()) return;
+    this.currentPage.set(this.totalPages() - 1);
   }
 
   private parseNumber(value: string): number {

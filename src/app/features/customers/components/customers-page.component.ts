@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../../services/supabase.service';
@@ -23,6 +23,9 @@ export class CustomersPageComponent implements OnInit {
   protected readonly showForm = signal<boolean>(false);
   protected readonly editingCustomer = signal<Customer | null>(null);
   protected readonly formData = signal<CustomerPayload>(this.createEmptyForm());
+  protected readonly pageSizeOptions = [5, 10, 25, 50];
+  protected readonly pageSize = signal<number>(this.pageSizeOptions[0]);
+  protected readonly currentPage = signal<number>(0);
 
   protected readonly filteredCustomers = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
@@ -45,6 +48,7 @@ export class CustomersPageComponent implements OnInit {
   });
 
   protected readonly totalCustomers = computed(() => this.customers().length);
+  protected readonly totalFilteredCustomers = computed(() => this.filteredCustomers().length);
   protected readonly lastUpdated = computed(() => {
     const timestamps = this.customers()
       .map(customer => customer.updatedAt ?? customer.createdAt)
@@ -63,6 +67,48 @@ export class CustomersPageComponent implements OnInit {
       .filter((value): value is string => !!value);
     return new Set(cities).size;
   });
+
+  protected readonly paginatedCustomers = computed(() => {
+    const startIndex = this.currentPage() * this.pageSize();
+    return this.filteredCustomers().slice(startIndex, startIndex + this.pageSize());
+  });
+
+  protected readonly paginationLabel = computed(() => {
+    const total = this.totalFilteredCustomers();
+    if (total === 0) {
+      return 'Mostrando 0 de 0';
+    }
+
+    const start = this.currentPage() * this.pageSize() + 1;
+    const end = Math.min(start + this.pageSize() - 1, total);
+    return `Mostrando ${start} – ${end} de ${total}`;
+  });
+
+  protected readonly pagePosition = computed(() => {
+    const total = this.totalFilteredCustomers();
+    if (total === 0) {
+      return 'Página 0 de 0';
+    }
+    return `Página ${this.currentPage() + 1} de ${this.totalPages()}`;
+  });
+
+  protected readonly totalPages = computed(() => {
+    const total = this.totalFilteredCustomers();
+    return total === 0 ? 1 : Math.ceil(total / this.pageSize());
+  });
+
+  protected readonly isOnFirstPage = computed(() => this.currentPage() === 0);
+  protected readonly isOnLastPage = computed(() => this.currentPage() >= this.totalPages() - 1);
+
+  constructor() {
+    effect(() => {
+      const totalPages = this.totalPages();
+      const current = this.currentPage();
+      if (current > totalPages - 1) {
+        this.currentPage.set(Math.max(totalPages - 1, 0));
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loadCustomers();
@@ -86,6 +132,7 @@ export class CustomersPageComponent implements OnInit {
   protected onSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.searchTerm.set(input.value);
+    this.currentPage.set(0);
   }
 
   protected openCreateForm(): void {
@@ -183,6 +230,32 @@ export class CustomersPageComponent implements OnInit {
 
   protected isEditing(): boolean {
     return !!this.editingCustomer();
+  }
+
+  protected onPageSizeChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.pageSize.set(Number(select.value));
+    this.currentPage.set(0);
+  }
+
+  protected goToFirstPage(): void {
+    if (this.isOnFirstPage()) return;
+    this.currentPage.set(0);
+  }
+
+  protected goToPreviousPage(): void {
+    if (this.isOnFirstPage()) return;
+    this.currentPage.update(page => Math.max(page - 1, 0));
+  }
+
+  protected goToNextPage(): void {
+    if (this.isOnLastPage()) return;
+    this.currentPage.update(page => Math.min(page + 1, this.totalPages() - 1));
+  }
+
+  protected goToLastPage(): void {
+    if (this.isOnLastPage()) return;
+    this.currentPage.set(this.totalPages() - 1);
   }
 
   private createEmptyForm(): CustomerPayload {

@@ -57,7 +57,7 @@
               <td colspan="6" class="mono text-center">No hay clientes que coincidan con tu búsqueda.</td>
             </tr>
           } @else {
-            @for (customer of filteredCustomers(); track customer.id) {
+            @for (customer of paginatedCustomers(); track customer.id) {
               <tr>
                 <td>
                   <div class="customer-name">{{ customer.name }}</div>
@@ -82,6 +82,40 @@
           }
         </tbody>
       </table>
+
+      <div class="pagination-bar" aria-label="Paginación de clientes">
+        <div class="pagination-info">{{ paginationLabel() }}</div>
+        <div class="pagination-controls">
+          <label class="pagination-size" for="customers-page-size">
+            <span>Resultados por página</span>
+            <select
+              id="customers-page-size"
+              [value]="pageSize()"
+              (change)="onPageSizeChange($event)">
+              @for (option of pageSizeOptions; track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
+          </label>
+
+          <div class="pagination-page">{{ pagePosition() }}</div>
+
+          <div class="pagination-buttons" role="group" aria-label="Botones de paginación">
+            <button type="button" class="pagination-button" [disabled]="isOnFirstPage()" (click)="goToFirstPage()" aria-label="Primera página">
+              <span class="material-symbols-rounded" aria-hidden="true">first_page</span>
+            </button>
+            <button type="button" class="pagination-button" [disabled]="isOnFirstPage()" (click)="goToPreviousPage()" aria-label="Página anterior">
+              <span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>
+            </button>
+            <button type="button" class="pagination-button" [disabled]="isOnLastPage()" (click)="goToNextPage()" aria-label="Página siguiente">
+              <span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>
+            </button>
+            <button type="button" class="pagination-button" [disabled]="isOnLastPage()" (click)="goToLastPage()" aria-label="Última página">
+              <span class="material-symbols-rounded" aria-hidden="true">last_page</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -14,91 +14,42 @@
   table-layout: fixed;
 }
 
-.products-page th[mat-header-cell],
-.products-page td[mat-cell] {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.products-page th[mat-header-cell] {
+.products-page table.management-table th,
+.products-page table.management-table td {
   white-space: nowrap;
-}
-
-.products-page td[mat-cell] {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.products-page .cdk-column-reference {
+.products-page table.management-table th:nth-child(1) {
   width: 100px;
 }
 
-.products-page .cdk-column-description {
-  width: 200px;
+.products-page table.management-table th:nth-child(2) {
+  width: 220px;
 }
 
-.products-page .cdk-column-manufacturer {
+.products-page table.management-table th:nth-child(3) {
+  width: 150px;
+}
+
+.products-page table.management-table th:nth-child(4) {
+  width: 130px;
+}
+
+.products-page table.management-table th:nth-child(5),
+.products-page table.management-table th:nth-child(7) {
+  width: 130px;
+}
+
+.products-page table.management-table th:nth-child(6) {
+  width: 80px;
+}
+
+.products-page table.management-table th:nth-child(8) {
+  width: 120px;
+}
+
+.products-page table.management-table th:nth-child(9) {
   width: 140px;
-}
-
-.products-page .cdk-column-category {
-  width: 120px;
-}
-
-.products-page .cdk-column-basePrice {
-  width: 110px;
-}
-
-.products-page .cdk-column-vatRate {
-  width: 70px;
-}
-
-.products-page .cdk-column-finalPrice {
-  width: 110px;
-}
-
-.products-page .cdk-column-active {
-  width: 100px;
-}
-
-.products-page .cdk-column-actions {
-  width: 120px;
-}
-
-.products-page .mat-mdc-cell {
-  font-size: 0.95rem;
-  color: #111827;
-}
-
-.products-page .mat-mdc-table {
-  background: transparent;
-  width: 100%;
-  max-width: 100%;
-}
-
-.products-page .mat-mdc-header-row,
-.products-page .mat-mdc-row {
-  display: table-row;
-}
-
-.products-page .mat-mdc-header-row {
-  background: #f8fafc;
-}
-
-.products-page .mat-mdc-header-row th {
-  font-size: 0.7rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.products-page .mat-mdc-row:hover td {
-  background: #f8fafc;
-}
-
-.products-page .mat-mdc-paginator {
-  border-top: 1px solid #e5e7eb;
-  padding: 0 1.5rem 1.5rem;
 }
