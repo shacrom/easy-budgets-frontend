@@ -36,11 +36,14 @@
       <section class="section-divider">
         <app-customer-selector
           [customers]="customers()"
+          [searchTerm]="customerSearchTerm()"
           [selectedCustomerId]="selectedCustomerId()"
           [selectedCustomer]="selectedCustomer()"
           [loading]="customersLoading()"
           [updating]="updatingCustomer()"
           [errorMessage]="customerError()"
+          (searchChanged)="onCustomerSearchChanged($event)"
+          (refreshRequested)="refreshCustomerResults()"
           (customerSelected)="onCustomerSelected($event)">
         </app-customer-selector>
       </section>

@@ -1,14 +1,21 @@
 <section class="customer-selector">
-  <header class="selector-header">
-    <div>
+  <header class="summary-card">
+    <div class="summary-icon" aria-hidden="true">
+      <span class="material-symbols-rounded">person</span>
+    </div>
+    <div class="summary-content">
       <p class="kicker">Cliente asociado</p>
-      <h2>{{ selectedCustomer()?.name || 'Selecciona un cliente' }}</h2>
-      @if (selectedCustomer()) {
-        <p class="customer-meta">
-          {{ selectedCustomer()?.city || 'Ciudad no disponible' }} ·
-          {{ selectedCustomer()?.phone || 'Teléfono no disponible' }}
-        </p>
-      }
+      <div class="summary-text">
+        <h2>{{ selectedCustomer()?.name || 'Sin cliente asignado' }}</h2>
+        @if (selectedCustomer()) {
+          <p class="customer-meta">
+            {{ selectedCustomer()?.city || 'Ciudad no disponible' }} ·
+            {{ selectedCustomer()?.phone || 'Teléfono no disponible' }}
+          </p>
+        } @else {
+          <p class="customer-meta">Busca y selecciona un cliente para este presupuesto</p>
+        }
+      </div>
     </div>
     <div class="selector-actions">
       <button type="button" class="btn ghost" (click)="clearSelection()" [disabled]="!selectedCustomerId() || updating()">
@@ -18,49 +25,95 @@
     </div>
   </header>
 
-  <div class="selector-body">
-    <div class="input-wrapper">
+  <div class="search-panel">
+    <div class="input-wrapper" [class.loading]="loading()">
       <span class="material-symbols-rounded" aria-hidden="true">search</span>
       <input
-        type="text"
-        placeholder="Buscar por nombre, email, ciudad o DNI"
+        type="search"
+        placeholder="Escribe al menos 2 caracteres para buscar"
+        autocomplete="off"
         [value]="searchTerm()"
         (input)="updateSearch($event)"
         [disabled]="loading()">
+      <button
+        type="button"
+        class="icon-btn"
+        aria-label="Limpiar búsqueda"
+        (click)="clearSearch()"
+        [disabled]="!searchTerm() || loading()">
+        <span class="material-symbols-rounded" aria-hidden="true">backspace</span>
+      </button>
+      <button
+        type="button"
+        class="icon-btn"
+        aria-label="Actualizar resultados"
+        (click)="retrySearch()"
+        [disabled]="loading()">
+        <span class="material-symbols-rounded" aria-hidden="true">refresh</span>
+      </button>
     </div>
+    <p class="search-hint">Puedes buscar por nombre, email, ciudad, DNI o CIF.</p>
+  </div>
 
+  <div class="results-panel">
     @if (errorMessage()) {
-      <p class="error-message">{{ errorMessage() }}</p>
-    }
-
-    @if (loading()) {
-      <p class="loading-message">Cargando clientes...</p>
-    } @else if (!hasCustomers()) {
-      <p class="empty-message">No hay clientes registrados todavía.</p>
-    } @else {
-      <div class="customers-grid">
-        @for (customer of filteredCustomers(); track customer.id) {
-          <button
-            type="button"
-            class="customer-card"
-            [class.selected]="customer.id === selectedCustomerId()"
-            (click)="selectCustomer(customer.id)"
-            [disabled]="updating()">
-            <div class="card-header">
-              <h3>{{ customer.name }}</h3>
-              @if (customer.city) {
-                <span class="badge">{{ customer.city }}</span>
-              }
-            </div>
-            <p class="card-meta">
-              {{ customer.email || 'Sin email' }} · {{ customer.phone || 'Sin teléfono' }}
-            </p>
-            @if (customer.address) {
-              <p class="card-address">{{ customer.address }}</p>
-            }
-          </button>
-        }
+      <div class="status-message error">
+        <span class="material-symbols-rounded" aria-hidden="true">error_circle_rounded</span>
+        <p>{{ errorMessage() }}</p>
+        <button type="button" (click)="retrySearch()">Reintentar</button>
       </div>
+    } @else if (loading()) {
+      <div class="status-message loading">
+        <span class="material-symbols-rounded spin" aria-hidden="true">progress_activity</span>
+        <p>Buscando clientes...</p>
+      </div>
+    } @else if (!hasCustomers()) {
+      <div class="status-message muted">
+        <span class="material-symbols-rounded" aria-hidden="true">search_check</span>
+        <p>
+          @if (meetsSearchThreshold()) {
+            No encontramos clientes que coincidan con tu búsqueda.
+          } @else if (searchTerm()) {
+            Escribe al menos 2 caracteres para iniciar la búsqueda.
+          } @else {
+            Empieza a escribir para ver resultados recientes.
+          }
+        </p>
+      </div>
+    } @else {
+      <ul class="results-list">
+        @for (customer of customers(); track customer.id) {
+          <li>
+            <button
+              type="button"
+              class="result-row"
+              [class.selected]="customer.id === selectedCustomerId()"
+              (click)="selectCustomer(customer.id)"
+              [disabled]="updating()">
+              <div class="result-icon" aria-hidden="true">
+                <span class="material-symbols-rounded">account_circle</span>
+              </div>
+              <div class="result-info">
+                <div class="result-top">
+                  <h3>{{ customer.name }}</h3>
+                  @if (customer.city) {
+                    <span class="badge">{{ customer.city }}</span>
+                  }
+                </div>
+                <p class="result-meta">
+                  {{ customer.email || 'Sin email' }} · {{ customer.phone || 'Sin teléfono' }}
+                </p>
+                @if (customer.address) {
+                  <p class="result-address">{{ customer.address }}</p>
+                }
+              </div>
+              <span class="material-symbols-rounded chevron" aria-hidden="true">
+                {{ customer.id === selectedCustomerId() ? 'check_circle' : 'north_east' }}
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
     }
   </div>
 </section>

@@ -157,6 +157,40 @@ export class SupabaseService {
     return data as Customer;
   }
 
+  async searchCustomers(term: string, limit = 10): Promise<Customer[]> {
+    const value = term.trim();
+    if (!value) {
+      const { data, error } = await this.supabase
+        .from('Customers')
+        .select('*')
+        .order('name')
+        .limit(limit);
+
+      if (error) throw error;
+      return (data ?? []) as Customer[];
+    }
+
+    const pattern = `%${value}%`;
+    const filters = [
+      `name.ilike.${pattern}`,
+      `email.ilike.${pattern}`,
+      `phone.ilike.${pattern}`,
+      `city.ilike.${pattern}`,
+      `dni.ilike.${pattern}`,
+      `taxId.ilike.${pattern}`
+    ].join(',');
+
+    const { data, error } = await this.supabase
+      .from('Customers')
+      .select('*')
+      .or(filters)
+      .order('name')
+      .limit(limit);
+
+    if (error) throw error;
+    return (data ?? []) as Customer[];
+  }
+
   async createCustomer(customer: Partial<Customer>) {
     const { data, error } = await this.supabase
       .from('Customers')

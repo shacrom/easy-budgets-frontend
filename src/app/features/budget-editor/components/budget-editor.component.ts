@@ -52,10 +52,12 @@ export class BudgetEditorComponent {
   protected readonly materials = signal<Material[]>([]);
   protected readonly materialTables = signal<MaterialTable[]>([]);
   protected readonly customers = signal<Customer[]>([]);
+  protected readonly customerSearchTerm = signal<string>('');
   protected readonly customersLoading = signal<boolean>(false);
   protected readonly updatingCustomer = signal<boolean>(false);
   protected readonly customerError = signal<string | null>(null);
   protected readonly selectedCustomerId = signal<string | null>(null);
+  private readonly cachedSelectedCustomer = signal<Customer | null>(null);
   protected readonly budgetMeta = signal<BudgetPdfMetadata | null>(null);
   protected readonly summarySnapshot = signal<BudgetSummary | null>(null);
   protected readonly conditionsTitle = signal<string>('Condiciones generales');
@@ -74,16 +76,13 @@ export class BudgetEditorComponent {
   protected readonly pdfPreviewUrl = signal<SafeResourceUrl | null>(null);
   protected readonly isPreviewLoading = signal<boolean>(false);
 
-  protected readonly selectedCustomer = computed(() => {
-    const id = this.selectedCustomerId();
-    if (!id) {
-      return null;
-    }
-    return this.customers().find(customer => customer.id === id) ?? null;
-  });
+  protected readonly selectedCustomer = computed(() => this.cachedSelectedCustomer());
+
+  private customerSearchTimer: ReturnType<typeof setTimeout> | null = null;
+  private latestCustomerSearchId = 0;
 
   constructor() {
-    this.loadCustomers();
+    void this.performCustomerSearch('');
     effect(() => {
       const id = this.routeParams()?.get('id');
       if (!id) {
@@ -181,7 +180,7 @@ export class BudgetEditorComponent {
 
       const customerId = budget?.customer?.id ?? budget?.customerId ?? null;
       this.selectedCustomerId.set(customerId);
-      this.ensureCustomerInList(budget?.customer as Customer | null | undefined);
+  this.cachedSelectedCustomer.set((budget?.customer as Customer | null | undefined) ?? null);
 
       this.isInitialized.set(true);
     } catch (error) {
@@ -190,32 +189,83 @@ export class BudgetEditorComponent {
     }
   }
 
-  private async loadCustomers(): Promise<void> {
-    this.customersLoading.set(true);
-    this.customerError.set(null);
-    try {
-      const customers = await this.supabase.getCustomers();
-      this.customers.set(customers);
-    } catch (error) {
-      console.error('No se pudieron cargar los clientes:', error);
-      this.customerError.set('No se pudieron cargar los clientes disponibles.');
-    } finally {
-      this.customersLoading.set(false);
+  protected onCustomerSearchChanged(term: string): void {
+    this.customerSearchTerm.set(term);
+    if (this.customerSearchTimer) {
+      clearTimeout(this.customerSearchTimer);
+      this.customerSearchTimer = null;
     }
-  }
 
-  private ensureCustomerInList(customer?: Customer | null): void {
-    if (!customer) {
+    if (!this.shouldExecuteCustomerSearch(term)) {
+      this.customersLoading.set(false);
+      this.customers.set([]);
+      this.customerError.set(null);
       return;
     }
 
-    this.customers.update(list => {
-      const exists = list.some(item => item.id === customer.id);
-      if (exists) {
-        return list.map(item => item.id === customer.id ? { ...item, ...customer } : item);
+    this.customerSearchTimer = setTimeout(() => {
+      void this.performCustomerSearch(term);
+    }, 350);
+  }
+
+  protected refreshCustomerResults(): void {
+    if (this.customerSearchTimer) {
+      clearTimeout(this.customerSearchTimer);
+      this.customerSearchTimer = null;
+    }
+
+    const term = this.customerSearchTerm();
+    if (!this.shouldExecuteCustomerSearch(term)) {
+      return;
+    }
+
+    void this.performCustomerSearch(term);
+  }
+
+  private async performCustomerSearch(rawTerm: string): Promise<void> {
+    const requestId = ++this.latestCustomerSearchId;
+    this.customersLoading.set(true);
+    this.customerError.set(null);
+
+    const term = rawTerm?.trim() ?? '';
+
+    try {
+      const results = await this.supabase.searchCustomers(term, 10);
+      if (this.latestCustomerSearchId !== requestId) {
+        return;
       }
-      return [...list, customer];
-    });
+
+      this.customers.set(results);
+      this.refreshSelectedCustomerFromResults(results);
+    } catch (error) {
+      if (this.latestCustomerSearchId !== requestId) {
+        return;
+      }
+
+      console.error('No se pudieron buscar los clientes:', error);
+      this.customerError.set('No se pudieron buscar clientes. Inténtalo de nuevo en unos segundos.');
+    } finally {
+      if (this.latestCustomerSearchId === requestId) {
+        this.customersLoading.set(false);
+      }
+    }
+  }
+
+  private refreshSelectedCustomerFromResults(results: Customer[]): void {
+    const currentId = this.selectedCustomerId();
+    if (!currentId) {
+      return;
+    }
+
+    const match = results.find(customer => customer.id === currentId);
+    if (match) {
+      this.cachedSelectedCustomer.set(match);
+    }
+  }
+
+  private shouldExecuteCustomerSearch(term: string): boolean {
+    const trimmed = term?.trim() ?? '';
+    return trimmed.length === 0 || trimmed.length >= 2;
   }
 
   protected async onCustomerSelected(customerId: string | null): Promise<void> {
@@ -234,12 +284,17 @@ export class BudgetEditorComponent {
       await this.supabase.updateBudget(this.currentBudgetId(), { customerId });
       this.selectedCustomerId.set(customerId);
 
-      if (customerId) {
-        const existing = this.customers().find(customer => customer.id === customerId);
-        if (!existing) {
-          const fetchedCustomer = await this.supabase.getCustomer(customerId);
-          this.ensureCustomerInList(fetchedCustomer ?? undefined);
-        }
+      if (!customerId) {
+        this.cachedSelectedCustomer.set(null);
+        return;
+      }
+
+      const existing = this.customers().find(customer => customer.id === customerId);
+      if (existing) {
+        this.cachedSelectedCustomer.set(existing);
+      } else {
+        const fetchedCustomer = await this.supabase.getCustomer(customerId);
+        this.cachedSelectedCustomer.set(fetchedCustomer ?? null);
       }
     } catch (error) {
       console.error('No se pudo actualizar el cliente del presupuesto:', error);

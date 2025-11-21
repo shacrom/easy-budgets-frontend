@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Customer } from '../../../models/customer.model';
 
 @Component({
@@ -8,11 +7,12 @@ import { Customer } from '../../../models/customer.model';
   standalone: true,
   templateUrl: './customer-selector.component.html',
   styleUrls: ['./customer-selector.component.css'],
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CustomerSelectorComponent {
   customers = input<Customer[]>([]);
+  searchTerm = input<string>('');
   selectedCustomerId = input<string | null>(null);
   selectedCustomer = input<Customer | null>(null);
   loading = input<boolean>(false);
@@ -20,38 +20,26 @@ export class CustomerSelectorComponent {
   errorMessage = input<string | null>(null);
 
   customerSelected = output<string | null>();
-
-  protected readonly searchTerm = signal('');
-
-  protected readonly filteredCustomers = computed(() => {
-    const list = this.customers() ?? [];
-    const term = this.searchTerm().trim().toLowerCase();
-
-    if (!term) {
-      return list.slice(0, 12);
-    }
-
-    return list
-      .filter(customer => {
-        const values = [
-          customer.name,
-          customer.email ?? '',
-          customer.phone ?? '',
-          customer.city ?? '',
-          customer.dni ?? '',
-          customer.taxId ?? ''
-        ];
-
-        return values.some(value => value?.toLowerCase().includes(term));
-      })
-      .slice(0, 12);
-  });
+  searchChanged = output<string>();
+  refreshRequested = output<void>();
 
   protected readonly hasCustomers = computed(() => (this.customers()?.length ?? 0) > 0);
+  protected readonly meetsSearchThreshold = computed(() => this.searchTerm().trim().length >= 2);
 
   protected updateSearch(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.searchTerm.set(value);
+    const value = (event.target as HTMLInputElement).value ?? '';
+    this.searchChanged.emit(value);
+  }
+
+  protected retrySearch(): void {
+    this.refreshRequested.emit();
+  }
+
+  protected clearSearch(): void {
+    if (this.loading()) {
+      return;
+    }
+    this.searchChanged.emit('');
   }
 
   protected selectCustomer(customerId: string): void {
