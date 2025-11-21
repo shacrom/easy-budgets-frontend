@@ -304,7 +304,7 @@ export class ProductsCatalogComponent implements AfterViewInit {
       description: '',
       manufacturer: '',
       basePrice: 0,
-      vatRate: 21,
+      vatRate: 0,
       category: '',
       active: true
     });

@@ -84,7 +84,7 @@ export class SupabaseService {
       description: product.description,
       manufacturer: product.manufacturer,
       basePrice: product.unitPrice,
-      vatRate: 21, // Por defecto 21% si no existe
+      vatRate: product.vatRate ?? 0,
       category: product.category,
       active: product.isActive,
       createdAt: product.createdAt,
@@ -111,6 +111,7 @@ export class SupabaseService {
         description: product.description,
         manufacturer: product.manufacturer,
         unitPrice: product.basePrice,
+        vatRate: product.vatRate, // Guardar IVA
         category: product.category,
         isActive: product.active ?? true
       }])
@@ -126,7 +127,7 @@ export class SupabaseService {
       description: data.description,
       manufacturer: data.manufacturer,
       basePrice: data.unitPrice,
-      vatRate: 21,
+      vatRate: data.vatRate ?? 21,
       category: data.category,
       active: data.isActive,
       createdAt: data.createdAt,
@@ -142,6 +143,7 @@ export class SupabaseService {
         description: updates.description,
         manufacturer: updates.manufacturer,
         unitPrice: updates.basePrice,
+        vatRate: updates.vatRate, // Actualizar IVA
         category: updates.category,
         isActive: updates.active
       })
@@ -158,7 +160,7 @@ export class SupabaseService {
       description: data.description,
       manufacturer: data.manufacturer,
       basePrice: data.unitPrice,
-      vatRate: 21,
+      vatRate: data.vatRate ?? 21,
       category: data.category,
       active: data.isActive,
       createdAt: data.createdAt,
