@@ -74,7 +74,7 @@ CREATE INDEX "idx_Customers_email" ON "Customers"("email");
 CREATE TABLE "Budgets" (
   "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   "budgetNumber" VARCHAR(50) UNIQUE NOT NULL,
-  "customerId" UUID REFERENCES "Customers"("id") ON DELETE SET NULL,
+  "customerId" UUID REFERENCES "Customers"("id") ON DELETE RESTRICT,
   "title" VARCHAR(255) NOT NULL,
   "status" VARCHAR(50) DEFAULT 'draft' CHECK ("status" IN ('draft', 'sent', 'accepted', 'rejected', 'archived')),
   "subtotal" DECIMAL(10,2) NOT NULL DEFAULT 0,
