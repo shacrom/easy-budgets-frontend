@@ -27,6 +27,7 @@
 .products-page td[mat-cell] {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .products-page .cdk-column-reference {
