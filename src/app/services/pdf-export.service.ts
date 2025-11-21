@@ -227,7 +227,7 @@ export class PdfExportService {
               width: 'auto',
               text: [
                 { text: 'D.N.I.:  ', bold: false },
-                { text: customer?.taxId ?? '' }
+                { text: this.getCustomerDocument(customer) }
               ]
             }
           ],
@@ -302,7 +302,7 @@ export class PdfExportService {
       .filter(Boolean)
       .map(value => value!.toString().toUpperCase());
 
-    return parts.join(' · ');
+    return parts.join(' - ');
   }
 
   private buildFooter(payload: BudgetPdfPayload, currentPage: number, pageCount: number): Content {
@@ -322,6 +322,14 @@ export class PdfExportService {
         }
       ]
     };
+  }
+
+  private getCustomerDocument(customer: Customer | null): string {
+    if (!customer) {
+      return '';
+    }
+
+    return customer.dni || customer.taxId || '';
   }
 
   private buildCustomerSection(customer: Customer | null): Content | null {
