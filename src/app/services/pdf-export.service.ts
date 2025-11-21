@@ -245,7 +245,7 @@ export class PdfExportService {
               width: '*',
               text: [
                 { text: 'Dirección.  ', bold: false },
-                { text: customer?.address ?? '' }
+                { text: this.buildAddressLine(customer) }
               ]
             },
             {
@@ -291,6 +291,18 @@ export class PdfExportService {
         color: '#1f2933'
       }
     };
+  }
+
+  private buildAddressLine(customer: Customer | null): string {
+    if (!customer) {
+      return '';
+    }
+
+    const parts = [customer.address, customer.postalCode]
+      .filter(Boolean)
+      .map(value => value!.toString().toUpperCase());
+
+    return parts.join(' · ');
   }
 
   private buildFooter(payload: BudgetPdfPayload, currentPage: number, pageCount: number): Content {
