@@ -65,7 +65,7 @@
             @for (product of paginatedProducts(); track product.id ?? product.reference) {
               <tr>
                 <td>{{ product.reference }}</td>
-                <td [attr.title]="product.description">{{ product.description }}</td>
+                <td class="description-cell" [attr.title]="product.description">{{ product.description }}</td>
                 <td>{{ product.manufacturer }}</td>
                 <td>{{ product.category || '—' }}</td>
                 <td class="numeric">{{ (product.basePrice || 0).toFixed(2) }}€</td>

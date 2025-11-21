@@ -14,11 +14,21 @@
   table-layout: fixed;
 }
 
-.products-page table.management-table th,
-.products-page table.management-table td {
+.products-page table.management-table th {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.products-page table.management-table td {
+  white-space: nowrap;
+}
+
+.products-page table.management-table td.description-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
 }
 
 .products-page table.management-table th:nth-child(1) {
