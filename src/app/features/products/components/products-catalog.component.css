@@ -1,17 +1,68 @@
 @import "../../shared/styles/management-ui.css";
 
+.products-page .table-panel {
+  overflow-x: auto;
+}
+
 .products-page .management-table {
   width: 100%;
+  min-width: 1100px;
 }
 
 .products-page table.management-table {
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .products-page th[mat-header-cell],
 .products-page td[mat-cell] {
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid #f1f5f9;
+}
+
+.products-page th[mat-header-cell] {
+  white-space: nowrap;
+}
+
+.products-page td[mat-cell] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.products-page .cdk-column-reference {
+  width: 100px;
+}
+
+.products-page .cdk-column-description {
+  width: 200px;
+}
+
+.products-page .cdk-column-manufacturer {
+  width: 140px;
+}
+
+.products-page .cdk-column-category {
+  width: 120px;
+}
+
+.products-page .cdk-column-basePrice {
+  width: 110px;
+}
+
+.products-page .cdk-column-vatRate {
+  width: 70px;
+}
+
+.products-page .cdk-column-finalPrice {
+  width: 110px;
+}
+
+.products-page .cdk-column-active {
+  width: 100px;
+}
+
+.products-page .cdk-column-actions {
+  width: 120px;
 }
 
 .products-page .mat-mdc-cell {
@@ -21,6 +72,13 @@
 
 .products-page .mat-mdc-table {
   background: transparent;
+  width: 100%;
+  max-width: 100%;
+}
+
+.products-page .mat-mdc-header-row,
+.products-page .mat-mdc-row {
+  display: table-row;
 }
 
 .products-page .mat-mdc-header-row {
