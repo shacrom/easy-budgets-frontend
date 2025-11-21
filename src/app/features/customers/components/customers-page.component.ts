@@ -168,9 +168,13 @@ export class CustomersPageComponent implements OnInit {
       await this.supabase.deleteCustomer(customer.id);
       this.customers.update(list => list.filter(item => item.id !== customer.id));
       this.successMessage.set('Cliente eliminado.');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting customer:', error);
-      this.errorMessage.set('No se pudo eliminar el cliente.');
+      if (error?.code === '23503') {
+        this.errorMessage.set('No se puede eliminar el cliente porque tiene presupuestos asociados. Elimina primero los presupuestos relacionados.');
+      } else {
+        this.errorMessage.set('No se pudo eliminar el cliente.');
+      }
     } finally {
       this.isLoading.set(false);
       setTimeout(() => this.successMessage.set(null), 3000);
