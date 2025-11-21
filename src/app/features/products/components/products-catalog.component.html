@@ -1,227 +1,175 @@
-<div class="products-catalog-container">
-  <!-- Header -->
-  <div class="header">
-    <button
-      (click)="toggleAddForm()"
-      class="btn-add-product"
-      type="button">
-      @if (showAddForm()) {
-        <span>Cancelar</span>
-      } @else {
-        <span>Añadir Producto</span>
-      }
-    </button>
-  </div>
-
-  <!-- Mensajes -->
-  @if (successMessage()) {
-    <div class="alert alert-success">
-      {{ successMessage() }}
+﻿<section class="management-page products-page">
+  <div class="actions-bar">
+    <div class="search-field">
+      <label for="product-search">Buscar</label>
+      <input
+        id="product-search"
+        type="text"
+        placeholder="Referencia, descripción, fabricante o categoría"
+        [value]="searchTerm()"
+        (input)="updateSearch($event)">
     </div>
-  }
+    <div class="actions-buttons">
+      <button
+        type="button"
+        class="btn ghost"
+        [disabled]="isLoading()"
+        (click)="loadProducts()">
+        Actualizar
+      </button>
+      <button
+        type="button"
+        class="btn dark"
+        (click)="openCreateForm()">
+        Nuevo Producto
+      </button>
+    </div>
+  </div>
 
   @if (errorMessage()) {
-    <div class="alert alert-error">
-      {{ errorMessage() }}
-    </div>
+    <div class="alert error">{{ errorMessage() }}</div>
   }
 
-  <!-- Formulario de Nuevo Producto -->
-  @if (showAddForm()) {
-    <div class="form-card">
-      <h2 class="text-xl font-bold text-gray-900 mb-4">Nuevo Producto</h2>
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">Referencia *</label>
-          <input
-            type="text"
-            [value]="newProduct().reference"
-            (input)="updateNewProductField('reference', $event)"
-            class="input-field"
-            placeholder="Ej: REF-001">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Fabricante *</label>
-          <input
-            type="text"
-            [value]="newProduct().manufacturer"
-            (input)="updateNewProductField('manufacturer', $event)"
-            class="input-field"
-            placeholder="Ej: DICA">
-        </div>
-
-        <div class="form-group col-span-2">
-          <label class="form-label">Descripción *</label>
-          <input
-            type="text"
-            [value]="newProduct().description"
-            (input)="updateNewProductField('description', $event)"
-            class="input-field"
-            placeholder="Descripción del producto">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Precio Base (€) *</label>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            [value]="newProduct().basePrice"
-            (input)="updateNewProductField('basePrice', $event)"
-            class="input-field"
-            placeholder="0.00">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">IVA (%) *</label>
-          <input
-            type="number"
-            step="1"
-            min="0"
-            max="100"
-            [value]="newProduct().vatRate"
-            (input)="updateNewProductField('vatRate', $event)"
-            class="input-field"
-            placeholder="21">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Categoría</label>
-          <input
-            type="text"
-            [value]="newProduct().category"
-            (input)="updateNewProductField('category', $event)"
-            class="input-field"
-            placeholder="Ej: Cocinas">
-        </div>
-
-        <div class="form-group flex items-center">
-          <input
-            type="checkbox"
-            id="new-active"
-            [checked]="newProduct().active"
-            (change)="updateNewProductField('active', $event)"
-            class="checkbox-field">
-          <label for="new-active" class="checkbox-label">Producto activo</label>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button
-          (click)="toggleAddForm()"
-          class="btn-secondary"
-          type="button">
-          Cancelar
-        </button>
-        <button
-          (click)="addProduct()"
-          [disabled]="isLoading()"
-          class="btn-primary"
-          type="button">
-          @if (isLoading()) {
-            <span>Guardando...</span>
-          } @else {
-            <span>Guardar Producto</span>
-          }
-        </button>
-      </div>
-    </div>
+  @if (successMessage()) {
+    <div class="alert success">{{ successMessage() }}</div>
   }
 
-  <!-- Buscador -->
-  <div class="search-container">
-    <input
-      type="text"
-      [value]="searchTerm()"
-      (input)="updateSearch($event)"
-      class="search-input"
-      placeholder="Buscar por referencia, descripción o fabricante...">
-    <span class="search-results-count">
-      {{ dataSource.filteredData.length }} producto(s) encontrado(s)
-    </span>
-  </div>
-
-  <!-- Tabla de Productos -->
-  <div class="table-container">
-    @if (isLoading() && products().length === 0) {
-      <div class="loading-state">
-        <p>Cargando productos...</p>
+  <div class="management-layout">
+    <div class="table-panel">
+      <div class="table-meta">
+        <span class="search-results-count">
+          {{ dataSource.filteredData.length }} producto(s) encontrado(s)
+        </span>
       </div>
-    } @else if (dataSource.data.length === 0) {
-      <div class="empty-state">
-        <p>No hay productos en el catálogo. Añade el primero.</p>
-      </div>
-    } @else {
-      <table mat-table [dataSource]="dataSource" class="mat-elevation-z1 products-table">
-        <!-- Referencia -->
-        <ng-container matColumnDef="reference">
-          <th mat-header-cell *matHeaderCellDef>Referencia</th>
-          <td mat-cell *matCellDef="let product">{{ product.reference }}</td>
-        </ng-container>
-        <!-- Descripción -->
-        <ng-container matColumnDef="description">
-          <th mat-header-cell *matHeaderCellDef>Descripción</th>
-          <td mat-cell *matCellDef="let product">{{ product.description }}</td>
-        </ng-container>
-        <!-- Fabricante -->
-        <ng-container matColumnDef="manufacturer">
-          <th mat-header-cell *matHeaderCellDef>Fabricante</th>
-          <td mat-cell *matCellDef="let product">{{ product.manufacturer }}</td>
-        </ng-container>
-        <!-- Categoría -->
-        <ng-container matColumnDef="category">
-          <th mat-header-cell *matHeaderCellDef>Categoría</th>
-          <td mat-cell *matCellDef="let product">{{ product.category || '-' }}</td>
-        </ng-container>
-        <!-- Precio Base -->
-        <ng-container matColumnDef="basePrice">
-          <th mat-header-cell *matHeaderCellDef>Precio Base</th>
-          <td mat-cell *matCellDef="let product" class="text-right">{{ (product.basePrice || 0).toFixed(2) }}€</td>
-        </ng-container>
-        <!-- IVA -->
-        <ng-container matColumnDef="vatRate">
-          <th mat-header-cell *matHeaderCellDef>IVA</th>
-          <td mat-cell *matCellDef="let product" class="text-right">{{ product.vatRate || 0 }}%</td>
-        </ng-container>
-        <!-- Precio Final -->
-        <ng-container matColumnDef="finalPrice">
-          <th mat-header-cell *matHeaderCellDef>Precio Final</th>
-          <td mat-cell *matCellDef="let product" class="text-right font-semibold">
-            {{ ((product.basePrice || 0) * (1 + (product.vatRate || 0) / 100)).toFixed(2) }}€
-          </td>
-        </ng-container>
-        <!-- Estado -->
-        <ng-container matColumnDef="active">
-          <th mat-header-cell *matHeaderCellDef>Estado</th>
-          <td mat-cell *matCellDef="let product">
-            <span *ngIf="product.active" class="badge badge-active">Activo</span>
-            <span *ngIf="!product.active" class="badge badge-inactive">Inactivo</span>
-          </td>
-        </ng-container>
-        <!-- Acciones -->
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef>Acciones</th>
-          <td mat-cell *matCellDef="let product">
-            <div class="action-buttons">
-              <button (click)="startEdit(product)" class="btn-edit" type="button" title="Editar">
-                <span class="material-icons">edit</span>
-              </button>
-              <button (click)="deleteProduct(product.id!)" class="btn-delete" type="button" title="Eliminar">
-                <span class="material-icons">delete</span>
-              </button>
-            </div>
-          </td>
-        </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
+      @if (isLoading() && products().length === 0) {
+        <div class="mono text-center padded-state">Cargando productos...</div>
+      } @else if (dataSource.filteredData.length === 0) {
+        <div class="mono text-center padded-state">No hay productos que coincidan con la búsqueda.</div>
+      } @else {
+        <table mat-table [dataSource]="dataSource" class="management-table mat-elevation-z0">
+          <ng-container matColumnDef="reference">
+            <th mat-header-cell *matHeaderCellDef>Referencia</th>
+            <td mat-cell *matCellDef="let product">{{ product.reference }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Descripción</th>
+            <td mat-cell *matCellDef="let product">{{ product.description }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="manufacturer">
+            <th mat-header-cell *matHeaderCellDef>Fabricante</th>
+            <td mat-cell *matCellDef="let product">{{ product.manufacturer }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef>Categoría</th>
+            <td mat-cell *matCellDef="let product">{{ product.category || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="basePrice">
+            <th mat-header-cell *matHeaderCellDef>Precio Base</th>
+            <td mat-cell *matCellDef="let product" class="numeric">{{ (product.basePrice || 0).toFixed(2) }}€</td>
+          </ng-container>
+
+          <ng-container matColumnDef="vatRate">
+            <th mat-header-cell *matHeaderCellDef>IVA</th>
+            <td mat-cell *matCellDef="let product" class="numeric">{{ product.vatRate || 0 }}%</td>
+          </ng-container>
+
+          <ng-container matColumnDef="finalPrice">
+            <th mat-header-cell *matHeaderCellDef>Precio Final</th>
+            <td mat-cell *matCellDef="let product" class="numeric strong">
+              {{ ((product.basePrice || 0) * (1 + (product.vatRate || 0) / 100)).toFixed(2) }}€
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="active">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let product">
+              <span class="badge" [class.badge-active]="product.active" [class.badge-inactive]="!product.active">
+                {{ product.active ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Acciones</th>
+            <td mat-cell *matCellDef="let product" class="actions-cell">
+              <button type="button" class="btn icon" (click)="openEditForm(product)">
+                <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+              </button>
+              <button type="button" class="btn icon danger" (click)="deleteProduct(product.id!)">
+                <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      }
       <mat-paginator
         [pageSizeOptions]="pageSizeOptions"
         showFirstLastButtons>
       </mat-paginator>
-    }
+    </div>
   </div>
-</div>
+
+  @if (showForm()) {
+    <div class="modal-overlay" (click)="cancelForm()">
+      <div class="form-panel" (click)="$event.stopPropagation()">
+        <div class="form-header">
+          <h3>{{ isEditing() ? 'Editar producto' : 'Nuevo producto' }}</h3>
+          <button type="button" class="btn ghost" (click)="cancelForm()">Cerrar</button>
+        </div>
+
+        <div class="form-grid">
+          <label class="form-field">
+            <span>Referencia *</span>
+            <input type="text" [value]="formValues().reference" (input)="updateFormField('reference', $event)">
+          </label>
+          <label class="form-field">
+            <span>Fabricante *</span>
+            <input type="text" [value]="formValues().manufacturer" (input)="updateFormField('manufacturer', $event)">
+          </label>
+          <label class="form-field full">
+            <span>Descripción *</span>
+            <input type="text" [value]="formValues().description" (input)="updateFormField('description', $event)">
+          </label>
+          <label class="form-field">
+            <span>Precio Base (€) *</span>
+            <input type="number" step="0.01" min="0" [value]="formValues().basePrice" (input)="updateFormField('basePrice', $event)">
+          </label>
+          <label class="form-field">
+            <span>IVA (%) *</span>
+            <input type="number" step="1" min="0" max="100" [value]="formValues().vatRate" (input)="updateFormField('vatRate', $event)">
+          </label>
+          <label class="form-field">
+            <span>Categoría</span>
+            <input type="text" [value]="formValues().category || ''" (input)="updateFormField('category', $event)">
+          </label>
+          <label class="form-field checkbox full">
+            <span>Estado</span>
+            <div class="checkbox-control">
+              <input
+                id="product-active"
+                type="checkbox"
+                [checked]="formValues().active ?? true"
+                (change)="updateFormField('active', $event)">
+              <label for="product-active">Producto activo</label>
+            </div>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn dark" [disabled]="isLoading()" (click)="submitForm()">
+            {{ isEditing() ? 'Guardar cambios' : 'Crear producto' }}
+          </button>
+          <button type="button" class="btn ghost" (click)="cancelForm()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

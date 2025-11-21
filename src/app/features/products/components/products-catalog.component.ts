@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, inject, ViewChild, AfterViewInit, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, inject, ViewChild, AfterViewInit, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -56,10 +56,12 @@ export class ProductsCatalogComponent implements AfterViewInit {
 
   // Estados de UI
   protected readonly isLoading = signal<boolean>(false);
-  protected readonly showAddForm = signal<boolean>(false);
+  protected readonly showForm = signal<boolean>(false);
   protected readonly errorMessage = signal<string>('');
   protected readonly successMessage = signal<string>('');
   protected readonly searchTerm = signal<string>('');
+  protected readonly isEditing = computed<boolean>(() => !!this.editingProduct());
+  protected readonly formValues = computed<Product | CreateProductDto>(() => this.editingProduct() ?? this.newProduct());
 
   constructor() {
     this.loadProducts();
@@ -77,10 +79,12 @@ export class ProductsCatalogComponent implements AfterViewInit {
     // Configurar filtro personalizado para buscar en múltiples campos
     this.dataSource.filterPredicate = (product: Product, filter: string) => {
       const searchStr = filter.toLowerCase();
+      const includesText = (value?: string | null) => (value ?? '').toLowerCase().includes(searchStr);
       return (
-        product.reference.toLowerCase().includes(searchStr) ||
-        product.description.toLowerCase().includes(searchStr) ||
-        product.manufacturer.toLowerCase().includes(searchStr)
+        includesText(product.reference) ||
+        includesText(product.description) ||
+        includesText(product.manufacturer) ||
+        includesText(product.category)
       );
     };
   }
@@ -107,11 +111,21 @@ export class ProductsCatalogComponent implements AfterViewInit {
   /**
    * Muestra/oculta el formulario de nuevo producto
    */
-  protected toggleAddForm(): void {
-    this.showAddForm.update(show => !show);
-    if (!this.showAddForm()) {
-      this.resetNewProduct();
-    }
+  protected openCreateForm(): void {
+    this.editingProduct.set(null);
+    this.resetNewProduct();
+    this.showForm.set(true);
+    this.clearMessages();
+  }
+
+  protected closeForm(): void {
+    this.showForm.set(false);
+    this.editingProduct.set(null);
+    this.resetNewProduct();
+  }
+
+  protected cancelForm(): void {
+    this.closeForm();
     this.clearMessages();
   }
 
@@ -139,9 +153,8 @@ export class ProductsCatalogComponent implements AfterViewInit {
       const newProduct = await this.supabaseService.createProduct(product);
       this.products.update(products => [...products, newProduct]);
       this.dataSource.data = [...this.dataSource.data, newProduct];
-      this.successMessage.set('Producto añadido correctamente');
-      this.resetNewProduct();
-      this.showAddForm.set(false);
+    this.successMessage.set('Producto añadido correctamente');
+    this.closeForm();
 
       setTimeout(() => this.successMessage.set(''), 3000);
     } catch (error) {
@@ -155,16 +168,9 @@ export class ProductsCatalogComponent implements AfterViewInit {
   /**
    * Inicia la edición de un producto
    */
-  protected startEdit(product: Product): void {
+  protected openEditForm(product: Product): void {
     this.editingProduct.set({ ...product });
-    this.clearMessages();
-  }
-
-  /**
-   * Cancela la edición
-   */
-  protected cancelEdit(): void {
-    this.editingProduct.set(null);
+    this.showForm.set(true);
     this.clearMessages();
   }
 
@@ -194,8 +200,8 @@ export class ProductsCatalogComponent implements AfterViewInit {
         products.map(p => p.id === updated.id ? updated : p)
       );
       this.dataSource.data = this.dataSource.data.map(p => p.id === updated.id ? updated : p);
-      this.editingProduct.set(null);
       this.successMessage.set('Producto actualizado correctamente');
+      this.closeForm();
 
       setTimeout(() => this.successMessage.set(''), 3000);
     } catch (error) {
@@ -221,6 +227,9 @@ export class ProductsCatalogComponent implements AfterViewInit {
       await this.supabaseService.deleteProduct(productId);
       this.products.update(products => products.filter(p => p.id !== productId));
       this.dataSource.data = this.dataSource.data.filter(p => p.id !== productId);
+      if (this.editingProduct()?.id === productId) {
+        this.closeForm();
+      }
       this.successMessage.set('Producto eliminado correctamente');
 
       setTimeout(() => this.successMessage.set(''), 3000);
@@ -246,7 +255,7 @@ export class ProductsCatalogComponent implements AfterViewInit {
   protected updateNewProductField(field: keyof CreateProductDto, event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = field === 'basePrice' || field === 'vatRate'
-      ? parseFloat(input.value)
+      ? this.parseNumber(input.value)
       : field === 'active'
         ? (input as HTMLInputElement).checked
         : input.value;
@@ -260,7 +269,7 @@ export class ProductsCatalogComponent implements AfterViewInit {
   protected updateEditingProductField(field: keyof Product, event: Event): void {
     const input = event.target as HTMLInputElement;
     const value = field === 'basePrice' || field === 'vatRate'
-      ? parseFloat(input.value)
+      ? this.parseNumber(input.value)
       : field === 'active'
         ? (input as HTMLInputElement).checked
         : input.value;
@@ -268,6 +277,22 @@ export class ProductsCatalogComponent implements AfterViewInit {
     this.editingProduct.update(product =>
       product ? { ...product, [field]: value } : null
     );
+  }
+
+  protected updateFormField(field: keyof CreateProductDto, event: Event): void {
+    if (this.editingProduct()) {
+      this.updateEditingProductField(field as keyof Product, event);
+    } else {
+      this.updateNewProductField(field, event);
+    }
+  }
+
+  protected async submitForm(): Promise<void> {
+    if (this.editingProduct()) {
+      await this.saveProduct(this.editingProduct()!);
+    } else {
+      await this.addProduct();
+    }
   }
 
   /**
@@ -291,5 +316,10 @@ export class ProductsCatalogComponent implements AfterViewInit {
   private clearMessages(): void {
     this.errorMessage.set('');
     this.successMessage.set('');
+  }
+
+  private parseNumber(value: string): number {
+    const parsed = parseFloat(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
   }
 }
