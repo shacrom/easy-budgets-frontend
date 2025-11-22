@@ -57,6 +57,11 @@ const GENERAL_CONDITIONS: Condition[] = [
     id: '5',
     title: '',
     text: 'La venta de la mercancía descrita queda condicionada al total pago del importe estipulado en el plazo fijado, reservándose en todo caso Entrecuines Dos S.L el dominio de la citada mercancía hasta el total pago del importe contratado.'
+  },
+  {
+    id: '6',
+    title: '',
+    text: 'Le recordamos que la información de carácter personal contenida en este documento ha sido incorporada a un fichero titularidad de DELTA ASESORES, cuya finalidad es la debida gestión administrativa, económica, y contable del despacho. De acuerdo con lo dispuesto en la L.O. 15/1999, de Protección de Datos de Carácter Personal, Ud. tiene derecho a ejercitar los derechos de acceso, rectificación, cancelación, y en su caso, oposición, enviando una solicitud por escrito, acompañada de una fotocopia de su DNI a la siguiente dirección: Avda. de las Cortes Valencianas, 22 esc. A 1º, 4º de Valencia, 46015.  En cualquier caso, si en un plazo de 30 días desde la recepción de este documento, usted no expone su negativa, entenderemos que consiente el tratamiento de sus datos de carácter  personal.'
   }
 ];
 
@@ -92,12 +97,17 @@ const DICA_CONDITIONS: Condition[] = [
   {
     id: '6',
     title: 'Pago mediante financiación:',
-    text: 'Las cantidades se deberán abonar mediante trasferencia bancaria a Entrecuines Dos S.L a la cuenta: ES97 2100 4757 7813 0056 4698 de CAIXABANK. La venta de la mercancía descrita queda condicionada al total pago del importe estipulado en el plazo fijado, reservándose en todo caso Entrecuines Dos S.L el dominio de la citada mercancía hasta el total pago del importe contratado.'
+    text: 'Las cantidades se deberán abonar mediante trasferencia bancaria a Entrecuines Dos S.L a la cuenta: ES97 2100 4757 7813 0056 4698 de CAIXABANK.'
   },
   {
     id: '7',
     title: '',
     text: 'La venta de la mercancía descrita queda condicionada al total pago del importe estipulado en el plazo fijado, reservándose en todo caso Entrecuines Dos S.L el dominio de la citada mercancía hasta el total pago del importe contratado.'
+  },
+  {
+    id: '8',
+    title: '',
+    text: 'Le recordamos que la información de carácter personal contenida en este documento ha sido incorporada a un fichero titularidad de DELTA ASESORES, cuya finalidad es la debida gestión administrativa, económica, y contable del despacho. De acuerdo con lo dispuesto en la L.O. 15/1999, de Protección de Datos de Carácter Personal, Ud. tiene derecho a ejercitar los derechos de acceso, rectificación, cancelación, y en su caso, oposición, enviando una solicitud por escrito, acompañada de una fotocopia de su DNI a la siguiente dirección: Avda. de las Cortes Valencianas, 22 esc. A 1º, 4º de Valencia, 46015.  En cualquier caso, si en un plazo de 30 días desde la recepción de este documento, usted no expone su negativa, entenderemos que consiente el tratamiento de sus datos de carácter  personal.'
   }
 ];
 
@@ -144,6 +154,11 @@ const DIOMO_CONDITIONS: Condition[] = [
     id: '8',
     title: '',
     text: 'La venta de la mercancía descrita queda condicionada al total pago del importe estipulado en el plazo fijado, reservándose en todo caso Entrecuines Dos S.L el dominio de la citada mercancía hasta el total pago del importe contratado.'
+  },
+  {
+    id: '9',
+    title: '',
+    text: 'Le recordamos que la información de carácter personal contenida en este documento ha sido incorporada a un fichero titularidad de DELTA ASESORES, cuya finalidad es la debida gestión administrativa, económica, y contable del despacho. De acuerdo con lo dispuesto en la L.O. 15/1999, de Protección de Datos de Carácter Personal, Ud. tiene derecho a ejercitar los derechos de acceso, rectificación, cancelación, y en su caso, oposición, enviando una solicitud por escrito, acompañada de una fotocopia de su DNI a la siguiente dirección: Avda. de las Cortes Valencianas, 22 esc. A 1º, 4º de Valencia, 46015.  En cualquier caso, si en un plazo de 30 días desde la recepción de este documento, usted no expone su negativa, entenderemos que consiente el tratamiento de sus datos de carácter  personal.'
   }
 ];
 

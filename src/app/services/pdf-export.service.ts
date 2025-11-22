@@ -1018,11 +1018,12 @@ export class PdfExportService {
       stack: [
         header,
         {
-          ol: conditions.map(condition => ({
+          ol: conditions.map((condition, index) => ({
             stack: this.compactContent([
               condition.title ? { text: condition.title, bold: true, margin: [0, 0, 0, 2] as [number, number, number, number], color: this.accentColor } : null,
               { text: condition.text }
-            ])
+            ]),
+            margin: [0, index === 0 ? 0 : 6, 0, 6] as [number, number, number, number]
           }))
         }
       ]
