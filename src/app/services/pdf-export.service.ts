@@ -590,10 +590,12 @@ export class PdfExportService {
     const overallTotal = allRows.reduce((sum, row) => sum + (row.totalPrice ?? 0), 0);
     const content: Content[] = [];
 
-    content.push(this.buildCard([
-      { text: 'MATERIALES Y EQUIPAMIENTO', style: 'materialsIntroTitle' },
-      // { text: 'Detalle desglosado de los suministros seleccionados para este presupuesto.', style: 'materialsCardSubtitle', margin: [0, 2, 0, 10] as [number, number, number, number] },
-    ], '#f9f6f2'));
+    content.push(
+      this.buildSectionHero({
+        title: 'Materiales y equipamiento',
+        background: '#f9f6f2'
+      })
+    );
 
     for (const table of groupedTables) {
       const rows = table.rows ?? [];
@@ -757,7 +759,7 @@ export class PdfExportService {
 
     return [
       {
-        text: isChild ? `• ${safeLabel}` : safeLabel,
+        text: isChild ? `${safeLabel}` : safeLabel,
         margin: leftMargin,
         color,
         fontSize: isChild ? 9 : 10,
