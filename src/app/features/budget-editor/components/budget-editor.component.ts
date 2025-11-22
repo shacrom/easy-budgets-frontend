@@ -64,6 +64,8 @@ export class BudgetEditorComponent {
   protected readonly conditionsList = signal<Condition[]>([]);
   protected readonly pdfGenerating = signal<boolean>(false);
   protected readonly countertopData = signal<Countertop | null>(null);
+  protected readonly budgetTitleInput = signal<string>('');
+  protected readonly savingBudgetTitle = signal<boolean>(false);
 
   // Visibility signals
   protected readonly showTextBlocks = signal<boolean>(true);
@@ -166,6 +168,7 @@ export class BudgetEditorComponent {
         validUntil: budget?.validUntil ?? null,
         createdAt: budget?.createdAt ?? null
       });
+      this.budgetTitleInput.set(budget?.title ?? '');
 
       this.showTextBlocks.set(budget.showTextBlocks ?? true);
       this.showMaterials.set(budget.showMaterials ?? true);
@@ -380,6 +383,51 @@ export class BudgetEditorComponent {
 
   protected onConditionsChanged(conditions: Condition[]): void {
     this.conditionsList.set(conditions);
+  }
+
+  protected onBudgetTitleInput(value: string): void {
+    this.budgetTitleInput.set(value);
+  }
+
+  protected onBudgetTitleKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      void this.persistBudgetTitle();
+    }
+  }
+
+  protected onBudgetTitleBlur(): void {
+    void this.persistBudgetTitle();
+  }
+
+  private async persistBudgetTitle(): Promise<void> {
+    const id = this.currentBudgetId();
+    if (!id || this.savingBudgetTitle()) {
+      return;
+    }
+
+    const newTitle = this.budgetTitleInput().trim();
+    const normalized = newTitle.length ? newTitle : null;
+    const currentTitle = this.budgetMeta()?.title ?? null;
+
+    if ((currentTitle ?? null) === normalized) {
+      if (newTitle !== (currentTitle ?? '')) {
+        this.budgetTitleInput.set(currentTitle ?? '');
+      }
+      return;
+    }
+
+    this.savingBudgetTitle.set(true);
+    try {
+      const updated = await this.supabase.updateBudget(id, { title: normalized });
+      const resolvedTitle = updated?.title ?? normalized ?? '';
+      this.budgetMeta.update(meta => meta ? ({ ...meta, title: resolvedTitle || null }) : meta);
+      this.budgetTitleInput.set(resolvedTitle ?? '');
+    } catch (error) {
+      console.error('No se pudo actualizar el título del presupuesto:', error);
+    } finally {
+      this.savingBudgetTitle.set(false);
+    }
   }
 
   protected async exportBudgetPdf(): Promise<void> {

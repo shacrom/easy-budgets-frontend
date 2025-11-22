@@ -3,6 +3,26 @@
     <div class="header-content">
       <h1>Creador de Presupuestos</h1>
       <p>Genera un documento profesional con todos los apartados.</p>
+      <div class="budget-title-editor">
+        <label for="budget-title-input">Título del presupuesto</label>
+        <div class="budget-title-input-wrapper">
+          <input
+            id="budget-title-input"
+            type="text"
+            class="budget-title-input"
+            #budgetTitleField
+            [value]="budgetTitleInput()"
+            (input)="onBudgetTitleInput(budgetTitleField.value)"
+            (blur)="onBudgetTitleBlur()"
+            (keydown)="onBudgetTitleKeydown($event)"
+            [placeholder]="isInitialized() ? 'Ej. Reforma cocina familia García' : 'Cargando...'"
+            [disabled]="!isInitialized()"
+          />
+          @if (savingBudgetTitle()) {
+            <span class="budget-title-status">Guardando…</span>
+          }
+        </div>
+      </div>
     </div>
     <div class="header-actions">
       <button
