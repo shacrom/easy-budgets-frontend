@@ -817,8 +817,7 @@ export class PdfExportService {
     if (countertop.model) {
       stack.push({
         text: [
-          { text: 'MODELO ENCIMERA: ', bold: true },
-          { text: countertop.model.toUpperCase() }
+          { text: countertop.model.toUpperCase(), bold: true }
         ],
         margin: [0, 0, 0, 8] as [number, number, number, number],
         style: 'box'
