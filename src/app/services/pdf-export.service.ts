@@ -435,7 +435,7 @@ export class PdfExportService {
     const totalMobiliario = blocks.reduce((sum, block) => sum + (block.subtotal || 0), 0);
     const header = this.buildSectionHero({
       title: 'Mobiliario',
-      background: '#fef9f4'
+      background: '#cbb39a'
     });
 
     return [
@@ -509,7 +509,7 @@ export class PdfExportService {
   }
 
   private buildSectionHero(options: SectionHeroOptions): Content {
-    const background = options.background ?? '#fef9f4';
+    const background = options.background ?? '#cbb39a';
 
     const columns: Content[] = [
       {
@@ -592,8 +592,8 @@ export class PdfExportService {
 
     content.push(
       this.buildSectionHero({
-        title: 'Materiales y equipamiento',
-        background: '#f9f6f2'
+      title: 'Materiales y equipamiento',
+      background: '#cbb39a'
       })
     );
 
@@ -607,7 +607,7 @@ export class PdfExportService {
     }
 
     content.push(this.buildCard([
-      { text: 'Total materiales', style: 'sectionCardTitle' },
+      { text: 'TOTAL MATERIALES', style: 'sectionCardTitle' },
       { text: this.formatCurrency(overallTotal), style: 'sectionGrandTotal', alignment: 'right', margin: [0, 4, 0, 0] as [number, number, number, number] }
     ], '#f4ede5'));
 
@@ -720,7 +720,7 @@ export class PdfExportService {
     const borderColor = '#e5d5c2';
 
     return {
-      fillColor: (rowIndex: number) => (rowIndex % 2 === 1 ? '#fcfaf6' : null),
+      fillColor: () => null, // No background for breakdown lines
       hLineWidth: (rowIndex: number) => (rowIndex === 0 ? 0 : 0.5),
       vLineWidth: () => 0,
       hLineColor: () => borderColor,
@@ -732,22 +732,16 @@ export class PdfExportService {
   }
 
   private summaryTotalsLayout(): TableLayout {
+    // Only apply background color to each total row, not to breakdown lines
+    const backgrounds = ['#fff7ed', '#fffbeb', '#fff4e6'];
     return {
-      fillColor: (rowIndex: number) => {
-        if (rowIndex === 2) {
-          return '#fff4e6';
-        }
-        if (rowIndex === 1) {
-          return '#fffbeb';
-        }
-        return '#fff7ed';
-      },
+      fillColor: (rowIndex: number) => backgrounds[rowIndex] ?? null,
       hLineWidth: () => 0,
       vLineWidth: () => 0,
       paddingLeft: (index: number) => (index === 0 ? 16 : 8),
       paddingRight: () => 8,
-      paddingTop: (rowIndex: number) => (rowIndex === 2 ? 12 : 10),
-      paddingBottom: (rowIndex: number) => (rowIndex === 2 ? 12 : 10)
+      paddingTop: () => 12,
+      paddingBottom: () => 12
     };
   }
 
@@ -810,7 +804,7 @@ export class PdfExportService {
     if (!countertop) return null;
     const header = this.buildSectionHero({
       title: 'Encimera',
-      background: '#fef9f4'
+      background: '#cbb39a'
     });
 
     const stack: Content[] = [];
@@ -918,14 +912,14 @@ export class PdfExportService {
     }
 
     const totalsRows: TableCell[][] = [
-      this.summaryTotalsRow('Subtotal', summary.subtotal),
+      this.summaryTotalsRow('SUBTOTAL', summary.subtotal),
       this.summaryTotalsRow(`IVA (${summary.vatPercentage}%)`, summary.vat),
-      this.summaryTotalsRow('Total general', summary.grandTotal, true)
+      this.summaryTotalsRow('TOTAL GENERAL', summary.grandTotal, true)
     ];
 
     const header = this.buildSectionHero({
-      title: 'Resumen económico',
-      background: '#fef9f4'
+      title: 'Resumen precios',
+      background: '#cbb39a'
     });
 
     const cardContent = this.compactContent([
@@ -963,7 +957,7 @@ export class PdfExportService {
 
     const header = this.buildSectionHero({
       title,
-      background: '#fef9f4'
+      background: '#cbb39a'
     });
 
     return {

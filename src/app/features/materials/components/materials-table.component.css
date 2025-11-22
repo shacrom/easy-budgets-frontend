@@ -90,7 +90,7 @@
 }
 
 .table-title-input {
-  @apply w-full border-b border-gray-300 bg-transparent text-xl font-semibold uppercase tracking-[0.1em] text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:outline-none;
+  @apply w-full border-b border-gray-300 bg-transparent text-xl font-semibold tracking-[0.1em] text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:outline-none;
 }
 
 .card-subtitle {
