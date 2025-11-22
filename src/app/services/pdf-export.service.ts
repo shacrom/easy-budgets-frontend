@@ -157,7 +157,7 @@ export class PdfExportService {
       { text: '', pageBreak: 'after' },
       this.buildCountertopSection(countertop),
       { text: '', pageBreak: 'after' },
-      this.buildSummarySection(payload.summary),
+      this.buildSummarySection(payload.summary, blocks, payload.materialTables),
       { text: '', pageBreak: 'after' },
       this.buildConditionsSection(payload.conditionsTitle, payload.conditions)
     ]);
@@ -714,6 +714,96 @@ export class PdfExportService {
     };
   }
 
+  private summaryLineItemsLayout(): TableLayout {
+    const borderColor = '#e5d5c2';
+
+    return {
+      fillColor: (rowIndex: number) => (rowIndex % 2 === 1 ? '#fcfaf6' : null),
+      hLineWidth: (rowIndex: number) => (rowIndex === 0 ? 0 : 0.5),
+      vLineWidth: () => 0,
+      hLineColor: () => borderColor,
+      paddingLeft: (index: number) => (index === 0 ? 12 : 8),
+      paddingRight: () => 8,
+      paddingTop: () => 4,
+      paddingBottom: () => 4
+    };
+  }
+
+  private summaryTotalsLayout(): TableLayout {
+    return {
+      fillColor: (rowIndex: number) => {
+        if (rowIndex === 2) {
+          return '#fff4e6';
+        }
+        if (rowIndex === 1) {
+          return '#fffbeb';
+        }
+        return '#fff7ed';
+      },
+      hLineWidth: () => 0,
+      vLineWidth: () => 0,
+      paddingLeft: (index: number) => (index === 0 ? 16 : 8),
+      paddingRight: () => 8,
+      paddingTop: (rowIndex: number) => (rowIndex === 2 ? 12 : 10),
+      paddingBottom: (rowIndex: number) => (rowIndex === 2 ? 12 : 10)
+    };
+  }
+
+  private summaryCategoryRow(label: string, value: number, isChild = false): TableCell[] {
+    const safeLabel = label?.trim() ? label : 'Concepto';
+    const color = isChild ? '#4b5563' : '#1f2933';
+    const leftMargin: [number, number, number, number] = isChild ? [12, 4, 0, 4] : [0, 6, 0, 6];
+    const rightMargin: [number, number, number, number] = isChild ? [0, 4, 0, 4] : [0, 6, 0, 6];
+
+    return [
+      {
+        text: isChild ? `• ${safeLabel}` : safeLabel,
+        margin: leftMargin,
+        color,
+        fontSize: isChild ? 9 : 10,
+        bold: !isChild
+      },
+      {
+        text: this.formatCurrency(value),
+        alignment: 'right',
+        margin: rightMargin,
+        color,
+        bold: !isChild
+      }
+    ];
+  }
+
+  private summaryTotalsRow(label: string, value: number, emphasize = false): TableCell[] {
+    const color = emphasize ? this.accentColor : '#1f2933';
+    const fontSize = emphasize ? 13 : 11;
+
+    return [
+      {
+        text: label,
+        bold: true,
+        fontSize,
+        color,
+        margin: [0, 6, 0, 6] as [number, number, number, number]
+      },
+      {
+        text: this.formatCurrency(value),
+        alignment: 'right',
+        bold: true,
+        fontSize,
+        color,
+        margin: [0, 6, 0, 6] as [number, number, number, number],
+        decoration: emphasize ? 'underline' : undefined
+      }
+    ];
+  }
+
+  private calculateMaterialTableTotal(table: MaterialTable): number {
+    return table.rows.reduce((sum, material) => {
+      const total = material.totalPrice ?? (material.quantity ?? 0) * (material.unitPrice ?? 0);
+      return sum + total;
+    }, 0);
+  }
+
   private buildCountertopSection(countertop: Countertop | null): Content | null {
     if (!countertop) return null;
     const header = this.buildSectionHero({
@@ -773,55 +863,94 @@ export class PdfExportService {
     };
   }
 
-  private buildSummarySection(summary: BudgetSummary | null): Content | null {
+  private buildSummarySection(
+    summary: BudgetSummary | null,
+    blocks: BudgetTextBlock[],
+    materialTables: MaterialTable[]
+  ): Content | null {
     if (!summary) {
       return null;
     }
 
-    const rows: TableCell[][] = [];
+    const blockBreakdown = blocks
+      .map(block => ({
+        label: block.heading?.trim() || 'Bloque sin título',
+        value: block.subtotal ?? 0
+      }))
+      .filter(line => Number.isFinite(line.value));
+
+    const materialBreakdown = materialTables
+      .map(table => ({
+        label: table.title?.trim() || 'Tabla sin título',
+        value: this.calculateMaterialTableTotal(table)
+      }))
+      .filter(line => Number.isFinite(line.value));
+
+    const breakdownRows: TableCell[][] = [];
+    const pushCategory = (
+      label: string,
+      value: number,
+      breakdown?: Array<{ label: string; value: number }>
+    ): void => {
+      breakdownRows.push(this.summaryCategoryRow(label, value));
+      breakdown?.forEach(line => {
+        breakdownRows.push(this.summaryCategoryRow(line.label, line.value, true));
+      });
+    };
 
     if (summary.totalBlocks > 0) {
-      rows.push(['Total mobiliario', this.formatCurrency(summary.totalBlocks)]);
+      pushCategory('Total mobiliario', summary.totalBlocks, blockBreakdown);
     }
 
     if (summary.totalMaterials > 0) {
-      rows.push(['Total materiales', this.formatCurrency(summary.totalMaterials)]);
+      pushCategory('Total materiales', summary.totalMaterials, materialBreakdown);
     }
 
     if (summary.totalCountertop && summary.totalCountertop > 0) {
-      rows.push(['Total encimera', this.formatCurrency(summary.totalCountertop)]);
+      pushCategory('Total encimera', summary.totalCountertop);
     }
-
-    rows.push(['Subtotal', this.formatCurrency(summary.subtotal)]);
-    rows.push([`IVA (${summary.vatPercentage}%)`, this.formatCurrency(summary.vat)]);
-    rows.push(['Total general', this.formatCurrency(summary.grandTotal)]);
 
     if (summary.additionalLines?.length) {
-      for (const line of summary.additionalLines) {
-        rows.splice(rows.length - 1, 0, [line.concept, this.formatCurrency(line.amount)]);
-      }
+      summary.additionalLines.forEach(line => {
+        pushCategory(line.concept || 'Concepto adicional', line.amount);
+      });
     }
+
+    const totalsRows: TableCell[][] = [
+      this.summaryTotalsRow('Subtotal', summary.subtotal),
+      this.summaryTotalsRow(`IVA (${summary.vatPercentage}%)`, summary.vat),
+      this.summaryTotalsRow('Total general', summary.grandTotal, true)
+    ];
 
     const header = this.buildSectionHero({
       title: 'Resumen económico',
       background: '#fef9f4'
     });
 
+    const cardContent = this.compactContent([
+      breakdownRows.length
+        ? {
+            table: {
+              widths: ['*', 'auto'],
+              body: breakdownRows
+            },
+            layout: this.summaryLineItemsLayout()
+          }
+        : null,
+      {
+        table: {
+          widths: ['*', 'auto'],
+          body: totalsRows
+        },
+        layout: this.summaryTotalsLayout(),
+        margin: [0, breakdownRows.length ? 12 : 0, 0, 0] as [number, number, number, number]
+      }
+    ]);
+
     return {
       stack: [
         header,
-        {
-          style: 'box',
-          stack: [
-            {
-              table: {
-                widths: ['*', 'auto'],
-                body: rows
-              },
-              layout: this.stripedLayout()
-            }
-          ]
-        }
+        this.buildCard(cardContent)
       ]
     };
   }
