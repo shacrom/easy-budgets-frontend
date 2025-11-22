@@ -36,12 +36,6 @@
 
   <div class="management-layout">
     <div class="table-panel">
-      <div class="table-meta">
-        <span class="search-results-count">
-          {{ totalFilteredProducts() }} producto(s) encontrado(s)
-        </span>
-      </div>
-
       @if (isLoading() && products().length === 0) {
         <div class="mono text-center padded-state">Cargando productos...</div>
       } @else if (totalFilteredProducts() === 0) {
