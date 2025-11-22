@@ -31,6 +31,14 @@ export interface BudgetPdfPayload {
   generatedAt: string;
 }
 
+interface SectionHeroOptions {
+  title: string;
+  subtitle?: string;
+  total?: { label: string; value: string };
+  stats?: Array<{ label: string; value: string }>;
+  background?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PdfExportService {
   private readonly accentColor = '#7a4d32';
@@ -190,42 +198,57 @@ export class PdfExportService {
           bold: true,
           color: this.accentColor
         },
-        materialsIntroTitle: {
-          fontSize: 13,
+        sectionHeroTitle: {
+          fontSize: 14,
           bold: true,
-          color: this.accentColor,
+          color: '#1f2933',
           characterSpacing: 0.5
         },
-        materialsMeta: {
+        sectionHeroSubtitle: {
+          fontSize: 10,
+          color: '#6b7280'
+        },
+        sectionHeroHighlight: {
+          fontSize: 18,
+          bold: true,
+          color: this.accentColor
+        },
+        sectionMeta: {
           fontSize: 9,
           color: '#6b7280',
           bold: true,
           characterSpacing: 0.5
         },
-        materialsIntroTotal: {
+        sectionCardTitle: {
           fontSize: 12,
           bold: true,
           color: '#1f2933'
         },
-        materialsCardTitle: {
-          fontSize: 12,
-          bold: true,
-          color: '#1f2933'
-        },
-        materialsCardSubtitle: {
+        sectionCardSubtitle: {
           fontSize: 9,
           color: '#6b7280',
           characterSpacing: 0.3
         },
-        materialsCardTotal: {
+        sectionCardTotal: {
           fontSize: 11,
           bold: true,
           color: this.accentColor
         },
-        materialsGrandTotal: {
+        sectionGrandTotal: {
           fontSize: 14,
           bold: true,
           color: this.accentColor
+        },
+        pillLabel: {
+          fontSize: 8,
+          bold: true,
+          color: '#9ca3af',
+          characterSpacing: 1
+        },
+        pillValue: {
+          fontSize: 12,
+          bold: true,
+          color: '#1f2933'
         }
       }
     };
@@ -406,9 +429,13 @@ export class PdfExportService {
     }
 
     const totalMobiliario = blocks.reduce((sum, block) => sum + (block.subtotal || 0), 0);
+    const header = this.buildSectionHero({
+      title: 'Mobiliario',
+      background: '#fef9f4'
+    });
 
     return [
-      { text: 'MOBILIARIO', style: 'sectionHeader' },
+      header,
       ...blocks.map(block => {
         const stack: Content[] = [];
 
@@ -477,6 +504,72 @@ export class PdfExportService {
     ];
   }
 
+  private buildSectionHero(options: SectionHeroOptions): Content {
+    const background = options.background ?? '#fef9f4';
+
+    const columns: Content[] = [
+      {
+        width: '*',
+        stack: this.compactContent([
+          { text: options.title.toUpperCase(), style: 'sectionHeroTitle' },
+          options.subtitle ? { text: options.subtitle, style: 'sectionHeroSubtitle', margin: [0, 4, 0, 0] as [number, number, number, number] } : null
+        ])
+      } as Content
+    ];
+
+    if (options.total) {
+      columns.push({
+        width: 'auto',
+        stack: [
+          { text: options.total.label, style: 'sectionMeta', alignment: 'right' },
+          { text: options.total.value, style: 'sectionHeroHighlight', alignment: 'right', margin: [0, 4, 0, 0] as [number, number, number, number] }
+        ]
+      } as Content);
+    }
+
+    const heroStack: Content[] = [
+      {
+        columns,
+        columnGap: 24
+      }
+    ];
+
+    if (options.stats?.length) {
+      heroStack.push({
+        columns: options.stats.map(stat => ({ width: 'auto', stack: [this.buildStatPill(stat.label, stat.value)] } as Content)),
+        columnGap: 8,
+        margin: [0, 12, 0, 0] as [number, number, number, number]
+      });
+    }
+
+    return this.buildCard(heroStack, background);
+  }
+
+  private buildStatPill(label: string, value: string): Content {
+    return {
+      table: {
+        widths: ['*'],
+        body: [[{
+          stack: [
+            { text: label.toUpperCase(), style: 'pillLabel' },
+            { text: value, style: 'pillValue', margin: [0, 2, 0, 0] as [number, number, number, number] }
+          ]
+        }]]
+      },
+      layout: {
+        hLineWidth: () => 1,
+        vLineWidth: () => 1,
+        hLineColor: () => '#efdcc9',
+        vLineColor: () => '#efdcc9',
+        paddingLeft: () => 10,
+        paddingRight: () => 10,
+        paddingTop: () => 6,
+        paddingBottom: () => 6,
+        fillColor: () => '#ffffff'
+      }
+    };
+  }
+
   private buildMaterialsSection(tables: MaterialTable[], standaloneMaterials: Material[]): Content[] {
     const groupedTables = tables ?? [];
     const filteredStandalone = standaloneMaterials?.filter(material => !groupedTables.some(table => table.rows?.some(row => row.id === material.id))) ?? [];
@@ -508,8 +601,8 @@ export class PdfExportService {
     }
 
     content.push(this.buildCard([
-      { text: 'Total materiales', style: 'materialsCardTitle' },
-      { text: this.formatCurrency(overallTotal), style: 'materialsGrandTotal', margin: [0, 4, 0, 0] as [number, number, number, number] }
+      { text: 'Total materiales', style: 'sectionCardTitle' },
+      { text: this.formatCurrency(overallTotal), style: 'sectionGrandTotal', alignment: 'right', margin: [0, 4, 0, 0] as [number, number, number, number] }
     ], '#f4ede5'));
 
     return content;
@@ -619,10 +712,12 @@ export class PdfExportService {
 
   private buildCountertopSection(countertop: Countertop | null): Content | null {
     if (!countertop) return null;
+    const header = this.buildSectionHero({
+      title: 'Encimera',
+      background: '#fef9f4'
+    });
 
-    const stack: Content[] = [
-      { text: 'ENCIMERA', style: 'sectionHeader' }
-    ];
+    const stack: Content[] = [];
 
     // Model
     if (countertop.model) {
@@ -668,7 +763,7 @@ export class PdfExportService {
     }
 
     return {
-      stack,
+      stack: [header, ...stack],
       margin: [0, 0, 0, 20] as [number, number, number, number],
       unbreakable: true
     };
@@ -703,16 +798,25 @@ export class PdfExportService {
       }
     }
 
+    const header = this.buildSectionHero({
+      title: 'Resumen económico',
+      background: '#fef9f4'
+    });
+
     return {
-      style: 'box',
       stack: [
-  { text: 'Resumen económico', style: 'sectionHeader', margin: [0, 0, 0, 8] as [number, number, number, number] },
+        header,
         {
-          table: {
-            widths: ['*', 'auto'],
-            body: rows
-          },
-          layout: this.stripedLayout()
+          style: 'box',
+          stack: [
+            {
+              table: {
+                widths: ['*', 'auto'],
+                body: rows
+              },
+              layout: this.stripedLayout()
+            }
+          ]
         }
       ]
     };
@@ -723,9 +827,14 @@ export class PdfExportService {
       return null;
     }
 
+    const header = this.buildSectionHero({
+      title,
+      background: '#fef9f4'
+    });
+
     return {
       stack: [
-  { text: title, style: 'sectionHeader', margin: [0, 12, 0, 8] as [number, number, number, number] },
+        header,
         {
           ol: conditions.map(condition => ({
             stack: this.compactContent([
