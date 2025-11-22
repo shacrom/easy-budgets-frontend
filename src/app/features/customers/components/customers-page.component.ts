@@ -24,7 +24,7 @@ export class CustomersPageComponent implements OnInit {
   protected readonly editingCustomer = signal<Customer | null>(null);
   protected readonly formData = signal<CustomerPayload>(this.createEmptyForm());
   protected readonly pageSizeOptions = [5, 10, 25, 50];
-  protected readonly pageSize = signal<number>(this.pageSizeOptions[0]);
+  protected readonly pageSize = signal<number>(this.pageSizeOptions[2]);
   protected readonly currentPage = signal<number>(0);
 
   protected readonly filteredCustomers = computed(() => {

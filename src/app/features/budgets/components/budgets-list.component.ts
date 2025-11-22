@@ -43,7 +43,7 @@ export class BudgetsListComponent implements OnInit {
   protected readonly endDateFilter = signal<string>('');
   protected readonly sortField = signal<SortField>('createdAt');
   protected readonly pageSizeOptions = [5, 10, 25, 50];
-  protected readonly pageSize = signal<number>(this.pageSizeOptions[0]);
+  protected readonly pageSize = signal<number>(this.pageSizeOptions[2]);
   protected readonly currentPage = signal<number>(0);
 
   protected readonly sortOptions: ReadonlyArray<{ value: SortField; label: string }> = [

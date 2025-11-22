@@ -38,6 +38,10 @@ export class PdfExportService {
     style: 'currency',
     currency: 'EUR'
   });
+  private readonly quantityFormatter = new Intl.NumberFormat('es-ES', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  });
   private fontsRegistered = false;
 
   async generateBudgetPdf(payload: BudgetPdfPayload): Promise<void> {
@@ -185,6 +189,43 @@ export class PdfExportService {
         tableHeader: {
           bold: true,
           color: this.accentColor
+        },
+        materialsIntroTitle: {
+          fontSize: 13,
+          bold: true,
+          color: this.accentColor,
+          characterSpacing: 0.5
+        },
+        materialsMeta: {
+          fontSize: 9,
+          color: '#6b7280',
+          bold: true,
+          characterSpacing: 0.5
+        },
+        materialsIntroTotal: {
+          fontSize: 12,
+          bold: true,
+          color: '#1f2933'
+        },
+        materialsCardTitle: {
+          fontSize: 12,
+          bold: true,
+          color: '#1f2933'
+        },
+        materialsCardSubtitle: {
+          fontSize: 9,
+          color: '#6b7280',
+          characterSpacing: 0.3
+        },
+        materialsCardTotal: {
+          fontSize: 11,
+          bold: true,
+          color: this.accentColor
+        },
+        materialsGrandTotal: {
+          fontSize: 14,
+          bold: true,
+          color: this.accentColor
         }
       }
     };
@@ -312,7 +353,7 @@ export class PdfExportService {
   margin: [40, 0, 40, 30] as [number, number, number, number],
       columns: [
         {
-          text: 'Entrecuines Dos S.L. · CIF B12345678 · Barcelona',
+          text: 'Entrecuines Dos S.L. · CIF B97214878 · Valencia',
           style: 'muted'
         },
         {
@@ -437,70 +478,142 @@ export class PdfExportService {
   }
 
   private buildMaterialsSection(tables: MaterialTable[], standaloneMaterials: Material[]): Content[] {
+    const groupedTables = tables ?? [];
+    const filteredStandalone = standaloneMaterials?.filter(material => !groupedTables.some(table => table.rows?.some(row => row.id === material.id))) ?? [];
+
+    const allRows = [
+      ...groupedTables.flatMap(table => table.rows ?? []),
+      ...filteredStandalone
+    ];
+
+    if (!allRows.length) {
+      return [];
+    }
+
+    const overallTotal = allRows.reduce((sum, row) => sum + (row.totalPrice ?? 0), 0);
     const content: Content[] = [];
 
-    if (tables?.length) {
-      for (const table of tables) {
-        const rows = table.rows ?? [];
-        const total = rows.reduce((sum, row) => sum + (row.totalPrice ?? 0), 0);
+    content.push(this.buildCard([
+      { text: 'MATERIALES Y EQUIPAMIENTO', style: 'materialsIntroTitle' },
+      // { text: 'Detalle desglosado de los suministros seleccionados para este presupuesto.', style: 'materialsCardSubtitle', margin: [0, 2, 0, 10] as [number, number, number, number] },
+    ], '#f9f6f2'));
 
-        content.push({
-          style: 'box',
-          stack: [
-            { text: table.title, style: 'blockHeading', margin: [0, 0, 0, 8] as [number, number, number, number] },
-            this.buildMaterialsTable(rows),
-            {
-              text: `Total del grupo: ${this.formatCurrency(total)}`,
-              alignment: 'right',
-              bold: true,
-              color: this.accentColor,
-              margin: [0, 6, 0, 0] as [number, number, number, number]
-            }
-          ]
-        });
-      }
+    for (const table of groupedTables) {
+      const rows = table.rows ?? [];
+      content.push(this.buildMaterialGroupCard(table.title, rows));
     }
 
-    const filteredStandalone = standaloneMaterials?.filter(material => !tables?.some(table => table.rows?.some(row => row.id === material.id)));
-    if (filteredStandalone?.length) {
-      content.push({
-        style: 'box',
-        stack: [
-          { text: 'Materiales adicionales', style: 'blockHeading', margin: [0, 0, 0, 8] as [number, number, number, number] },
-          this.buildMaterialsTable(filteredStandalone)
-        ]
-      });
+    if (filteredStandalone.length) {
+      content.push(this.buildMaterialGroupCard('Materiales adicionales', filteredStandalone));
     }
+
+    content.push(this.buildCard([
+      { text: 'Total materiales', style: 'materialsCardTitle' },
+      { text: this.formatCurrency(overallTotal), style: 'materialsGrandTotal', margin: [0, 4, 0, 0] as [number, number, number, number] }
+    ], '#f4ede5'));
 
     return content;
   }
 
   private buildMaterialsTable(materials: Material[]): Content {
-    const body: TableCell[][] = [
-      [
-        { text: 'Referencia', style: 'tableHeader' },
-        { text: 'Descripción', style: 'tableHeader' },
-        { text: 'Fabricante', style: 'tableHeader' },
-        { text: 'Cantidad', style: 'tableHeader' },
-        { text: 'Precio unitario', style: 'tableHeader' },
-        { text: 'Total', style: 'tableHeader' }
-      ],
-      ...materials.map(material => [
-        material.reference,
-        material.description,
-        material.manufacturer,
-        material.quantity?.toString() ?? '—',
-        this.formatCurrency(material.unitPrice),
-        this.formatCurrency(material.totalPrice)
-      ])
+    const headers: TableCell[] = [
+      { text: 'Referencia', style: 'tableHeader' },
+      { text: 'Descripción', style: 'tableHeader' },
+      { text: 'Fabricante', style: 'tableHeader' },
+      { text: 'Cantidad', style: 'tableHeader', alignment: 'center' },
+      { text: 'Precio unitario', style: 'tableHeader', alignment: 'right' },
+      { text: 'Total', style: 'tableHeader', alignment: 'right' }
     ];
+
+    const rows = materials.map(material => ([
+      { text: material.reference || '—', color: '#4b5563', fontSize: 9 } as TableCell,
+      { text: material.description || '—', fontSize: 10 } as TableCell,
+      { text: material.manufacturer || '—', color: '#6b7280', fontSize: 9 } as TableCell,
+      { text: this.formatQuantity(material.quantity), alignment: 'center' } as TableCell,
+      { text: this.formatCurrency(material.unitPrice), alignment: 'right' } as TableCell,
+      { text: this.formatCurrency(material.totalPrice), alignment: 'right', bold: true } as TableCell
+    ]));
+
+    const body: TableCell[][] = [headers, ...rows];
 
     return {
       table: {
-        widths: ['auto', '*', '*', 'auto', 'auto', 'auto'],
+        widths: ['auto', '*', 'auto', 'auto', 'auto', 'auto'],
         body
       },
-      layout: 'lightHorizontalLines'
+      layout: this.materialsTableLayout()
+    };
+  }
+
+  private buildMaterialGroupCard(title: string, rows: Material[]): Content {
+    const countLabel = rows.length === 1 ? '1 partida' : `${rows.length} partidas`;
+
+    const header: Content = {
+      columns: [
+        {
+          width: '*',
+          stack: [
+            { text: title.toUpperCase(), style: 'materialsCardTitle' },
+          ]
+        }
+      ],
+      columnGap: 12,
+      margin: [0, 0, 0, 8] as [number, number, number, number]
+    };
+
+    const tableContent = rows.length
+      ? this.buildMaterialsTable(rows)
+      : {
+          text: 'No hay materiales en este bloque.',
+          style: 'muted',
+          italics: true
+        };
+
+    return this.buildCard([header, tableContent]);
+  }
+
+  private buildCard(inner: Content[], background = '#ffffff'): Content {
+    return {
+      table: {
+        widths: ['*'],
+        body: [[{ stack: inner }]]
+      },
+      layout: {
+        hLineWidth: () => 0,
+        vLineWidth: () => 0,
+        paddingLeft: () => 16,
+        paddingRight: () => 16,
+        paddingTop: () => 12,
+        paddingBottom: () => 12,
+        fillColor: () => background
+      },
+      margin: [0, 0, 0, 12] as [number, number, number, number]
+    };
+  }
+
+  private materialsTableLayout(): TableLayout {
+    const borderColor = '#e5d5c2';
+
+    return {
+      fillColor: (rowIndex: number) => {
+        if (rowIndex === 0) {
+          return '#efe6dc';
+        }
+        return rowIndex % 2 === 0 ? '#fcfaf6' : null;
+      },
+      hLineWidth: (rowIndex: number, node: any) => {
+        if (rowIndex === 0 || rowIndex === node.table.body.length) {
+          return 0;
+        }
+        return 0.5;
+      },
+      vLineWidth: () => 0,
+      hLineColor: () => borderColor,
+      vLineColor: () => borderColor,
+      paddingLeft: (index: number) => (index === 0 ? 12 : 8),
+      paddingRight: () => 8,
+      paddingTop: (rowIndex: number) => (rowIndex === 0 ? 8 : 6),
+      paddingBottom: (rowIndex: number) => (rowIndex === 0 ? 8 : 6)
     };
   }
 
@@ -632,6 +745,13 @@ export class PdfExportService {
 
   private formatCurrency(value?: number | null): string {
     return this.currencyFormatter.format(value ?? 0);
+  }
+
+  private formatQuantity(value?: number | null): string {
+    if (value === null || value === undefined) {
+      return '—';
+    }
+    return this.quantityFormatter.format(value);
   }
 
   private formatDate(value?: string | null): string {
