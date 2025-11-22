@@ -8,6 +8,14 @@
   max-width: 520px;
 }
 
+.budgets-page .table-panel {
+  overflow-x: auto;
+}
+
+.budgets-page .management-table {
+  min-width: 960px;
+}
+
 .budgets-page .compact-field {
   display: flex;
   flex-direction: column;

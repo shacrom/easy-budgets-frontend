@@ -1,5 +1,13 @@
 @import "../../shared/styles/management-ui.css";
 
+.customers-page .table-panel {
+  overflow-x: auto;
+}
+
+.customers-page .management-table {
+  min-width: 900px;
+}
+
 .customer-name {
   text-transform: uppercase;
   letter-spacing: 0.12em;
