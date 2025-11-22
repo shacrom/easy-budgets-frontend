@@ -159,7 +159,8 @@ export class PdfExportService {
       { text: '', pageBreak: 'after' },
       this.buildSummarySection(payload.summary, blocks, payload.materialTables),
       { text: '', pageBreak: 'after' },
-      this.buildConditionsSection(payload.conditionsTitle, payload.conditions)
+      this.buildConditionsSection(payload.conditionsTitle, payload.conditions),
+      this.buildSignatureSection(payload.customer)
     ]);
 
     return {
@@ -253,6 +254,17 @@ export class PdfExportService {
           fontSize: 12,
           bold: true,
           color: '#1f2933'
+        },
+        signatureLabel: {
+          fontSize: 9,
+          bold: true,
+          color: '#9ca3af',
+          characterSpacing: 1.2
+        },
+        signatureHint: {
+          fontSize: 10,
+          color: '#4b5563',
+          alignment: 'center'
         }
       }
     };
@@ -745,6 +757,20 @@ export class PdfExportService {
     };
   }
 
+  private signatureBoxesLayout(): TableLayout {
+    const borderColor = '#d7c8b8';
+    return {
+      hLineWidth: () => 1,
+      vLineWidth: () => 1,
+      hLineColor: () => borderColor,
+      vLineColor: () => borderColor,
+      paddingLeft: () => 18,
+      paddingRight: () => 18,
+      paddingTop: () => 16,
+      paddingBottom: () => 16
+    };
+  }
+
   private summaryCategoryRow(label: string, value: number, isChild = false): TableCell[] {
     const safeLabel = label?.trim() ? label : 'Concepto';
     const color = isChild ? '#4b5563' : '#1f2933';
@@ -855,6 +881,34 @@ export class PdfExportService {
       stack: [header, ...stack],
       margin: [0, 0, 0, 20] as [number, number, number, number],
       unbreakable: true
+    };
+  }
+
+  private buildSignatureSection(customer: Customer | null): Content {
+    return {
+      margin: [0, 40, 0, 0] as [number, number, number, number],
+      stack: [
+        {
+          table: {
+            widths: ['*', '*'],
+            body: [[
+              this.buildSignatureBox('Firma del cliente', customer?.name),
+              this.buildSignatureBox('Firma de la empresa')
+            ]]
+          },
+          layout: this.signatureBoxesLayout()
+        }
+      ]
+    };
+  }
+
+  private buildSignatureBox(label: string, name?: string | null): Content {
+    return {
+      stack: this.compactContent([
+        { text: label.toUpperCase(), style: 'signatureLabel', margin: [0, 0, 0, 24] as [number, number, number, number] },
+        { text: '_______________________________', alignment: 'center', margin: [0, 30, 0, 8] as [number, number, number, number] },
+        name?.trim() ? { text: name!.toUpperCase(), style: 'signatureHint' } : null
+      ])
     };
   }
 
