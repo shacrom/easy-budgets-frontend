@@ -1,20 +1,54 @@
-<section class="budgets-list-container">
-  <header class="list-header">
-    <div>
-      <h1>Presupuestos</h1>
-      <p class="subtitle">Selecciona un presupuesto existente o crea uno nuevo.</p>
+<section class="management-page budgets-page">
+  <div class="actions-bar">
+    <div class="search-field">
+      <label for="budget-customer-search">Cliente</label>
+      <input
+        id="budget-customer-search"
+        type="text"
+        placeholder="Busca por nombre de cliente"
+        [value]="customerFilter()"
+        (input)="customerFilter.set($any($event.target).value)"
+      />
     </div>
-    <div class="header-actions">
+
+    <div class="inline-filters">
+      <label class="compact-field">
+        <span>Fecha desde</span>
+        <input
+          type="date"
+          [value]="startDateFilter()"
+          (change)="startDateFilter.set($any($event.target).value)"
+        />
+      </label>
+      <label class="compact-field">
+        <span>Fecha hasta</span>
+        <input
+          type="date"
+          [value]="endDateFilter()"
+          (change)="endDateFilter.set($any($event.target).value)"
+        />
+      </label>
+      <label class="compact-field">
+        <span>Ordenar por</span>
+        <select [value]="sortField()" (change)="changeSortField($any($event.target).value)">
+          @for (option of sortOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <div class="actions-buttons">
       <button
         type="button"
-        class="btn-refresh"
+        class="btn ghost"
         [disabled]="isLoading()"
         (click)="loadBudgets()">
         Actualizar
       </button>
       <button
         type="button"
-        class="btn-primary"
+        class="btn dark"
         [disabled]="isCreating()"
         (click)="createBudget()">
         @if (isCreating()) {
@@ -24,135 +58,96 @@
         }
       </button>
     </div>
-  </header>
+  </div>
 
-  <section class="filters-panel">
-    <div class="filters-grid">
-      <label class="filter-group">
-        <span>Cliente</span>
-        <input
-          type="text"
-          placeholder="Busca por nombre de cliente"
-          [value]="customerFilter()"
-          (input)="customerFilter.set($any($event.target).value)"
-        />
-      </label>
-
-      <label class="filter-group">
-        <span>Fecha desde</span>
-        <input
-          type="date"
-          [value]="startDateFilter()"
-          (change)="startDateFilter.set($any($event.target).value)"
-        />
-      </label>
-
-      <label class="filter-group">
-        <span>Fecha hasta</span>
-        <input
-          type="date"
-          [value]="endDateFilter()"
-          (change)="endDateFilter.set($any($event.target).value)"
-        />
-      </label>
-
-      <label class="filter-group">
-        <span>Ordenar por</span>
-  <select [value]="sortField()" (change)="changeSortField($any($event.target).value)">
-          @for (option of sortOptions; track option.value) {
-            <option [value]="option.value">{{ option.label }}</option>
-          }
-        </select>
-      </label>
-    </div>
-    <div class="filters-footer">
-      <span class="filters-count">
-        {{ filteredBudgets().length }} de {{ budgets().length }} resultados
-      </span>
-      <button
-        type="button"
-        class="btn-clear"
-        [disabled]="!hasFilters()"
-        (click)="clearFilters()">
-        Limpiar filtros
-      </button>
-    </div>
-  </section>
+  <div class="filters-footer">
+    <span class="filters-count">
+      {{ filteredBudgets().length }} de {{ budgets().length }} resultados
+    </span>
+    <button
+      type="button"
+      class="btn ghost"
+      [disabled]="!hasFilters()"
+      (click)="clearFilters()">
+      Limpiar filtros
+    </button>
+  </div>
 
   @if (errorMessage()) {
-    <div class="error-message">{{ errorMessage() }}</div>
+    <div class="alert error">{{ errorMessage() }}</div>
   }
 
-  @if (isLoading()) {
-    <div class="loading-state">Cargando presupuestos...</div>
-  } @else if (budgets().length === 0) {
-    <div class="empty-state">
-      <p>No hay presupuestos creados. Haz clic en "Nuevo Presupuesto" para comenzar.</p>
-    </div>
-  } @else if (filteredBudgets().length === 0) {
-    <div class="empty-state">
-      <p>No hay presupuestos que coincidan con los filtros aplicados.</p>
-      <button type="button" class="btn-clear" (click)="clearFilters()">Borrar filtros</button>
-    </div>
-  } @else {
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Nº Presupuesto</th>
-            <th>Título</th>
-            <th>Cliente</th>
-            <th>Estado</th>
-            <th>Total</th>
-            <th>Creado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (budget of filteredBudgets(); track budget.id) {
+  <div class="management-layout">
+    <div class="table-panel">
+      @if (isLoading()) {
+        <div class="mono text-center padded-state">Cargando presupuestos...</div>
+      } @else if (budgets().length === 0) {
+        <div class="mono text-center padded-state">
+          No hay presupuestos creados. Haz clic en "Nuevo Presupuesto" para comenzar.
+        </div>
+      } @else if (filteredBudgets().length === 0) {
+        <div class="mono text-center padded-state">
+          No hay presupuestos que coincidan con los filtros aplicados.
+          <button type="button" class="btn ghost" (click)="clearFilters()">Borrar filtros</button>
+        </div>
+      } @else {
+        <table class="management-table">
+          <thead>
             <tr>
-              <td class="mono">{{ budget.budgetNumber }}</td>
-              <td>{{ budget.title }}</td>
-              <td>{{ budget.customer?.name || 'Sin cliente' }}</td>
-              <td>
-                <span [class]="'status-chip status-' + budget.status">
-                  {{ budget.status | titlecase }}
-                </span>
-              </td>
-              <td class="mono">{{ budget.total | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
-              <td>{{ budget.createdAt | date:'shortDate' }}</td>
-              <td class="actions-cell">
-                <button type="button" class="btn-secondary" (click)="openBudget(budget.id)">
-                  <span class="material-symbols-outlined" aria-hidden="true">edit</span>
-                </button>
-                <button
-                  type="button"
-                  class="btn-neutral"
-                  [disabled]="duplicatingBudgetId() === budget.id"
-                  (click)="duplicateBudget(budget)">
-                  @if (duplicatingBudgetId() === budget.id) {
-                    <span class="material-symbols-outlined loading-icon" aria-hidden="true">autorenew</span>
-                  } @else {
-                    <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
-                  }
-                </button>
-                <button
-                  type="button"
-                  class="btn-danger"
-                  [disabled]="deletingBudgetId() === budget.id"
-                  (click)="deleteBudget(budget)"
-                >
-                  @if (deletingBudgetId() === budget.id) {
-                    <span class="material-symbols-outlined loading-icon" aria-hidden="true">autorenew</span>
-                  } @else {
-                    <span class="material-symbols-outlined" aria-hidden="true">delete</span>
-                  }
-                </button>
-              </td>
+              <th>Nº Presupuesto</th>
+              <th>Título</th>
+              <th>Cliente</th>
+              <th>Estado</th>
+              <th class="numeric">Total</th>
+              <th>Creado</th>
+              <th></th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (budget of filteredBudgets(); track budget.id) {
+              <tr>
+                <td class="mono">{{ budget.budgetNumber }}</td>
+                <td>{{ budget.title }}</td>
+                <td>{{ budget.customer?.name || 'Sin cliente' }}</td>
+                <td>
+                  <span [class]="'status-chip status-' + budget.status">
+                    {{ budget.status | titlecase }}
+                  </span>
+                </td>
+                <td class="mono numeric">{{ budget.total | currency:'EUR':'symbol':'1.2-2':'es' }}</td>
+                <td>{{ budget.createdAt | date:'shortDate' }}</td>
+                <td class="actions-cell">
+                  <button type="button" class="btn icon" (click)="openBudget(budget.id)">
+                    <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn icon"
+                    [disabled]="duplicatingBudgetId() === budget.id"
+                    (click)="duplicateBudget(budget)">
+                    @if (duplicatingBudgetId() === budget.id) {
+                      <span class="material-symbols-rounded loading-icon" aria-hidden="true">autorenew</span>
+                    } @else {
+                      <span class="material-symbols-rounded" aria-hidden="true">content_copy</span>
+                    }
+                  </button>
+                  <button
+                    type="button"
+                    class="btn icon danger"
+                    [disabled]="deletingBudgetId() === budget.id"
+                    (click)="deleteBudget(budget)">
+                    @if (deletingBudgetId() === budget.id) {
+                      <span class="material-symbols-rounded loading-icon" aria-hidden="true">autorenew</span>
+                    } @else {
+                      <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+                    }
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     </div>
-  }
+  </div>
 </section>
