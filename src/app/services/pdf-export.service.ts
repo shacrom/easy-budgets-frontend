@@ -148,15 +148,19 @@ export class PdfExportService {
       return block;
     }));
 
-    const content: Content[] = [
-      ...this.compactContent([
-        ...this.buildTextBlocksSection(blocks),
-        ...this.buildMaterialsSection(payload.materialTables, payload.materials),
-        this.buildCountertopSection(countertop),
-        this.buildSummarySection(payload.summary),
-        this.buildConditionsSection(payload.conditionsTitle, payload.conditions)
-      ])
-    ];
+
+    // Secciones con salto de página entre ellas
+    const content: Content[] = this.compactContent([
+      ...this.buildTextBlocksSection(blocks),
+      { text: '', pageBreak: 'after' },
+      ...this.buildMaterialsSection(payload.materialTables, payload.materials),
+      { text: '', pageBreak: 'after' },
+      this.buildCountertopSection(countertop),
+      { text: '', pageBreak: 'after' },
+      this.buildSummarySection(payload.summary),
+      { text: '', pageBreak: 'after' },
+      this.buildConditionsSection(payload.conditionsTitle, payload.conditions)
+    ]);
 
     return {
       pageSize: 'A4',
