@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../../services/supabase.service';
@@ -42,6 +42,9 @@ export class BudgetsListComponent implements OnInit {
   protected readonly startDateFilter = signal<string>('');
   protected readonly endDateFilter = signal<string>('');
   protected readonly sortField = signal<SortField>('createdAt');
+  protected readonly pageSizeOptions = [5, 10, 25, 50];
+  protected readonly pageSize = signal<number>(this.pageSizeOptions[0]);
+  protected readonly currentPage = signal<number>(0);
 
   protected readonly sortOptions: ReadonlyArray<{ value: SortField; label: string }> = [
     { value: 'createdAt', label: 'Fecha de creación (más recientes)' },
@@ -79,6 +82,44 @@ export class BudgetsListComponent implements OnInit {
       })
       .sort((a, b) => this.getBudgetDate(b, orderField) - this.getBudgetDate(a, orderField));
   });
+
+  protected readonly totalFilteredBudgets = computed(() => this.filteredBudgets().length);
+  protected readonly totalPages = computed(() => {
+    const total = this.totalFilteredBudgets();
+    return total === 0 ? 1 : Math.ceil(total / this.pageSize());
+  });
+  protected readonly paginatedBudgets = computed(() => {
+    const startIndex = this.currentPage() * this.pageSize();
+    return this.filteredBudgets().slice(startIndex, startIndex + this.pageSize());
+  });
+
+  protected readonly paginationLabel = computed(() => {
+    const total = this.totalFilteredBudgets();
+    if (total === 0) return 'Mostrando 0 de 0';
+
+    const start = this.currentPage() * this.pageSize() + 1;
+    const end = Math.min(start + this.pageSize() - 1, total);
+    return `Mostrando ${start} – ${end} de ${total}`;
+  });
+
+  protected readonly pagePosition = computed(() => {
+    const total = this.totalFilteredBudgets();
+    if (total === 0) return 'Página 0 de 0';
+    return `Página ${this.currentPage() + 1} de ${this.totalPages()}`;
+  });
+
+  protected readonly isOnFirstPage = computed(() => this.currentPage() === 0);
+  protected readonly isOnLastPage = computed(() => this.currentPage() >= this.totalPages() - 1);
+
+  constructor() {
+    effect(() => {
+      const totalPages = this.totalPages();
+      const current = this.currentPage();
+      if (current > totalPages - 1) {
+        this.currentPage.set(Math.max(totalPages - 1, 0));
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loadBudgets();
@@ -182,10 +223,56 @@ export class BudgetsListComponent implements OnInit {
     this.startDateFilter.set('');
     this.endDateFilter.set('');
     this.sortField.set('createdAt');
+    this.currentPage.set(0);
   }
 
   protected changeSortField(value: string): void {
     this.sortField.set((value as SortField) ?? 'createdAt');
+    this.currentPage.set(0);
+  }
+
+  protected updateCustomerFilter(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.customerFilter.set(input.value);
+    this.currentPage.set(0);
+  }
+
+  protected updateStartDate(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.startDateFilter.set(input.value);
+    this.currentPage.set(0);
+  }
+
+  protected updateEndDate(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.endDateFilter.set(input.value);
+    this.currentPage.set(0);
+  }
+
+  protected onPageSizeChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.pageSize.set(Number(select.value));
+    this.currentPage.set(0);
+  }
+
+  protected goToFirstPage(): void {
+    if (this.isOnFirstPage()) return;
+    this.currentPage.set(0);
+  }
+
+  protected goToPreviousPage(): void {
+    if (this.isOnFirstPage()) return;
+    this.currentPage.update(page => Math.max(page - 1, 0));
+  }
+
+  protected goToNextPage(): void {
+    if (this.isOnLastPage()) return;
+    this.currentPage.update(page => Math.min(page + 1, this.totalPages() - 1));
+  }
+
+  protected goToLastPage(): void {
+    if (this.isOnLastPage()) return;
+    this.currentPage.set(this.totalPages() - 1);
   }
 
   private parseDateFilter(value: string, endOfDay: boolean): Date | null {
