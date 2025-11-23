@@ -481,15 +481,15 @@ export class PdfExportService {
           stack
         };
       }),
-      {
-        text: `TOTAL MOBILIARIO: ${this.formatCurrency(totalMobiliario)}`,
-        alignment: 'right',
-        bold: true,
-        fontSize: 11,
-        color: this.accentColor,
-        margin: [0, 10, 0, 20] as [number, number, number, number],
-        decoration: 'underline'
-      }
+      this.buildCard([
+        { text: 'TOTAL MOBILIARIO', style: 'sectionCardTitle' },
+        {
+          text: this.formatCurrency(totalMobiliario),
+          style: 'sectionGrandTotal',
+          alignment: 'right',
+          margin: [0, 4, 0, 0] as [number, number, number, number]
+        }
+      ], '#f4ede5')
     ];
   }
 
@@ -840,14 +840,17 @@ export class PdfExportService {
 
     // Price
     if (countertop.price) {
-      stack.push({
-        text: [
-          { text: 'TOTAL PRECIO: ', bold: true },
-          { text: this.formatCurrency(countertop.price) }
-        ],
-        alignment: 'right',
-        margin: [0, 10, 0, 0] as [number, number, number, number]
-      });
+      stack.push(
+        this.buildCard([
+          { text: 'TOTAL ENCIMERA', style: 'sectionCardTitle' },
+          {
+            text: this.formatCurrency(countertop.price),
+            style: 'sectionGrandTotal',
+            alignment: 'right',
+            margin: [0, 4, 0, 0] as [number, number, number, number]
+          }
+        ], '#f4ede5')
+      );
     }
 
     return {
@@ -940,9 +943,22 @@ export class PdfExportService {
 
     const totalsRows: TableCell[][] = [
       this.summaryTotalsRow('BASE IMPONIBLE', summary.taxableBase),
-      this.summaryTotalsRow(`IVA (${summary.vatPercentage}%)`, summary.vat),
-      this.summaryTotalsRow('TOTAL GENERAL', summary.grandTotal, true)
+      this.summaryTotalsRow(`IVA (${summary.vatPercentage}%)`, summary.vat)
     ];
+
+    const summaryTotalsLayoutWithGrayIva: TableLayout = {
+      fillColor: (rowIndex: number) => {
+        if (rowIndex === 1) return '#F9F6F2';
+        const backgrounds = ['#fff7ed', '#fffbeb', '#fff4e6'];
+        return backgrounds[rowIndex] ?? null;
+      },
+      hLineWidth: () => 0,
+      vLineWidth: () => 0,
+      paddingLeft: (index: number) => (index === 0 ? 16 : 8),
+      paddingRight: () => 8,
+      paddingTop: () => 12,
+      paddingBottom: () => 12
+    };
 
     const header = this.buildSectionHero({
       title: 'Resumen precios',
@@ -964,15 +980,26 @@ export class PdfExportService {
           widths: ['*', 'auto'],
           body: totalsRows
         },
-        layout: this.summaryTotalsLayout(),
+        layout: summaryTotalsLayoutWithGrayIva,
         margin: [0, breakdownRows.length ? 12 : 0, 0, 0] as [number, number, number, number]
       }
     ]);
 
+    const grandTotalCard = this.buildCard([
+      { text: 'TOTAL GENERAL', style: 'sectionCardTitle' },
+      {
+        text: this.formatCurrency(summary.grandTotal),
+        style: 'sectionGrandTotal',
+        alignment: 'right',
+        margin: [0, 4, 0, 0] as [number, number, number, number]
+      }
+    ], '#f4ede5');
+
     return {
       stack: [
         header,
-        this.buildCard(cardContent)
+        this.buildCard(cardContent),
+        grandTotalCard
       ]
     };
   }
