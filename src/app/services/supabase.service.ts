@@ -3,6 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 import { Customer } from '../models/customer.model';
 import { BudgetSummary } from '../models/budget-summary.model';
+import { BudgetStatus } from '../models/budget.model';
 import { MaterialTable } from '../models/material.model';
 
 @Injectable({
@@ -292,11 +293,15 @@ export class SupabaseService {
       return Number.isFinite(parsed) ? parsed : 0;
     };
 
+    const parseStatus = (value: unknown): BudgetStatus => {
+      return value === 'completed' ? 'completed' : 'not_completed';
+    };
+
     return (data ?? []).map((budget: any) => ({
       id: budget.id,
       budgetNumber: budget.budgetNumber,
       title: budget.title,
-      status: budget.status,
+      status: parseStatus(budget.status),
       total: parseNumber(budget.total),
       taxableBase: parseNumber(budget.taxableBase),
       taxPercentage: parseNumber(budget.taxPercentage),

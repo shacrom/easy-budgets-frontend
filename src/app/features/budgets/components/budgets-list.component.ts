@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, s
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../../services/supabase.service';
+import { BudgetStatus } from '../../../models/budget.model';
 
 type SortField = 'createdAt' | 'updatedAt';
 
@@ -9,7 +10,7 @@ interface BudgetListItem {
   id: string;
   budgetNumber: string;
   title: string;
-  status: string;
+  status: BudgetStatus;
   total: number;
   totalBlocks?: number;
   totalMaterials?: number;
@@ -151,7 +152,7 @@ export class BudgetsListComponent implements OnInit {
         budgetNumber,
         customerId: null,
         title: 'Nuevo presupuesto',
-        status: 'draft',
+        status: 'not_completed',
         taxableBase: 0,
         taxPercentage: 21,
         taxAmount: 0,
@@ -253,6 +254,10 @@ export class BudgetsListComponent implements OnInit {
     const select = event.target as HTMLSelectElement;
     this.pageSize.set(Number(select.value));
     this.currentPage.set(0);
+  }
+
+  protected formatStatus(status: BudgetStatus): string {
+    return status === 'completed' ? 'Completado' : 'No completado';
   }
 
   protected goToFirstPage(): void {

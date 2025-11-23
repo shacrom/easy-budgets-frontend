@@ -108,7 +108,7 @@
                 <td>{{ budget.customer?.name || 'Sin cliente' }}</td>
                 <td>
                   <span [class]="'status-chip status-' + budget.status">
-                    {{ budget.status | titlecase }}
+                    {{ formatStatus(budget.status) }}
                   </span>
                 </td>
                 <td class="mono numeric">{{ budget.total | currency:'EUR':'symbol':'1.2-2':'es' }}</td>

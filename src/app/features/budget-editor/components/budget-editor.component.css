@@ -43,6 +43,30 @@
   @apply flex flex-col md:flex-row gap-4;
 }
 
+.completion-toggle {
+  @apply flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-2xl shadow-sm min-w-[240px];
+}
+
+.state-pill {
+  @apply inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wide px-4 py-2 rounded-full bg-gray-100 text-gray-600;
+}
+
+.state-pill.completed {
+  @apply bg-emerald-100 text-emerald-800;
+}
+
+.state-pill .material-symbols-rounded {
+  @apply text-lg;
+}
+
+.completion-btn {
+  @apply inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-widest px-4 py-3 rounded-full border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-not-allowed;
+}
+
+.completion-btn .material-symbols-rounded {
+  @apply text-base;
+}
+
 .preview-btn {
   @apply inline-flex items-center gap-3 text-sm font-semibold tracking-wide uppercase px-6 py-4 rounded-full transition duration-200 border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-400;
   letter-spacing: 0.15em;

@@ -16,6 +16,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CountertopEditorComponent } from '../../countertop/components/countertop-editor.component';
 import { Countertop } from '../../../models/countertop.model';
+import { BudgetStatus } from '../../../models/budget.model';
 
 @Component({
   selector: 'app-budget-editor',
@@ -72,6 +73,7 @@ export class BudgetEditorComponent implements OnDestroy {
   protected readonly showMaterials = signal<boolean>(true);
   protected readonly showCountertop = signal<boolean>(false);
   protected readonly showConditions = signal<boolean>(true);
+  protected readonly togglingStatus = signal<boolean>(false);
 
   // PDF Preview
   protected readonly showPdfPreview = signal<boolean>(false);
@@ -79,6 +81,11 @@ export class BudgetEditorComponent implements OnDestroy {
   protected readonly isPreviewLoading = signal<boolean>(false);
 
   protected readonly selectedCustomer = computed(() => this.cachedSelectedCustomer());
+  protected readonly isBudgetCompleted = computed(() => (this.budgetMeta()?.status ?? '').toLowerCase() === 'completed');
+  protected readonly completionStateLabel = computed(() => this.isBudgetCompleted() ? 'Completado' : 'No completado');
+  protected readonly completionStateIcon = computed(() => this.isBudgetCompleted() ? 'task_alt' : 'hourglass_top');
+  protected readonly completionActionLabel = computed(() => this.isBudgetCompleted() ? 'Marcar como no completado' : 'Marcar como completado');
+  protected readonly completionActionIcon = computed(() => this.isBudgetCompleted() ? 'undo' : 'check_circle');
 
   private customerSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private latestCustomerSearchId = 0;
@@ -402,6 +409,26 @@ export class BudgetEditorComponent implements OnDestroy {
 
   protected onBudgetTitleBlur(): void {
     void this.persistBudgetTitle();
+  }
+
+  protected async toggleCompletionState(): Promise<void> {
+    const id = this.currentBudgetId();
+    if (!id || this.togglingStatus()) {
+      return;
+    }
+
+    const nextStatus: BudgetStatus = this.isBudgetCompleted() ? 'not_completed' : 'completed';
+    this.togglingStatus.set(true);
+
+    try {
+      const updated = await this.supabase.updateBudget(id, { status: nextStatus });
+      const resolvedStatus = updated?.status ?? nextStatus;
+      this.budgetMeta.update(meta => meta ? ({ ...meta, status: resolvedStatus }) : meta);
+    } catch (error) {
+      console.error('No se pudo actualizar el estado del presupuesto:', error);
+    } finally {
+      this.togglingStatus.set(false);
+    }
   }
 
   private async persistBudgetTitle(): Promise<void> {

@@ -25,6 +25,22 @@
       </div>
     </div>
     <div class="header-actions">
+      <div class="completion-toggle" aria-live="polite">
+        <span class="state-pill" [class.completed]="isBudgetCompleted()">
+          <span class="material-symbols-rounded" aria-hidden="true">{{ completionStateIcon() }}</span>
+          <span>{{ completionStateLabel() }}</span>
+        </span>
+        <button
+          type="button"
+          class="completion-btn"
+          (click)="toggleCompletionState()"
+          [disabled]="!isInitialized() || togglingStatus()">
+          <span class="material-symbols-rounded" aria-hidden="true">
+            {{ togglingStatus() ? 'progress_activity' : completionActionIcon() }}
+          </span>
+          <span>{{ togglingStatus() ? 'Actualizando…' : completionActionLabel() }}</span>
+        </button>
+      </div>
       <button
         type="button"
         class="preview-btn"

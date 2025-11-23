@@ -68,15 +68,15 @@ CREATE TABLE "Customers" (
 CREATE INDEX "idx_Customers_name" ON "Customers"("name");
 CREATE INDEX "idx_Customers_email" ON "Customers"("email");
 
--- ============================================
--- 3. TABLA: Budgets
--- ============================================
+-- Tipo ENUM para el estado del presupuesto
+CREATE TYPE "BudgetStatus" AS ENUM ('completed', 'not_completed');
+
 CREATE TABLE "Budgets" (
   "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   "budgetNumber" VARCHAR(50) UNIQUE NOT NULL,
   "customerId" UUID REFERENCES "Customers"("id") ON DELETE RESTRICT,
   "title" VARCHAR(255) NOT NULL,
-  "status" VARCHAR(50) DEFAULT 'draft' CHECK ("status" IN ('draft', 'sent', 'accepted', 'rejected', 'archived')),
+  "status" "BudgetStatus" NOT NULL DEFAULT 'not_completed',
   "taxableBase" DECIMAL(10,2) NOT NULL DEFAULT 0,
   "taxPercentage" DECIMAL(5,2) DEFAULT 21.00,
   "taxAmount" DECIMAL(10,2) NOT NULL DEFAULT 0,
