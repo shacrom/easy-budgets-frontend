@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 import { Customer } from '../models/customer.model';
+import { BudgetSummary } from '../models/budget-summary.model';
 import { MaterialTable } from '../models/material.model';
 
 @Injectable({
@@ -276,44 +277,60 @@ export class SupabaseService {
       .from('Budgets')
       .select(`
         *,
-        customer:Customers(*),
-        textBlocks:BudgetTextBlocks(subtotal),
-        materialTables:BudgetMaterialTables(
-          orderIndex,
-          title,
-          rows:BudgetMaterialTableRows(totalPrice,unitPrice,quantity)
-        )
+        customer:Customers(*)
       `)
       .order('createdAt', { ascending: false });
 
     if (error) throw error;
 
-    return data.map((budget: any) => {
-      const totalBlocks = budget.textBlocks?.reduce(
-        (sum: number, block: { subtotal?: number }) => sum + (block?.subtotal ?? 0),
-        0
-      ) ?? 0;
+    const parseNumber = (value: unknown) => {
+      if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : 0;
+      }
 
-      const totalFromTables = budget.materialTables?.reduce(
-        (tableSum: number, table: { rows?: Array<{ totalPrice?: number; unitPrice?: number; quantity?: number }> }) =>
-          tableSum + (table.rows ?? []).reduce(
-            (rowSum, row) => rowSum + (row?.totalPrice ?? ((row?.unitPrice ?? 0) * (row?.quantity ?? 0))),
-            0
-          ),
-        0
-      ) ?? 0;
+      const parsed = Number(value ?? 0);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
 
-      const totalMaterials = totalFromTables;
+    return (data ?? []).map((budget: any) => ({
+      id: budget.id,
+      budgetNumber: budget.budgetNumber,
+      title: budget.title,
+      status: budget.status,
+      total: parseNumber(budget.total),
+      taxableBase: parseNumber(budget.taxableBase),
+      taxPercentage: parseNumber(budget.taxPercentage),
+      taxAmount: parseNumber(budget.taxAmount),
+      customer: budget.customer ?? null,
+      createdAt: budget.createdAt,
+      updatedAt: budget.updatedAt
+    }));
+  }
 
-      const { textBlocks, materialTables, ...rest } = budget;
+  async updateBudgetTotals(budgetId: string, summary: BudgetSummary) {
+    if (!budgetId) {
+      throw new Error('Budget ID is required to update totals.');
+    }
 
-      return {
-        ...rest,
-        totalBlocks,
-        totalMaterials,
-        total: totalBlocks + totalMaterials
-      };
-    });
+    if (!summary) {
+      throw new Error('Budget summary is required to update totals.');
+    }
+
+    const normalizeCurrency = (value: number) => Number((value ?? 0).toFixed(2));
+
+    const payload = {
+      taxableBase: normalizeCurrency(summary.taxableBase ?? 0),
+      taxPercentage: normalizeCurrency(summary.vatPercentage ?? 0),
+      taxAmount: normalizeCurrency(summary.vat ?? 0),
+      total: normalizeCurrency(summary.grandTotal ?? 0)
+    };
+
+    const { error } = await this.supabase
+      .from('Budgets')
+      .update(payload)
+      .eq('id', budgetId);
+
+    if (error) throw error;
   }
 
   async getBudget(id: string) {

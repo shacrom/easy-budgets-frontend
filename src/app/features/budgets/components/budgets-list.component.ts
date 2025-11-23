@@ -152,7 +152,7 @@ export class BudgetsListComponent implements OnInit {
         customerId: null,
         title: 'Nuevo presupuesto',
         status: 'draft',
-        subtotal: 0,
+        taxableBase: 0,
         taxPercentage: 21,
         taxAmount: 0,
         total: 0,

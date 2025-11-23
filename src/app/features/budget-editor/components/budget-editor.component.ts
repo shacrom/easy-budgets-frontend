@@ -1,4 +1,4 @@
-import { Component, signal, inject, effect, computed, untracked } from '@angular/core';
+import { Component, signal, inject, effect, computed, untracked, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { BudgetTextBlocksComponent } from '../../budgets/components/budget-text-blocks.component';
 import { MaterialsTableComponent } from '../../materials/components/materials-table.component';
@@ -30,7 +30,7 @@ import { Countertop } from '../../../models/countertop.model';
   templateUrl: './budget-editor.component.html',
   styleUrl: './budget-editor.component.css'
 })
-export class BudgetEditorComponent {
+export class BudgetEditorComponent implements OnDestroy {
   private readonly supabase = inject(SupabaseService);
   private readonly pdfExport = inject(PdfExportService);
   private readonly sanitizer = inject(DomSanitizer);
@@ -82,6 +82,9 @@ export class BudgetEditorComponent {
 
   private customerSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private latestCustomerSearchId = 0;
+  private summaryPersistenceTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingSummaryTotals: BudgetSummary | null = null;
+  private readonly SUMMARY_PERSIST_DEBOUNCE_MS = 500;
 
   constructor() {
     effect(() => {
@@ -375,6 +378,7 @@ export class BudgetEditorComponent {
 
   protected onSummaryChanged(summary: BudgetSummary): void {
     this.summarySnapshot.set(summary);
+    this.queueBudgetTotalsPersist(summary);
   }
 
   protected onConditionsTitleChanged(title: string): void {
@@ -480,6 +484,38 @@ export class BudgetEditorComponent {
     0);
   }
 
+  private queueBudgetTotalsPersist(summary: BudgetSummary): void {
+    this.pendingSummaryTotals = summary;
+
+    if (!this.currentBudgetId()) {
+      return;
+    }
+
+    if (this.summaryPersistenceTimer) {
+      clearTimeout(this.summaryPersistenceTimer);
+    }
+
+    this.summaryPersistenceTimer = setTimeout(() => {
+      void this.persistBudgetTotals();
+    }, this.SUMMARY_PERSIST_DEBOUNCE_MS);
+  }
+
+  private async persistBudgetTotals(): Promise<void> {
+    const summary = this.pendingSummaryTotals;
+    const budgetId = this.currentBudgetId();
+    this.summaryPersistenceTimer = null;
+
+    if (!summary || !budgetId) {
+      return;
+    }
+
+    try {
+      await this.supabase.updateBudgetTotals(budgetId, summary);
+    } catch (error) {
+      console.error('No se pudieron actualizar los totales del presupuesto:', error);
+    }
+  }
+
   async toggleSection(section: 'textBlocks' | 'materials' | 'countertop' | 'conditions') {
     const id = this.currentBudgetId();
     if (!id) return;
@@ -512,6 +548,18 @@ export class BudgetEditorComponent {
       await this.supabase.updateBudget(id, updates);
     } catch (error) {
       console.error('Error updating section visibility:', error);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.customerSearchTimer) {
+      clearTimeout(this.customerSearchTimer);
+      this.customerSearchTimer = null;
+    }
+
+    if (this.summaryPersistenceTimer) {
+      clearTimeout(this.summaryPersistenceTimer);
+      this.summaryPersistenceTimer = null;
     }
   }
 }
