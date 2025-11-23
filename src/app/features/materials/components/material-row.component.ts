@@ -99,20 +99,18 @@ export class MaterialRowComponent {
     this.clearDropdownTimeout();
 
     const currentMaterial = this.material();
-    const shouldReplaceDescription = !currentMaterial.description?.trim().length;
-    const shouldReplaceManufacturer = !currentMaterial.manufacturer?.trim().length;
-    const resolvedUnitPrice = currentMaterial.unitPrice > 0
-      ? currentMaterial.unitPrice
-      : product.basePrice ?? currentMaterial.unitPrice;
+    const resolvedQuantity = currentMaterial.quantity > 0 ? currentMaterial.quantity : 1;
+    const resolvedUnitPrice = product.basePrice ?? currentMaterial.unitPrice;
 
     const updatedMaterial: Material = {
       ...currentMaterial,
       productId: product.id ?? currentMaterial.productId,
       reference: product.reference,
-      description: shouldReplaceDescription ? product.description : currentMaterial.description,
-      manufacturer: shouldReplaceManufacturer ? product.manufacturer : currentMaterial.manufacturer,
+      description: product.description,
+      manufacturer: product.manufacturer,
+      quantity: resolvedQuantity,
       unitPrice: resolvedUnitPrice,
-      totalPrice: currentMaterial.quantity * resolvedUnitPrice
+      totalPrice: resolvedQuantity * resolvedUnitPrice
     };
 
     this.referenceSearchTerm.set(product.reference);
