@@ -5,7 +5,7 @@ import type { Content, TableCell, TDocumentDefinitions, TableLayout } from 'pdfm
 import { Customer } from '../models/customer.model';
 import { BudgetTextBlock } from '../models/budget-text-block.model';
 import { Material, MaterialTable } from '../models/material.model';
-import { BudgetSummary } from '../models/budget-summary.model';
+import { BudgetSummary, SummaryLine, SummaryLineType } from '../models/budget-summary.model';
 import { Condition } from '../models/conditions.model';
 import { Countertop } from '../models/countertop.model';
 
@@ -937,7 +937,46 @@ export class PdfExportService {
 
     if (summary.additionalLines?.length) {
       summary.additionalLines.forEach(line => {
-        pushCategory(line.concept || 'Concepto adicional', line.amount);
+        const type = this.resolveSummaryLineType(line);
+        const label = this.formatSummaryLineLabel(line);
+
+        if (type === 'note') {
+          breakdownRows.push([
+            {
+              text: label,
+              margin: [12, 4, 0, 4] as [number, number, number, number],
+              color: '#6b7280',
+              italics: true,
+              fontSize: 9
+            },
+            {
+              text: '—',
+              alignment: 'right',
+              margin: [0, 4, 0, 4] as [number, number, number, number],
+              color: '#9ca3af',
+              italics: true
+            }
+          ]);
+          return;
+        }
+
+        const row = this.summaryCategoryRow(label, this.formatSummaryLineAmount(line), true) as [TableCell, TableCell];
+
+        if (type === 'optional') {
+          const labelCell = row[0] as TableCell & Record<string, unknown>;
+          const valueCell = row[1] as TableCell & Record<string, unknown>;
+          labelCell.decoration = 'lineThrough';
+          labelCell.color = '#6b7280';
+          valueCell.decoration = 'lineThrough';
+          valueCell.color = '#6b7280';
+        }
+
+        if (type === 'discount') {
+          const valueCell = row[1] as TableCell & Record<string, unknown>;
+          valueCell.color = '#b91c1c';
+        }
+
+        breakdownRows.push(row);
       });
     }
 
@@ -995,13 +1034,40 @@ export class PdfExportService {
       }
     ], '#f4ede5');
 
-    return {
-      stack: [
-        header,
-        this.buildCard(cardContent),
-        grandTotalCard
-      ]
-    };
+    const stack: Content[] = [
+      header,
+      this.buildCard(cardContent),
+      grandTotalCard
+    ];
+
+    if (this.hasOptionalSummaryLines(summary.additionalLines)) {
+      stack.push({
+        text: '* Los precios de los productos opcionales no se contabilizan sobre el total general.',
+        fontSize: 9,
+        color: '#4b5563',
+        margin: [0, 4, 0, 0] as [number, number, number, number]
+      });
+    }
+
+    return { stack };
+  }
+
+  private resolveSummaryLineType(line?: SummaryLine | null): SummaryLineType {
+    return line?.conceptType ?? 'adjustment';
+  }
+
+  private formatSummaryLineAmount(line: SummaryLine): number {
+    const amount = Math.abs(Number(line?.amount ?? 0)) || 0;
+    return this.resolveSummaryLineType(line) === 'discount' ? -amount : amount;
+  }
+
+  private formatSummaryLineLabel(line: SummaryLine): string {
+    const base = line.concept?.trim() || 'Concepto adicional';
+    return this.resolveSummaryLineType(line) === 'optional' ? `${base} *` : base;
+  }
+
+  private hasOptionalSummaryLines(lines?: SummaryLine[] | null): boolean {
+    return (lines ?? []).some(line => this.resolveSummaryLineType(line) === 'optional');
   }
 
   private buildConditionsSection(title = 'Condiciones generales', conditions?: Condition[] | null): Content | null {

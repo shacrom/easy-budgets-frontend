@@ -104,6 +104,22 @@
   @apply flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 py-3 last:border-b-0;
 }
 
+.extra-row .extra-content {
+  @apply flex flex-col gap-1 text-sm text-gray-700;
+}
+
+.type-pill {
+  @apply inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-600;
+}
+
+.concept-text {
+  @apply text-sm font-semibold text-gray-900;
+}
+
+.concept-text.with-strike {
+  @apply line-through text-gray-500;
+}
+
 .extra-row strong {
   @apply text-base font-semibold text-gray-900;
 }
@@ -112,12 +128,24 @@
   @apply text-red-600;
 }
 
+.extra-row strong.optional-price {
+  @apply text-gray-500 line-through;
+}
+
+.extra-row.is-note {
+  @apply text-gray-600 italic;
+}
+
+.input-field.type-select {
+  @apply flex-none w-32 capitalize;
+}
+
 .extra-row.total {
   @apply border-t border-gray-300 pt-4 text-gray-900;
 }
 
 .input-field {
-  @apply flex-1 border border-gray-300 px-3 py-2 text-sm font-semibold tracking-[0.1em] text-gray-800 focus:border-gray-900 focus:outline-none;
+  @apply flex-1 border border-gray-300 px-3 py-2 text-sm font-semibold tracking-widest text-gray-800 focus:border-gray-900 focus:outline-none;
 }
 
 .input-field.amount {
@@ -154,4 +182,8 @@
 
 .grand-total strong {
   @apply text-3xl font-semibold;
+}
+
+.optional-footnote {
+  @apply mt-2 text-xs font-medium text-gray-600;
 }

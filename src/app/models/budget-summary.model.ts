@@ -1,3 +1,5 @@
+export type SummaryLineType = 'adjustment' | 'discount' | 'optional' | 'note';
+
 /**
  * Modelo para una línea del resumen del presupuesto
  */
@@ -5,6 +7,7 @@ export interface SummaryLine {
   id: string;
   concept: string;
   amount: number;
+  conceptType: SummaryLineType;
 }
 
 /**

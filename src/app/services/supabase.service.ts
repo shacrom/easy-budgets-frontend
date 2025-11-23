@@ -743,9 +743,14 @@ export class SupabaseService {
   // ============================================
 
   async addAdditionalLineToBudget(line: any) {
+    const payload = {
+      ...line,
+      conceptType: line?.conceptType ?? 'adjustment'
+    };
+
     const { data, error } = await this.supabase
       .from('BudgetAdditionalLines')
-      .insert([line])
+      .insert([payload])
       .select()
       .single();
 
@@ -754,9 +759,14 @@ export class SupabaseService {
   }
 
   async updateBudgetAdditionalLine(id: string, updates: any) {
+    const payload = {
+      ...updates,
+      conceptType: updates?.conceptType ?? 'adjustment'
+    };
+
     const { data, error } = await this.supabase
       .from('BudgetAdditionalLines')
-      .update(updates)
+      .update(payload)
         .eq('id', id)
       .select()
       .single();
