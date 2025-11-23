@@ -146,6 +146,17 @@
             <input type="number" step="0.01" min="0" [value]="formValues().basePrice" (input)="updateFormField('basePrice', $event)">
           </label>
           <label class="form-field">
+            <span>Precio total (PVP)</span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              [value]="formGrossPrice()"
+              (input)="updateGrossPriceField($event)"
+              placeholder="Introduce el precio con IVA">
+            <small>Calculamos automáticamente el precio unitario sin IVA.</small>
+          </label>
+          <label class="form-field">
             <span>IVA (%) *</span>
             <input type="number" step="1" min="0" max="100" [value]="formValues().vatRate" (input)="updateFormField('vatRate', $event)">
           </label>

@@ -47,6 +47,10 @@ export class ProductsCatalogComponent {
   protected readonly searchTerm = signal<string>('');
   protected readonly isEditing = computed<boolean>(() => !!this.editingProduct());
   protected readonly formValues = computed<Product | CreateProductDto>(() => this.editingProduct() ?? this.newProduct());
+  protected readonly formGrossPrice = computed(() =>
+    this.calculateGrossPrice(this.formValues().basePrice ?? 0, this.formValues().vatRate ?? 0)
+  );
+  protected readonly lastGrossPrice = signal<number | null>(null);
   protected readonly filteredProducts = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
     const list = this.products();
@@ -127,6 +131,7 @@ export class ProductsCatalogComponent {
   protected openCreateForm(): void {
     this.editingProduct.set(null);
     this.resetNewProduct();
+    this.lastGrossPrice.set(null);
     this.showForm.set(true);
     this.clearMessages();
   }
@@ -135,6 +140,7 @@ export class ProductsCatalogComponent {
     this.showForm.set(false);
     this.editingProduct.set(null);
     this.resetNewProduct();
+    this.lastGrossPrice.set(null);
   }
 
   protected cancelForm(): void {
@@ -182,6 +188,7 @@ export class ProductsCatalogComponent {
    */
   protected openEditForm(product: Product): void {
     this.editingProduct.set({ ...product });
+    this.lastGrossPrice.set(null);
     this.showForm.set(true);
     this.clearMessages();
   }
@@ -271,7 +278,22 @@ export class ProductsCatalogComponent {
         ? (input as HTMLInputElement).checked
         : input.value;
 
-    this.newProduct.update(product => ({ ...product, [field]: value }));
+    this.newProduct.update(product => {
+      const updatedProduct = { ...product, [field]: value };
+      const trackedGrossPrice = this.lastGrossPrice();
+
+      if (field === 'basePrice') {
+        this.lastGrossPrice.set(null);
+        return updatedProduct;
+      }
+
+      if (field === 'vatRate' && trackedGrossPrice !== null) {
+        const basePrice = this.calculateBasePriceFromGross(trackedGrossPrice, value as number);
+        return { ...updatedProduct, basePrice };
+      }
+
+      return updatedProduct;
+    });
   }
 
   /**
@@ -285,9 +307,26 @@ export class ProductsCatalogComponent {
         ? (input as HTMLInputElement).checked
         : input.value;
 
-    this.editingProduct.update(product =>
-      product ? { ...product, [field]: value } : null
-    );
+    this.editingProduct.update(product => {
+      if (!product) {
+        return product;
+      }
+
+      const updatedProduct = { ...product, [field]: value } as Product;
+      const trackedGrossPrice = this.lastGrossPrice();
+
+      if (field === 'basePrice') {
+        this.lastGrossPrice.set(null);
+        return updatedProduct;
+      }
+
+      if (field === 'vatRate' && trackedGrossPrice !== null) {
+        const basePrice = this.calculateBasePriceFromGross(trackedGrossPrice, value as number);
+        return { ...updatedProduct, basePrice };
+      }
+
+      return updatedProduct;
+    });
   }
 
   protected updateFormField(field: keyof CreateProductDto, event: Event): void {
@@ -295,6 +334,30 @@ export class ProductsCatalogComponent {
       this.updateEditingProductField(field as keyof Product, event);
     } else {
       this.updateNewProductField(field, event);
+    }
+  }
+
+  protected updateGrossPriceField(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const rawValue = input.value.trim();
+
+    if (!rawValue) {
+      // Clearing the field should stop forcing base price recalculations
+      this.lastGrossPrice.set(null);
+      return;
+    }
+
+    const grossPrice = this.parseNumber(rawValue);
+    const vatRate = this.formValues().vatRate ?? 0;
+    const basePrice = this.calculateBasePriceFromGross(grossPrice, vatRate);
+    this.lastGrossPrice.set(grossPrice);
+
+    if (this.editingProduct()) {
+      this.editingProduct.update(product =>
+        product ? { ...product, basePrice } : product
+      );
+    } else {
+      this.newProduct.update(product => ({ ...product, basePrice }));
     }
   }
 
@@ -358,5 +421,22 @@ export class ProductsCatalogComponent {
   private parseNumber(value: string): number {
     const parsed = parseFloat(value);
     return Number.isNaN(parsed) ? 0 : parsed;
+  }
+
+  private calculateGrossPrice(basePrice: number, vatRate: number): number {
+    const net = Number.isFinite(basePrice) ? basePrice : 0;
+    const rate = Number.isFinite(vatRate) ? vatRate : 0;
+    const multiplier = 1 + Math.max(rate, 0) / 100;
+    return Number((net * multiplier).toFixed(2));
+  }
+
+  private calculateBasePriceFromGross(grossPrice: number, vatRate: number): number {
+    const gross = Number.isFinite(grossPrice) ? grossPrice : 0;
+    const rate = Number.isFinite(vatRate) ? vatRate : 0;
+    const divisor = 1 + Math.max(rate, 0) / 100;
+    if (divisor <= 0) {
+      return Number(gross.toFixed(2));
+    }
+    return Number((gross / divisor).toFixed(2));
   }
 }
