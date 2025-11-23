@@ -188,10 +188,21 @@ export class PdfExportService {
           decoration: 'underline'
         },
         blockHeading: {
-          fontSize: 11,
+          fontSize: 12,
           bold: true,
-          color: this.accentColor,
-          decoration: 'underline'
+          color: '#1f2933',
+          characterSpacing: 0.5
+        },
+        blockSubtotalLabel: {
+          fontSize: 9,
+          color: '#6b7280',
+          bold: true,
+          characterSpacing: 1
+        },
+        blockSubtotalValue: {
+          fontSize: 12,
+          bold: true,
+          color: this.accentColor
         },
         box: {
           margin: [0, 0, 0, 12] as [number, number, number, number]
@@ -428,11 +439,7 @@ export class PdfExportService {
       ...blocks.map(block => {
         const stack: Content[] = [];
 
-        stack.push({
-          text: block.heading,
-          style: 'blockHeading',
-          margin: [0, 0, 0, 8] as [number, number, number, number]
-        });
+        stack.push(this.buildBlockHeading(block.heading));
 
         for (const section of block.descriptions ?? []) {
           if (section.title) {
@@ -467,17 +474,12 @@ export class PdfExportService {
           });
         }
 
-        stack.push({
-          text: `Subtotal del mobiliario ${this.formatCurrency(block.subtotal)}`,
-          alignment: 'right',
-          bold: true,
-          color: this.accentColor,
-          margin: [0, 8, 0, 0] as [number, number, number, number]
-        });
+        stack.push(this.buildBlockSubtotal(block.subtotal));
 
+        // Increased margin below each block for more separation
         return {
           style: 'box',
-          margin: [0, 0, 0, 8] as [number, number, number, number],
+          margin: [0, 0, 0, 28] as [number, number, number, number],
           stack
         };
       }),
@@ -491,6 +493,49 @@ export class PdfExportService {
         }
       ], '#f4ede5')
     ];
+  }
+
+  private buildBlockHeading(title?: string | null): Content {
+    const safeTitle = (title?.trim() || 'Bloque sin título').toUpperCase();
+
+    return {
+      table: {
+        widths: ['*'],
+        body: [[{ text: safeTitle, style: 'blockHeading' }]]
+      },
+      layout: {
+        hLineWidth: () => 0,
+        vLineWidth: () => 0,
+        paddingLeft: () => 14,
+        paddingRight: () => 14,
+        paddingTop: () => 10,
+        paddingBottom: () => 10,
+        fillColor: () => '#f6f1eb'
+      },
+      margin: [0, 0, 0, 8] as [number, number, number, number]
+    };
+  }
+
+  private buildBlockSubtotal(value?: number | null): Content {
+    return {
+      table: {
+        widths: ['*', 'auto'],
+        body: [[
+          { text: 'SUBTOTAL MOBILIARIO', style: 'blockSubtotalLabel' },
+          { text: this.formatCurrency(value), style: 'blockSubtotalValue', alignment: 'right' }
+        ]]
+      },
+      layout: {
+        hLineWidth: () => 0,
+        vLineWidth: () => 0,
+        paddingLeft: () => 12,
+        paddingRight: () => 12,
+        paddingTop: () => 8,
+        paddingBottom: () => 8,
+        fillColor: () => '#fdf8f3'
+      },
+      margin: [0, 8, 0, 0] as [number, number, number, number]
+    };
   }
 
   private buildSectionHero(options: SectionHeroOptions): Content {
