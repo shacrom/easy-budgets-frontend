@@ -130,8 +130,8 @@
       }
 
       <div class="summary-row subtotal">
-        <span>Subtotal</span>
-        <strong>{{ subtotal() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+        <span>Base imponible</span>
+        <strong>{{ taxableBase() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
       </div>
     </div>
 
@@ -181,8 +181,8 @@
 
         @if (additionalLines().length > 0) {
           <div class="extra-row total">
-            <span>Subtotal con adicionales</span>
-            <strong>{{ taxableBase() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+            <span>Base imponible con adicionales</span>
+            <strong>{{ taxableBaseWithAdditionals() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
           </div>
         }
       </div>

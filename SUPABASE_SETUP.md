@@ -77,7 +77,7 @@ CREATE TABLE "Budgets" (
   "customerId" UUID REFERENCES "Customers"("id") ON DELETE RESTRICT,
   "title" VARCHAR(255) NOT NULL,
   "status" VARCHAR(50) DEFAULT 'draft' CHECK ("status" IN ('draft', 'sent', 'accepted', 'rejected', 'archived')),
-  "subtotal" DECIMAL(10,2) NOT NULL DEFAULT 0,
+  "taxableBase" DECIMAL(10,2) NOT NULL DEFAULT 0,
   "taxPercentage" DECIMAL(5,2) DEFAULT 21.00,
   "taxAmount" DECIMAL(10,2) NOT NULL DEFAULT 0,
   "total" DECIMAL(10,2) NOT NULL DEFAULT 0,

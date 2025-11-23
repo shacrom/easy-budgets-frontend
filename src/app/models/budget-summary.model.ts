@@ -14,7 +14,7 @@ export interface BudgetSummary {
   totalBlocks: number;
   totalMaterials: number;
   totalCountertop?: number;
-  subtotal: number;
+  taxableBase: number;
   vat: number;
   vatPercentage: number;
   grandTotal: number;

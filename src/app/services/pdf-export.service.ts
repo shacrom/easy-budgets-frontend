@@ -412,33 +412,6 @@ export class PdfExportService {
   return customer.dni || '';
   }
 
-  /* private buildCustomerSection(customer: Customer | null): Content | null {
-    if (!customer) {
-      return null;
-    }
-
-    const details = [
-      `Nombre: ${customer.name}`,
-      customer.email ? `Email: ${customer.email}` : null,
-      customer.phone ? `Teléfono: ${customer.phone}` : null,
-      customer.address ? `Dirección: ${customer.address}` : null,
-      customer.city ? `Ciudad: ${customer.city}` : null,
-      customer.postalCode ? `Código Postal: ${customer.postalCode}` : null,
-  null
-    ].filter(Boolean) as string[];
-
-    return {
-      style: 'box',
-      stack: [
-  { text: 'Datos del cliente', style: 'sectionHeader', margin: [0, 0, 0, 6] as [number, number, number, number] },
-        {
-          ul: details,
-          margin: [0, 0, 0, 4] as [number, number, number, number]
-        }
-      ]
-    };
-  } */
-
   private buildTextBlocksSection(blocks: BudgetTextBlock[]): Content[] {
     if (!blocks?.length) {
       return [];
@@ -966,7 +939,7 @@ export class PdfExportService {
     }
 
     const totalsRows: TableCell[][] = [
-      this.summaryTotalsRow('SUBTOTAL', summary.subtotal),
+      this.summaryTotalsRow('BASE IMPONIBLE', summary.taxableBase),
       this.summaryTotalsRow(`IVA (${summary.vatPercentage}%)`, summary.vat),
       this.summaryTotalsRow('TOTAL GENERAL', summary.grandTotal, true)
     ];
@@ -1060,12 +1033,6 @@ export class PdfExportService {
       month: 'long',
       year: 'numeric'
     });
-  }
-
-  private stripedLayout(): TableLayout {
-    return {
-      fillColor: (rowIndex: number) => (rowIndex > 0 && rowIndex % 2 === 0 ? '#f9fafb' : null)
-    };
   }
 
   private compactContent<T extends Content>(values: Array<T | null | undefined>): T[] {

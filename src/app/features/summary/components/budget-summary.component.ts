@@ -42,7 +42,7 @@ export class BudgetSummaryComponent {
         totalBlocks: this.totalBlocks(),
         totalMaterials: this.totalMaterials(),
         totalCountertop: this.totalCountertop(),
-        subtotal: this.subtotal(),
+        taxableBase: this.taxableBase(),
         vat: this.vat(),
         vatPercentage: this.vatPercentage(),
         grandTotal: this.grandTotal(),
@@ -65,7 +65,7 @@ export class BudgetSummaryComponent {
   protected readonly hasMaterialTables = computed(() => this.materialTables().length > 0);
 
   // Computed values
-  protected readonly subtotal = computed(() => {
+  protected readonly taxableBase = computed(() => {
     const blocks = this.totalBlocks();
     const materials = this.totalMaterials();
     const countertop = this.totalCountertop();
@@ -77,16 +77,16 @@ export class BudgetSummaryComponent {
     return this.additionalLines().reduce((sum, line) => sum + line.amount, 0);
   });
 
-  protected readonly taxableBase = computed(() => {
-    return this.subtotal() + this.totalAdditionalLines();
+  protected readonly taxableBaseWithAdditionals = computed(() => {
+    return this.taxableBase() + this.totalAdditionalLines();
   });
 
   protected readonly vat = computed(() => {
-    return this.taxableBase() * (this.vatPercentage() / 100);
+    return this.taxableBaseWithAdditionals() * (this.vatPercentage() / 100);
   });
 
   protected readonly grandTotal = computed(() => {
-    return this.taxableBase() + this.vat();
+    return this.taxableBaseWithAdditionals() + this.vat();
   });
 
   /**
