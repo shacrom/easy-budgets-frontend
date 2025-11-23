@@ -5,13 +5,11 @@
 }
 
 .app-header {
-  @apply bg-white py-10 px-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between rounded-b-2xl shadow-sm;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  @apply bg-white border-b border-gray-200 py-8 px-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between;
 }
 
 .app-header .header-content h1 {
-  @apply text-4xl font-light text-gray-800 tracking-widest uppercase mb-3;
-  letter-spacing: 0.2em;
+  @apply text-3xl font-semibold text-gray-900 tracking-[0.2em] uppercase mb-2;
 }
 
 .app-header .header-content p {
@@ -24,7 +22,7 @@
 }
 
 .budget-title-editor label {
-  @apply text-xs font-semibold tracking-[0.25em] uppercase text-gray-500;
+  @apply text-xs font-semibold tracking-[0.2em] uppercase text-gray-600;
 }
 
 .budget-title-input-wrapper {
@@ -32,27 +30,27 @@
 }
 
 .budget-title-input {
-  @apply flex-1 border border-gray-200 rounded-2xl px-5 py-3 text-lg font-medium text-gray-800 bg-white shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-900/10 transition disabled:bg-gray-100 disabled:text-gray-400;
+  @apply flex-1 border border-gray-300 px-4 py-2 text-base font-medium text-gray-900 bg-white focus:outline-none focus:ring-1 focus:ring-gray-900/40 transition disabled:bg-gray-100 disabled:text-gray-400;
 }
 
 .budget-title-status {
-  @apply text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-100 animate-pulse;
+  @apply text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 border border-amber-200 animate-pulse;
 }
 
 .header-actions {
-  @apply flex flex-col md:flex-row gap-4;
+  @apply flex flex-col md:flex-row gap-4 items-stretch;
 }
 
 .completion-toggle {
-  @apply flex flex-col gap-3 p-4 bg-white border border-gray-200 rounded-2xl shadow-sm min-w-[240px];
+  @apply flex flex-col gap-3 p-4 bg-white border border-gray-200 min-w-60;
 }
 
 .state-pill {
-  @apply inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wide px-4 py-2 rounded-full bg-gray-100 text-gray-600;
+  @apply inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wide px-3 py-2 bg-gray-100 text-gray-700 border border-gray-200;
 }
 
 .state-pill.completed {
-  @apply bg-emerald-100 text-emerald-800;
+  @apply bg-emerald-50 border-emerald-200 text-emerald-800;
 }
 
 .state-pill .material-symbols-rounded {
@@ -60,7 +58,7 @@
 }
 
 .completion-btn {
-  @apply inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-widest px-4 py-3 rounded-full border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-not-allowed;
+  @apply inline-flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-widest px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-not-allowed;
 }
 
 .completion-btn .material-symbols-rounded {
@@ -68,7 +66,7 @@
 }
 
 .preview-btn {
-  @apply inline-flex items-center gap-3 text-sm font-semibold tracking-wide uppercase px-6 py-4 rounded-full transition duration-200 border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-400;
+  @apply inline-flex items-center gap-3 text-sm font-semibold tracking-wide uppercase px-6 py-3 transition duration-200 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400;
   letter-spacing: 0.15em;
 }
 
@@ -81,7 +79,7 @@
 }
 
 .export-btn {
-  @apply inline-flex items-center gap-3 text-sm font-semibold tracking-wide uppercase px-6 py-4 rounded-full transition duration-200 border border-gray-900 bg-gray-900 text-white shadow-lg;
+  @apply inline-flex items-center gap-3 text-sm font-semibold tracking-wide uppercase px-6 py-3 transition duration-200 border border-gray-900 bg-gray-900 text-white;
   letter-spacing: 0.15em;
 }
 
@@ -102,11 +100,11 @@
 }
 
 .toggle-btn {
-  @apply flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-gray-50 text-gray-600 text-sm font-medium transition-all duration-200 hover:bg-gray-100 hover:border-gray-300;
+  @apply flex items-center gap-2 px-4 py-2 border border-gray-200 bg-gray-50 text-gray-600 text-sm font-medium transition-all duration-200 hover:bg-gray-100 hover:border-gray-300;
 }
 
 .toggle-btn.active {
-  @apply bg-amber-50 border-amber-200 text-amber-900 shadow-sm;
+  @apply bg-amber-50 border-amber-200 text-amber-900;
 }
 
 /* Layout for Split View */
@@ -143,7 +141,7 @@
 }
 
 .preview-sticky {
-  @apply sticky top-6 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col;
+  @apply sticky top-6 bg-white border border-gray-200 overflow-hidden flex flex-col;
   height: calc(100vh - 3rem);
 }
 
@@ -156,7 +154,7 @@
 }
 
 .loading-badge {
-  @apply text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full border border-amber-100 animate-pulse;
+  @apply text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 border border-amber-200 animate-pulse;
 }
 
 .preview-frame-container {
