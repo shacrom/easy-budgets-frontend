@@ -676,7 +676,7 @@ export class PdfExportService {
     content.push(this.buildCard([
       {
         columns: [
-          { text: (sectionTitle || 'Materiales y equipamiento').toUpperCase(), style: 'sectionCardTitle', width: '*' },
+          { text: ('Total').toUpperCase(), style: 'sectionCardTitle', width: '*' },
           { text: this.formatCurrency(overallTotal), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
         ]
       }
