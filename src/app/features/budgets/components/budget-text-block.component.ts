@@ -43,6 +43,9 @@ export class BudgetTextBlockComponent {
   protected readonly isUploadingImage = signal<boolean>(false);
   protected readonly imageUploadError = signal<string | null>(null);
 
+  private sectionUpdateTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly SECTION_UPDATE_DEBOUNCE_MS = 800;
+
   // Sync sections when block changes
   constructor() {
     effect(() => {
@@ -150,28 +153,42 @@ export class BudgetTextBlockComponent {
     const input = event.target as HTMLInputElement | HTMLTextAreaElement;
     const value = input.value;
 
-    try {
-      // Update locally first for immediate feedback
-      this.sections.update(sections =>
-        sections.map(section =>
-          section.id === sectionId
-            ? { ...section, [field]: value }
-            : section
-        )
-      );
+    // Update locally first for immediate feedback
+    const updatedSections = this.sections().map(section =>
+      section.id === sectionId
+        ? { ...section, [field]: value }
+        : section
+    );
+    this.sections.set(updatedSections);
 
-      // Then update in database
-      const section = this.sections().find(s => s.id === sectionId);
-      if (section) {
-        await this.supabase.updateTextBlockSection(sectionId, {
-          title: section.title,
-          text: section.text,
-          orderIndex: section.orderIndex
-        });
-      }
-    } catch (error) {
-      console.error('Error updating section:', error);
+    // Clear previous timer
+    if (this.sectionUpdateTimer) {
+      clearTimeout(this.sectionUpdateTimer);
     }
+
+    // Debounce the update to parent and database
+    this.sectionUpdateTimer = setTimeout(async () => {
+      try {
+        // Emit update event to notify parent component
+        const updatedBlock: BudgetTextBlock = {
+          ...this.block(),
+          descriptions: this.sections()
+        };
+        this.blockUpdated.emit(updatedBlock);
+
+        // Then update in database
+        const section = this.sections().find(s => s.id === sectionId);
+        if (section) {
+          await this.supabase.updateTextBlockSection(sectionId, {
+            title: section.title,
+            text: section.text,
+            orderIndex: section.orderIndex
+          });
+        }
+      } catch (error) {
+        console.error('Error updating section:', error);
+      }
+    }, this.SECTION_UPDATE_DEBOUNCE_MS);
   }
 
   /**
