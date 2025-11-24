@@ -321,4 +321,16 @@ export class BudgetTextBlockComponent {
       }
     }
   }
+
+  /**
+   * Calculates the number of rows for a textarea based on content
+   * Minimum 3 rows, or number of line breaks + 1
+   */
+  protected calculateRows(text: string | undefined | null): number {
+    if (!text) {
+      return 3;
+    }
+    const lineBreaks = (text.match(/\n/g) || []).length;
+    return Math.max(3, lineBreaks + 1);
+  }
 }

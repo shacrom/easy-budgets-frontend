@@ -143,7 +143,7 @@
               <textarea
                 [value]="descripcion.text"
                 (input)="updateDescriptionSection(descripcion.id, 'text', $event)"
-                rows="3"
+                [rows]="calculateRows(descripcion.text)"
                 class="form-input-small"
                 placeholder="Las cocinas Dica se diseñan..."></textarea>
             </div>
