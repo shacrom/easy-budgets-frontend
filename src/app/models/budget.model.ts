@@ -14,6 +14,9 @@ export interface Budget {
   createdAt?: string;
   updatedAt?: string;
 
+  // Section titles
+  materialsSectionTitle?: string;
+
   // Visibility flags
   showTextBlocks: boolean;
   showMaterials: boolean;

@@ -1,7 +1,16 @@
 <section class="materials-module">
   <header class="module-header">
     <div class="module-title">
-      <h2>Tablas de materiales</h2>
+      @if (editMode()) {
+        <input
+          class="section-title-input"
+          type="text"
+          [value]="sectionTitle()"
+          placeholder="Título de la sección"
+          (input)="updateSectionTitle($event)">
+      } @else {
+        <h2>{{ sectionTitle() || 'Materiales y equipamiento' }}</h2>
+      }
     </div>
     <div class="header-actions">
       <button type="button" class="btn ghost" (click)="toggleEditMode()">

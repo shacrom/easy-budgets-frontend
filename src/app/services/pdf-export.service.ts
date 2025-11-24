@@ -26,6 +26,7 @@ export interface BudgetPdfPayload {
   materialTables: MaterialTable[];
   countertop: Countertop | null;
   summary: BudgetSummary | null;
+  materialsSectionTitle?: string;
   conditionsTitle?: string;
   conditions?: Condition[];
   generatedAt: string;
@@ -185,11 +186,11 @@ export class PdfExportService {
     const content: Content[] = this.compactContent([
       ...this.buildTextBlocksSection(blocks),
       { text: '', pageBreak: 'after' },
-      ...this.buildMaterialsSection(payload.materialTables, payload.materials),
+      ...this.buildMaterialsSection(payload.materialTables, payload.materials, payload.materialsSectionTitle),
       { text: '', pageBreak: 'after' },
       this.buildCountertopSection(countertop),
       { text: '', pageBreak: 'after' },
-      this.buildSummarySection(payload.summary, blocks, payload.materialTables),
+      this.buildSummarySection(payload.summary, blocks, payload.materialTables, payload.materialsSectionTitle),
       { text: '', pageBreak: 'after' },
       this.buildConditionsSection(payload.conditionsTitle, payload.conditions),
       this.buildSignatureSection(payload.customer)
@@ -640,7 +641,7 @@ export class PdfExportService {
     };
   }
 
-  private buildMaterialsSection(tables: MaterialTable[], standaloneMaterials: Material[]): Content[] {
+  private buildMaterialsSection(tables: MaterialTable[], standaloneMaterials: Material[], sectionTitle?: string): Content[] {
     const groupedTables = tables ?? [];
     const filteredStandalone = standaloneMaterials?.filter(material => !groupedTables.some(table => table.rows?.some(row => row.id === material.id))) ?? [];
 
@@ -658,7 +659,7 @@ export class PdfExportService {
 
     content.push(
       this.buildSectionHero({
-      title: 'Materiales y equipamiento',
+      title: sectionTitle || 'Materiales y equipamiento',
       background: '#cbb39a'
       })
     );
@@ -675,7 +676,7 @@ export class PdfExportService {
     content.push(this.buildCard([
       {
         columns: [
-          { text: 'TOTAL MATERIALES', style: 'sectionCardTitle', width: '*' },
+          { text: (sectionTitle || 'Materiales y equipamiento').toUpperCase(), style: 'sectionCardTitle', width: '*' },
           { text: this.formatCurrency(overallTotal), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
         ]
       }
@@ -996,7 +997,8 @@ export class PdfExportService {
   private buildSummarySection(
     summary: BudgetSummary | null,
     blocks: BudgetTextBlock[],
-    materialTables: MaterialTable[]
+    materialTables: MaterialTable[],
+    materialsSectionTitle?: string
   ): Content | null {
     if (!summary) {
       return null;
@@ -1033,7 +1035,7 @@ export class PdfExportService {
     }
 
     if (summary.totalMaterials > 0) {
-      pushCategory('Total materiales', summary.totalMaterials, materialBreakdown);
+      pushCategory(materialsSectionTitle || 'Materiales y equipamiento', summary.totalMaterials, materialBreakdown);
     }
 
     if (summary.totalCountertop && summary.totalCountertop > 0) {

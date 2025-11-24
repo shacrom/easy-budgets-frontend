@@ -141,9 +141,11 @@
         <section class="section-divider">
           <app-materials-table
             [tables]="materialTables()"
+            [sectionTitle]="materialsSectionTitle()"
             (totalChanged)="onTotalMaterialsChanged($event)"
             (materialsChanged)="onMaterialsChanged($event)"
-            (tablesChanged)="onTablesChanged($event)">
+            (tablesChanged)="onTablesChanged($event)"
+            (sectionTitleChanged)="onMaterialsSectionTitleChanged($event)">
           </app-materials-table>
         </section>
       }

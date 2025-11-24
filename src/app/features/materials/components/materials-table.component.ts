@@ -18,7 +18,13 @@ import { SupabaseService } from '../../../services/supabase.service';
 })
 export class MaterialsTableComponent {
   private readonly defaultTableTitle = 'Título';
+  private readonly defaultSectionTitle = 'Materiales y equipamiento';
   private readonly supabase = inject(SupabaseService);
+
+  // Section title (editable)
+  readonly sectionTitleInput = input<string>(this.defaultSectionTitle, { alias: 'sectionTitle' });
+  protected readonly sectionTitle = signal<string>(this.defaultSectionTitle);
+  sectionTitleChanged = output<string>();
 
   // List of material tables
   protected readonly tables = signal<MaterialTable[]>([]);
@@ -46,6 +52,14 @@ export class MaterialsTableComponent {
   materialsChanged = output<Material[]>();
 
   constructor() {
+    // Sync section title from input
+    effect(() => {
+      const title = this.sectionTitleInput();
+      if (title) {
+        this.sectionTitle.set(title);
+      }
+    });
+
     effect(() => {
       const incomingTables = this.tablesInput() ?? [];
       this.tables.set(this.prepareTables(incomingTables));
@@ -54,6 +68,15 @@ export class MaterialsTableComponent {
 
     this.emitChanges({ skipTableOutput: true });
     void this.loadProducts();
+  }
+
+  /**
+   * Updates the section title
+   */
+  protected updateSectionTitle(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.sectionTitle.set(value);
+    this.sectionTitleChanged.emit(value);
   }
 
   /**

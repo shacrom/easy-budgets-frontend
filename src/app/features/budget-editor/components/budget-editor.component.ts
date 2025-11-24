@@ -54,6 +54,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   protected readonly blocks = signal<BudgetTextBlock[]>([]);
   protected readonly materials = signal<Material[]>([]);
   protected readonly materialTables = signal<MaterialTable[]>([]);
+  protected readonly materialsSectionTitle = signal<string>('Materiales y equipamiento');
   protected readonly customers = signal<Customer[]>([]);
   protected readonly customerSearchTerm = signal<string>('');
   protected readonly customersLoading = signal<boolean>(false);
@@ -120,6 +121,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
         this.blocks();
         this.materials();
         this.materialTables();
+        this.materialsSectionTitle();
         this.countertopData();
         this.summarySnapshot();
         this.conditionsList();
@@ -169,6 +171,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       materialTables: this.showMaterials() ? this.materialTables() : [],
       countertop: this.showCountertop() ? this.countertopData() : null,
       summary: this.summarySnapshot(),
+      materialsSectionTitle: this.materialsSectionTitle(),
       conditionsTitle: this.conditionsTitle(),
       conditions: this.showConditions() ? this.conditionsList() : [],
       generatedAt: new Date().toISOString()
@@ -259,6 +262,9 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       this.showMaterials.set(budget.showMaterials ?? true);
       this.showCountertop.set(budget.showCountertop ?? false);
       this.showConditions.set(budget.showConditions ?? true);
+
+      // Load materials section title
+      this.materialsSectionTitle.set(budget.materialsSectionTitle ?? 'Materiales y equipamiento');
 
       const relationalTables = Array.isArray(budget.materialTables) ? budget.materialTables : [];
       this.materialTables.set(relationalTables);
@@ -403,6 +409,19 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
    */
   protected onTotalMaterialsChanged(total: number): void {
     this.totalMaterials.set(total);
+  }
+
+  protected async onMaterialsSectionTitleChanged(title: string): Promise<void> {
+    this.materialsSectionTitle.set(title);
+
+    const id = this.currentBudgetId();
+    if (!id) return;
+
+    try {
+      await this.supabase.updateBudget(id, { materialsSectionTitle: title });
+    } catch (error) {
+      console.error('Error saving materials section title:', error);
+    }
   }
 
   protected onTotalCountertopChanged(total: number) {
