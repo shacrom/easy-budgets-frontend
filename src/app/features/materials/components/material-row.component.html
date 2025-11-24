@@ -1,6 +1,6 @@
 @if (!editMode()) {
   <!-- Read-only view -->
-  <tr class="material-row">
+  <tr class="material-row" [class.dropdown-active]="referenceDropdownOpen()">
     <td class="material-cell reference">{{ material().reference || '—' }}</td>
     <td class="material-cell description">{{ material().description }}</td>
     <td class="material-cell manufacturer">{{ material().manufacturer }}</td>
@@ -15,7 +15,7 @@
   </tr>
 } @else {
   <!-- Edit view -->
-  <tr class="material-row edit-mode">
+  <tr class="material-row edit-mode" [class.dropdown-active]="referenceDropdownOpen()">
     <td class="material-cell reference">
       <div class="reference-field">
         <input

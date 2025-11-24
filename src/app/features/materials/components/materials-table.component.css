@@ -72,9 +72,7 @@
 
 .materials-card {
   @apply border border-gray-200 bg-white shadow-sm;
-  position: relative;
   overflow: visible !important;
-  z-index: 1;
 }
 
 .card-header {
@@ -115,14 +113,16 @@
 .table-wrapper {
   @apply w-full;
   overflow: visible !important;
-  position: static;
 }
 
 .materials-table {
   @apply w-full border border-gray-200 text-sm;
   border-spacing: 0;
-  position: relative;
-  z-index: 1;
+  border-collapse: separate;
+}
+
+.materials-table tbody {
+  isolation: auto;
 }
 
 .materials-table thead {
