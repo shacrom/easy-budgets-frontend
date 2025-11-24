@@ -205,7 +205,7 @@ export class PdfExportService {
           color: this.accentColor
         },
         blockParagraph: {
-          lineHeight: 1.4
+          lineHeight: 1.2
         },
         box: {
           margin: [0, 0, 0, 12] as [number, number, number, number]
