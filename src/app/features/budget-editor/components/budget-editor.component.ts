@@ -163,6 +163,34 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   }
 
   private buildPdfPayload(): BudgetPdfPayload {
+    // Crear un summary filtrado basado en las secciones visibles
+    const originalSummary = this.summarySnapshot();
+    const filteredSummary: BudgetSummary | null = originalSummary ? {
+      ...originalSummary,
+      totalBlocks: this.showTextBlocks() ? originalSummary.totalBlocks : 0,
+      totalMaterials: this.showMaterials() ? originalSummary.totalMaterials : 0,
+      totalCountertop: this.showCountertop() ? originalSummary.totalCountertop : 0
+    } : null;
+
+    // Recalcular taxableBase y grandTotal basado en secciones visibles
+    if (filteredSummary) {
+      const visibleTotal = filteredSummary.totalBlocks + filteredSummary.totalMaterials + (filteredSummary.totalCountertop ?? 0);
+
+      // Sumar líneas adicionales (descuentos, ajustes, etc.)
+      let additionalTotal = 0;
+      if (filteredSummary.additionalLines?.length) {
+        filteredSummary.additionalLines.forEach(line => {
+          if (line.conceptType !== 'note') {
+            additionalTotal += line.amount;
+          }
+        });
+      }
+
+      filteredSummary.taxableBase = visibleTotal + additionalTotal;
+      filteredSummary.vat = filteredSummary.taxableBase * (filteredSummary.vatPercentage / 100);
+      filteredSummary.grandTotal = filteredSummary.taxableBase + filteredSummary.vat;
+    }
+
     return {
       metadata: this.budgetMeta(),
       customer: this.selectedCustomer(),
@@ -170,7 +198,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       materials: this.showMaterials() ? this.materials() : [],
       materialTables: this.showMaterials() ? this.materialTables() : [],
       countertop: this.showCountertop() ? this.countertopData() : null,
-      summary: this.summarySnapshot(),
+      summary: filteredSummary,
       materialsSectionTitle: this.materialsSectionTitle(),
       conditionsTitle: this.conditionsTitle(),
       conditions: this.showConditions() ? this.conditionsList() : [],

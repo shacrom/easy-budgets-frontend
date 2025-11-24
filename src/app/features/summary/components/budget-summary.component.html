@@ -17,7 +17,7 @@
   <div class="summary-card">
     <div class="accordion">
       <!-- Blocks accordion -->
-      @if (totalBlocks() > 0) {
+      @if (effectiveTotalBlocks() > 0) {
         <div class="accordion-item">
           <button type="button" class="accordion-trigger" (click)="toggleBlocksExpanded()">
             <div class="trigger-label">
@@ -28,7 +28,7 @@
               </div>
             </div>
             <div class="trigger-value">
-              <span>{{ totalBlocks() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              <span>{{ effectiveTotalBlocks() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
               <span class="material-symbols-rounded" aria-hidden="true">
                 {{ blocksExpanded() ? 'expand_less' : 'expand_more' }}
               </span>
@@ -55,7 +55,7 @@
       }
 
       <!-- Materials accordion -->
-      @if (totalMaterials() > 0) {
+      @if (effectiveTotalMaterials() > 0) {
         <div class="accordion-item">
           <button type="button" class="accordion-trigger" (click)="toggleMaterialsExpanded()">
             <div class="trigger-label">
@@ -72,7 +72,7 @@
               </div>
             </div>
             <div class="trigger-value">
-              <span>{{ totalMaterials() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              <span>{{ effectiveTotalMaterials() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
               <span class="material-symbols-rounded" aria-hidden="true">
                 {{ materialsExpanded() ? 'expand_less' : 'expand_more' }}
               </span>
@@ -113,7 +113,7 @@
       }
 
       <!-- Countertop section -->
-      @if (totalCountertop() > 0) {
+      @if (effectiveTotalCountertop() > 0) {
         <div class="accordion-item">
           <div class="accordion-trigger" style="cursor: default;">
             <div class="trigger-label">
@@ -123,7 +123,7 @@
               </div>
             </div>
             <div class="trigger-value">
-              <span>{{ totalCountertop() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              <span>{{ effectiveTotalCountertop() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
             </div>
           </div>
         </div>

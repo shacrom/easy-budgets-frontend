@@ -22,6 +22,11 @@ export class BudgetSummaryComponent {
   totalMaterials = input<number>(0);
   totalCountertop = input<number>(0);
 
+  // Inputs: visibility flags for each section
+  showBlocks = input<boolean>(true);
+  showMaterials = input<boolean>(true);
+  showCountertop = input<boolean>(true);
+
   // Inputs: data arrays to show details
   blocks = input<BudgetTextBlock[]>([]);
   materials = input<Material[]>([]);
@@ -48,9 +53,9 @@ export class BudgetSummaryComponent {
     effect(() => {
       const normalizedLines = this.additionalLines().map(line => this.normalizeLine(line));
       this.summaryChanged.emit({
-        totalBlocks: this.totalBlocks(),
-        totalMaterials: this.totalMaterials(),
-        totalCountertop: this.totalCountertop(),
+        totalBlocks: this.effectiveTotalBlocks(),
+        totalMaterials: this.effectiveTotalMaterials(),
+        totalCountertop: this.effectiveTotalCountertop(),
         taxableBase: this.taxableBase(),
         vat: this.vat(),
         vatPercentage: this.vatPercentage(),
@@ -75,8 +80,13 @@ export class BudgetSummaryComponent {
   protected readonly hasMaterialTables = computed(() => this.materialTables().length > 0);
 
   // Computed values
+  // Computed: effective totals based on visibility
+  protected readonly effectiveTotalBlocks = computed(() => this.showBlocks() ? (this.totalBlocks() ?? 0) : 0);
+  protected readonly effectiveTotalMaterials = computed(() => this.showMaterials() ? (this.totalMaterials() ?? 0) : 0);
+  protected readonly effectiveTotalCountertop = computed(() => this.showCountertop() ? (this.totalCountertop() ?? 0) : 0);
+
   protected readonly baseSubtotal = computed(() => {
-    return (this.totalBlocks() ?? 0) + (this.totalMaterials() ?? 0) + (this.totalCountertop() ?? 0);
+    return this.effectiveTotalBlocks() + this.effectiveTotalMaterials() + this.effectiveTotalCountertop();
   });
 
   protected readonly netAdjustments = computed(() => {

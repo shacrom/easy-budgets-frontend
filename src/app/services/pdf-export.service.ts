@@ -182,19 +182,33 @@ export class PdfExportService {
     }));
 
 
-    // Secciones con salto de página entre ellas
-    const content: Content[] = this.compactContent([
-      ...this.buildTextBlocksSection(blocks),
-      { text: '', pageBreak: 'after' },
-      ...this.buildMaterialsSection(payload.materialTables, payload.materials, payload.materialsSectionTitle),
-      { text: '', pageBreak: 'after' },
-      this.buildCountertopSection(countertop),
-      { text: '', pageBreak: 'after' },
-      this.buildSummarySection(payload.summary, blocks, payload.materialTables, payload.materialsSectionTitle),
-      { text: '', pageBreak: 'after' },
-      this.buildConditionsSection(payload.conditionsTitle, payload.conditions),
-      this.buildSignatureSection(payload.customer)
-    ]);
+    // Construir secciones individuales
+    const textBlocksContent = this.buildTextBlocksSection(blocks);
+    const materialsContent = this.buildMaterialsSection(payload.materialTables, payload.materials, payload.materialsSectionTitle);
+    const countertopContent = this.buildCountertopSection(countertop);
+    const summaryContent = this.buildSummarySection(payload.summary, blocks, payload.materialTables, payload.materialsSectionTitle);
+    const conditionsContent = this.buildConditionsSection(payload.conditionsTitle, payload.conditions);
+    const signatureContent = this.buildSignatureSection(payload.customer);
+
+    // Agrupar secciones con su contenido (solo las que tienen contenido)
+    const sections: Content[][] = [
+      textBlocksContent.length > 0 ? textBlocksContent : [],
+      materialsContent.length > 0 ? materialsContent : [],
+      countertopContent ? [countertopContent] : [],
+      summaryContent ? [summaryContent] : [],
+      conditionsContent ? [conditionsContent] : [],
+      signatureContent ? [signatureContent] : []
+    ].filter(section => section.length > 0);
+
+    // Construir contenido con saltos de página solo entre secciones que existen
+    const content: Content[] = [];
+    sections.forEach((section, index) => {
+      content.push(...section);
+      // Añadir salto de página después de cada sección excepto la última
+      if (index < sections.length - 1) {
+        content.push({ text: '', pageBreak: 'after' });
+      }
+    });
 
     return {
       pageSize: 'A4',
