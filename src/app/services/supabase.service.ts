@@ -352,7 +352,8 @@ export class SupabaseService {
           *,
           rows:BudgetMaterialTableRows(*)
         ),
-        additionalLines:BudgetAdditionalLines(*)
+        additionalLines:BudgetAdditionalLines(*),
+        countertop:BudgetCountertops(*)
       `)
         .eq('id', id)
       .single();
@@ -379,6 +380,11 @@ export class SupabaseService {
         }));
     } else {
       data.materialTables = [];
+    }
+
+    // Countertop viene como array de 0 o 1 elementos, convertirlo a objeto único o null
+    if (data.countertop && Array.isArray(data.countertop)) {
+      data.countertop = data.countertop.length > 0 ? data.countertop[0] : null;
     }
 
     return data;
@@ -427,6 +433,7 @@ export class SupabaseService {
       textBlocks = [],
       materialTables = [],
       additionalLines = [],
+      countertop,
       customer,
       id: _originalId,
       createdAt: _createdAt,
@@ -511,6 +518,22 @@ export class SupabaseService {
 
       if (additionalError) {
         throw additionalError;
+      }
+    }
+
+    if (countertop) {
+      const { id: _countertopId, budgetId: _oldBudgetId, createdAt: _ctCreatedAt, updatedAt: _ctUpdatedAt, ...countertopData } = countertop;
+      const countertopPayload = {
+        ...countertopData,
+        budgetId: newBudgetId
+      };
+
+      const { error: countertopError } = await this.supabase
+        .from('BudgetCountertops')
+        .insert([countertopPayload]);
+
+      if (countertopError) {
+        throw countertopError;
       }
     }
 
