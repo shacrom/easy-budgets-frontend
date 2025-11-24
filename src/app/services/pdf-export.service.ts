@@ -296,7 +296,7 @@ export class PdfExportService {
         // Row 1
         {
           columns: [
-            { text: `${title} Nº ${budgetNumber}`, bold: true, alignment: 'left', fontSize: 10 },
+            { text: `${title}`, bold: true, alignment: 'left', fontSize: 10 },
             { text: `Valencia a ${dateStr}`, alignment: 'center', fontSize: 10 },
             { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 10 }
           ],
