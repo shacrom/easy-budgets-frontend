@@ -38,7 +38,6 @@
                 Sin coincidencias
               </p>
             } @else {
-              <p class="reference-helper">Coincidencias del catálogo</p>
               <div class="reference-list">
                 @for (product of referenceMatches(); track product.id ?? product.reference) {
                   <button

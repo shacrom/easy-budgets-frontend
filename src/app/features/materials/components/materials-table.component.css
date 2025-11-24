@@ -82,13 +82,12 @@
 }
 
 .title-group {
-  @apply flex min-w-[16rem] flex-col gap-1;
+  @apply flex flex-1 flex-col gap-1 min-w-[10rem];
 }
 
 .title-group h3 {
   @apply text-xl font-semibold text-gray-900;
 }
-
 .table-title-input {
   @apply w-full border-b border-gray-300 bg-transparent text-xl font-semibold tracking-[0.1em] text-gray-900 placeholder:text-gray-400 focus:border-gray-900 focus:outline-none;
 }

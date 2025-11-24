@@ -42,7 +42,7 @@
 }
 
 .input-field {
-  @apply w-full border border-gray-300 px-2 py-1 text-sm font-light uppercase tracking-[0.05em] focus:border-gray-900 focus:outline-none;
+  @apply w-full border border-gray-300 px-2 py-1 text-sm font-light tracking-[0.05em] focus:border-gray-900 focus:outline-none;
 }
 
 .reference-field {
@@ -61,7 +61,8 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 4px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   z-index: 9999;
 }
 
