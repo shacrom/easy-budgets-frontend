@@ -490,12 +490,11 @@ export class PdfExportService {
         };
       }),
       this.buildCard([
-        { text: 'TOTAL MOBILIARIO', style: 'sectionCardTitle' },
         {
-          text: this.formatCurrency(totalMobiliario),
-          style: 'sectionGrandTotal',
-          alignment: 'right',
-          margin: [0, 4, 0, 0] as [number, number, number, number]
+          columns: [
+            { text: 'TOTAL MOBILIARIO', style: 'sectionCardTitle', width: '*' },
+            { text: this.formatCurrency(totalMobiliario), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
+          ]
         }
       ], '#f4ede5')
     ];
@@ -643,8 +642,12 @@ export class PdfExportService {
     }
 
     content.push(this.buildCard([
-      { text: 'TOTAL MATERIALES', style: 'sectionCardTitle' },
-      { text: this.formatCurrency(overallTotal), style: 'sectionGrandTotal', alignment: 'right', margin: [0, 4, 0, 0] as [number, number, number, number] }
+      {
+        columns: [
+          { text: 'TOTAL MATERIALES', style: 'sectionCardTitle', width: '*' },
+          { text: this.formatCurrency(overallTotal), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
+        ]
+      }
     ], '#f4ede5'));
 
     return content;
@@ -893,12 +896,11 @@ export class PdfExportService {
     if (countertop.price) {
       stack.push(
         this.buildCard([
-          { text: 'TOTAL ENCIMERA', style: 'sectionCardTitle' },
           {
-            text: this.formatCurrency(countertop.price),
-            style: 'sectionGrandTotal',
-            alignment: 'right',
-            margin: [0, 4, 0, 0] as [number, number, number, number]
+            columns: [
+              { text: 'TOTAL ENCIMERA', style: 'sectionCardTitle', width: '*' },
+              { text: this.formatCurrency(countertop.price), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
+            ]
           }
         ], '#f4ede5')
       );
@@ -1076,12 +1078,11 @@ export class PdfExportService {
     ]);
 
     const grandTotalCard = this.buildCard([
-      { text: 'TOTAL GENERAL', style: 'sectionCardTitle' },
       {
-        text: this.formatCurrency(summary.grandTotal),
-        style: 'sectionGrandTotal',
-        alignment: 'right',
-        margin: [0, 4, 0, 0] as [number, number, number, number]
+        columns: [
+          { text: 'TOTAL GENERAL', style: 'sectionCardTitle', width: '*' },
+          { text: this.formatCurrency(summary.grandTotal), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
+        ]
       }
     ], '#f4ede5');
 
