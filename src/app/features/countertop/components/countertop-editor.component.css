@@ -9,7 +9,7 @@
 }
 
 .header h2 {
-  @apply text-lg font-medium text-gray-900 uppercase;
+  @apply text-lg font-medium text-gray-900;
 }
 
 .content {
@@ -21,7 +21,7 @@
 }
 
 .form-group label {
-  @apply text-sm font-medium text-gray-700 uppercase;
+  @apply text-sm font-medium text-gray-700;
 }
 
 .form-input, .form-textarea {
@@ -49,7 +49,7 @@
 }
 
 .upload-image-btn {
-  @apply px-4 py-2 bg-amber-900 text-white text-sm uppercase tracking-wide rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2;
+  @apply px-4 py-2 bg-amber-900 text-white text-sm tracking-wide rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2;
 }
 
 .image-preview-actions {
@@ -81,7 +81,7 @@
 }
 
 .price-section label {
-  @apply text-sm font-medium text-gray-700 uppercase;
+  @apply text-sm font-medium text-gray-700;
 }
 
 .price-input {
