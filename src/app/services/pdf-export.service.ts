@@ -740,10 +740,10 @@ export class PdfExportService {
       layout: {
         hLineWidth: () => 0,
         vLineWidth: () => 0,
-        paddingLeft: () => 16,
-        paddingRight: () => 16,
-        paddingTop: () => 12,
-        paddingBottom: () => 12,
+        paddingLeft: () => 8,
+        paddingRight: () => 8,
+        paddingTop: () => 2,
+        paddingBottom: () => 2,
         fillColor: () => background
       },
       margin: [0, 0, 0, 12] as [number, number, number, number]
