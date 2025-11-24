@@ -127,8 +127,15 @@ export class BudgetTextBlockComponent {
         text: ''
       });
 
-  // Add to local state immediately for better UX
-  this.sections.update(sections => [...sections, newSection]);
+      // Add to local state immediately for better UX
+      this.sections.update(sections => [...sections, newSection]);
+
+      // Emit update event to notify parent component
+      const updatedBlock: BudgetTextBlock = {
+        ...this.block(),
+        descriptions: [...currentSections, newSection]
+      };
+      this.blockUpdated.emit(updatedBlock);
     } catch (error) {
       console.error('Error adding section:', error);
     }
@@ -180,8 +187,16 @@ export class BudgetTextBlockComponent {
     try {
       await this.supabase.deleteTextBlockSection(sectionId);
 
-  // Remove from local state
-  this.sections.update(sections => sections.filter(s => s.id !== sectionId));
+      // Remove from local state
+      const updatedSections = this.sections().filter(s => s.id !== sectionId);
+      this.sections.set(updatedSections);
+
+      // Emit update event to notify parent component
+      const updatedBlock: BudgetTextBlock = {
+        ...this.block(),
+        descriptions: updatedSections
+      };
+      this.blockUpdated.emit(updatedBlock);
     } catch (error) {
       console.error('Error deleting section:', error);
     }
