@@ -165,7 +165,7 @@ export class PdfExportService {
 
     return {
       pageSize: 'A4',
-      pageMargins: [40, 130, 40, 80],
+      pageMargins: [40, 110, 40, 80],
       header: (currentPage, pageCount) => this.buildHeader(payload, currentPage, pageCount),
       footer: (currentPage, pageCount) => this.buildFooter(payload, currentPage, pageCount),
       content,
@@ -285,7 +285,6 @@ export class PdfExportService {
   }
 
   private buildHeader(payload: BudgetPdfPayload, currentPage: number, pageCount: number): Content {
-    const budgetNumber = payload.metadata?.budgetNumber ?? payload.metadata?.id ?? '---';
     const title = (payload.metadata?.title ?? 'PRESUPUESTO').toUpperCase();
     const dateStr = this.formatDateLong(payload.generatedAt);
     const customer = payload.customer;
@@ -511,10 +510,10 @@ export class PdfExportService {
       layout: {
         hLineWidth: () => 0,
         vLineWidth: () => 0,
-        paddingLeft: () => 14,
-        paddingRight: () => 14,
-        paddingTop: () => 10,
-        paddingBottom: () => 10,
+        paddingLeft: () => 6,
+        paddingRight: () => 6,
+        paddingTop: () => 1,
+        paddingBottom: () => 1,
         fillColor: () => '#f6f1eb'
       },
       margin: [0, 0, 0, 8] as [number, number, number, number]
@@ -533,10 +532,10 @@ export class PdfExportService {
       layout: {
         hLineWidth: () => 0,
         vLineWidth: () => 0,
-        paddingLeft: () => 12,
-        paddingRight: () => 12,
-        paddingTop: () => 8,
-        paddingBottom: () => 8,
+        paddingLeft: () => 6,
+        paddingRight: () => 6,
+        paddingTop: () => 1,
+        paddingBottom: () => 1,
         fillColor: () => '#fdf8f3'
       },
       margin: [0, 8, 0, 0] as [number, number, number, number]
