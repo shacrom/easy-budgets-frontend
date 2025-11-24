@@ -685,6 +685,7 @@ export class PdfExportService {
 
   private buildMaterialGroupCard(title: string, rows: Material[]): Content {
     const countLabel = rows.length === 1 ? '1 partida' : `${rows.length} partidas`;
+    const subtotal = rows.reduce((sum, row) => sum + (row.totalPrice ?? 0), 0);
 
     const header: Content = {
       columns: [
@@ -707,7 +708,27 @@ export class PdfExportService {
           italics: true
         };
 
-    return this.buildCard([header, tableContent]);
+    const subtotalRow: Content = {
+      table: {
+        widths: ['*', 'auto'],
+        body: [[
+          { text: 'SUBTOTAL', style: 'blockSubtotalLabel' },
+          { text: this.formatCurrency(subtotal), style: 'blockSubtotalValue', alignment: 'right' }
+        ]]
+      },
+      layout: {
+        hLineWidth: () => 0,
+        vLineWidth: () => 0,
+        paddingLeft: () => 12,
+        paddingRight: () => 12,
+        paddingTop: () => 8,
+        paddingBottom: () => 8,
+        fillColor: () => '#fdf8f3'
+      },
+      margin: [0, 8, 0, 0] as [number, number, number, number]
+    };
+
+    return this.buildCard([header, tableContent, subtotalRow]);
   }
 
   private buildCard(inner: Content[], background = '#ffffff'): Content {
