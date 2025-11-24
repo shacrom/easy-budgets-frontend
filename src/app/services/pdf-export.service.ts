@@ -204,6 +204,9 @@ export class PdfExportService {
           bold: true,
           color: this.accentColor
         },
+        blockParagraph: {
+          lineHeight: 1.4
+        },
         box: {
           margin: [0, 0, 0, 12] as [number, number, number, number]
         },
@@ -446,13 +449,15 @@ export class PdfExportService {
             stack.push({
               text: section.title,
               bold: true,
-              margin: [0, 4, 0, 2] as [number, number, number, number]
+              margin: [0, 4, 0, 2] as [number, number, number, number],
+              style: 'blockParagraph'
             });
           }
 
           stack.push({
             text: section.text,
-            margin: [0, 0, 0, 4] as [number, number, number, number]
+            margin: [0, 0, 0, 4] as [number, number, number, number],
+            style: 'blockParagraph'
           });
         }
 
@@ -470,7 +475,8 @@ export class PdfExportService {
             text: block.link,
             link: block.link,
             color: '#2563eb',
-            margin: [0, 6, 0, 0] as [number, number, number, number]
+            margin: [0, 6, 0, 0] as [number, number, number, number],
+            style: 'blockParagraph'
           });
         }
 
