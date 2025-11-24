@@ -1,4 +1,4 @@
-import { Component, signal, inject, effect, computed, untracked, OnDestroy } from '@angular/core';
+import { Component, signal, inject, effect, computed, untracked, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { BudgetTextBlocksComponent } from '../../budgets/components/budget-text-blocks.component';
 import { MaterialsTableComponent } from '../../materials/components/materials-table.component';
@@ -31,13 +31,15 @@ import { BudgetStatus } from '../../../models/budget.model';
   templateUrl: './budget-editor.component.html',
   styleUrl: './budget-editor.component.css'
 })
-export class BudgetEditorComponent implements OnDestroy {
+export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   private readonly supabase = inject(SupabaseService);
   private readonly pdfExport = inject(PdfExportService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly routeParams = toSignal(this.route.paramMap);
+
+  @ViewChild('pdfIframe') pdfIframeRef!: ElementRef<HTMLIFrameElement>;
 
   // Budget ID - will be initialized on component creation
   protected readonly currentBudgetId = signal<string>('');
@@ -79,6 +81,13 @@ export class BudgetEditorComponent implements OnDestroy {
   protected readonly showPdfPreview = signal<boolean>(false);
   protected readonly pdfPreviewUrl = signal<SafeResourceUrl | null>(null);
   protected readonly isPreviewLoading = signal<boolean>(false);
+  protected readonly currentPdfPage = signal<number>(1);
+  protected readonly totalPdfPages = signal<number>(1);
+  private pdfIframeElement: HTMLIFrameElement | null = null;
+  private savedScrollTop = 0;
+  private currentPdfBlobUrl: string | null = null;
+  private pdfUpdateDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly PDF_UPDATE_DEBOUNCE_MS = 800;
 
   protected readonly selectedCustomer = computed(() => this.cachedSelectedCustomer());
   protected readonly isBudgetCompleted = computed(() => (this.budgetMeta()?.status ?? '').toLowerCase() === 'completed');
@@ -130,6 +139,27 @@ export class BudgetEditorComponent implements OnDestroy {
     });
   }
 
+  ngAfterViewInit(): void {
+    // Set up iframe load listener for scroll restoration
+    if (this.pdfIframeRef?.nativeElement) {
+      this.setupIframeScrollTracking();
+    }
+  }
+
+  private setupIframeScrollTracking(): void {
+    // Watch for iframe becoming available when preview is shown
+    const checkIframe = setInterval(() => {
+      const iframe = this.pdfIframeRef?.nativeElement;
+      if (iframe && this.showPdfPreview()) {
+        this.pdfIframeElement = iframe;
+        clearInterval(checkIframe);
+      }
+    }, 100);
+
+    // Clear interval after 5 seconds to avoid memory leaks
+    setTimeout(() => clearInterval(checkIframe), 5000);
+  }
+
   private buildPdfPayload(): BudgetPdfPayload {
     return {
       metadata: this.budgetMeta(),
@@ -146,13 +176,58 @@ export class BudgetEditorComponent implements OnDestroy {
   }
 
   async updatePdfPreview() {
+    // Cancel any pending update
+    if (this.pdfUpdateDebounceTimer) {
+      clearTimeout(this.pdfUpdateDebounceTimer);
+    }
+
+    // Debounce to avoid too frequent updates
+    this.pdfUpdateDebounceTimer = setTimeout(async () => {
+      await this.doUpdatePdfPreview();
+    }, this.PDF_UPDATE_DEBOUNCE_MS);
+  }
+
+  private async doUpdatePdfPreview() {
     if (this.isPreviewLoading()) return;
+
+    // Save current scroll/page before updating
+    this.saveCurrentPdfState();
 
     this.isPreviewLoading.set(true);
     try {
+      // Revoke old blob URL to prevent memory leaks
+      if (this.currentPdfBlobUrl) {
+        URL.revokeObjectURL(this.currentPdfBlobUrl);
+      }
+
       const payload = this.buildPdfPayload();
-      const url = await this.pdfExport.getBudgetPdfBlobUrl(payload);
-      this.pdfPreviewUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
+      const { url: blobUrl, pageCount } = await this.pdfExport.getBudgetPdfBlobUrlWithPageCount(payload);
+      this.currentPdfBlobUrl = blobUrl;
+      this.totalPdfPages.set(pageCount);
+
+      // Ensure current page doesn't exceed total pages
+      const currentPage = this.currentPdfPage();
+      if (currentPage > pageCount) {
+        this.currentPdfPage.set(pageCount);
+      }
+
+      // Build URL with PDF open parameters for better scroll preservation
+      // These parameters work in Chrome/Edge PDF viewer
+      const params = [];
+      const page = Math.min(this.currentPdfPage(), pageCount);
+      if (page > 1) {
+        params.push(`page=${page}`);
+      }
+      if (this.savedScrollTop > 0) {
+        // scrollbar parameter and view parameter can help maintain position
+        params.push(`scrollbar=1`);
+        params.push(`view=FitH,${this.savedScrollTop}`);
+      }
+
+      const hashParams = params.length > 0 ? `#${params.join('&')}` : '';
+      const urlWithParams = `${blobUrl}${hashParams}`;
+
+      this.pdfPreviewUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(urlWithParams));
     } catch (error) {
       console.error('Error updating PDF preview:', error);
     } finally {
@@ -587,6 +662,111 @@ export class BudgetEditorComponent implements OnDestroy {
     if (this.summaryPersistenceTimer) {
       clearTimeout(this.summaryPersistenceTimer);
       this.summaryPersistenceTimer = null;
+    }
+
+    this.cleanupPdfBlobUrl();
+  }
+
+  /**
+   * Registers the PDF iframe element for page tracking
+   */
+  registerPdfIframe(iframe: HTMLIFrameElement | null): void {
+    this.pdfIframeElement = iframe;
+  }
+
+  /**
+   * Called when user navigates to a different page in the PDF
+   */
+  onPdfPageChange(page: number): void {
+    if (page > 0) {
+      this.currentPdfPage.set(page);
+    }
+  }
+
+  /**
+   * Navigate to previous PDF page
+   */
+  goToPreviousPdfPage(): void {
+    const current = this.currentPdfPage();
+    if (current > 1) {
+      this.currentPdfPage.set(current - 1);
+      this.refreshPdfAtCurrentPage();
+    }
+  }
+
+  /**
+   * Navigate to next PDF page (limited by total pages)
+   */
+  goToNextPdfPage(): void {
+    const current = this.currentPdfPage();
+    const total = this.totalPdfPages();
+    if (current < total) {
+      this.currentPdfPage.set(current + 1);
+      this.refreshPdfAtCurrentPage();
+    }
+  }
+
+  /**
+   * Refresh the PDF preview at the current page
+   */
+  private refreshPdfAtCurrentPage(): void {
+    if (!this.currentPdfBlobUrl) return;
+
+    const page = Math.min(this.currentPdfPage(), this.totalPdfPages());
+    const urlWithPage = `${this.currentPdfBlobUrl}#page=${page}`;
+    this.pdfPreviewUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(urlWithPage));
+  }
+
+  /**
+   * Saves the current PDF state (page and scroll position) from the iframe
+   */
+  private saveCurrentPdfState(): void {
+    if (!this.pdfIframeElement) {
+      return;
+    }
+
+    try {
+      // Try to get current page from the iframe's current URL hash
+      const currentSrc = this.pdfIframeElement.src || '';
+      const pageMatch = currentSrc.match(/#.*?page=(\d+)/);
+      if (pageMatch) {
+        this.currentPdfPage.set(parseInt(pageMatch[1], 10));
+      }
+
+      // Try to get scroll position from view parameter
+      const viewMatch = currentSrc.match(/view=FitH,(\d+)/);
+      if (viewMatch) {
+        this.savedScrollTop = parseInt(viewMatch[1], 10);
+      }
+
+      // Also try to read from iframe's contentWindow if accessible
+      try {
+        if (this.pdfIframeElement.contentWindow) {
+          const scrollY = this.pdfIframeElement.contentWindow.scrollY;
+          if (scrollY > 0) {
+            this.savedScrollTop = scrollY;
+          }
+        }
+      } catch {
+        // Cross-origin - ignore
+      }
+    } catch (error) {
+      console.debug('Could not save PDF state:', error);
+    }
+  }
+
+  /**
+   * Clean up blob URLs on destroy to prevent memory leaks
+   */
+  private cleanupPdfBlobUrl(): void {
+    if (this.currentPdfBlobUrl) {
+      URL.revokeObjectURL(this.currentPdfBlobUrl);
+      this.currentPdfBlobUrl = null;
+    }
+
+    if (this.pdfUpdateDebounceTimer) {
+      clearTimeout(this.pdfUpdateDebounceTimer);
+      this.pdfUpdateDebounceTimer = null;
     }
   }
 }

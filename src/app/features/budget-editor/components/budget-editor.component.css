@@ -150,11 +150,31 @@
 }
 
 .preview-header {
-  @apply px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50;
+  @apply px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50 gap-4;
 }
 
 .preview-header h3 {
   @apply font-medium text-gray-700 uppercase tracking-wide text-sm;
+}
+
+.preview-controls {
+  @apply flex items-center gap-3;
+}
+
+.page-controls {
+  @apply flex items-center gap-1 bg-white border border-gray-200 px-1 py-1;
+}
+
+.page-btn {
+  @apply p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent;
+}
+
+.page-btn .material-symbols-rounded {
+  @apply text-xl;
+}
+
+.page-indicator {
+  @apply text-xs font-medium text-gray-600 px-2 min-w-16 text-center;
 }
 
 .loading-badge {

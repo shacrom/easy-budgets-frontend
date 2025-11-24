@@ -110,6 +110,38 @@ export class PdfExportService {
     });
   }
 
+  async getBudgetPdfBlobUrlWithPageCount(payload: BudgetPdfPayload): Promise<{ url: string; pageCount: number }> {
+    if (typeof window === 'undefined') {
+      return { url: '', pageCount: 0 };
+    }
+
+    this.ensureFontsRegistered();
+    const definition = await this.buildDocumentDefinition(payload);
+
+    return new Promise((resolve, reject) => {
+      try {
+        const pdfDocGenerator = pdfMake.createPdf(definition);
+
+        // First get the page count by generating the document info
+        pdfDocGenerator.getBuffer((buffer) => {
+          // Parse PDF to count pages - look for /Type /Page entries
+          const uint8Array = new Uint8Array(buffer);
+          const pdfString = new TextDecoder('latin1').decode(uint8Array);
+          const pageMatches = pdfString.match(/\/Type\s*\/Page[^s]/g);
+          const pageCount = pageMatches ? pageMatches.length : 1;
+
+          // Create blob URL
+          const blob = new Blob([uint8Array], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+
+          resolve({ url, pageCount });
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   private ensureFontsRegistered(): void {
     if (this.fontsRegistered) {
       return;
