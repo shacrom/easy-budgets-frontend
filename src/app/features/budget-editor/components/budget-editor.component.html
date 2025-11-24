@@ -123,6 +123,110 @@
             <span>Condiciones</span>
           </button>
         </div>
+
+        <!-- Logo Configuration -->
+        <div class="logo-config mt-4 pt-4 border-t border-gray-200">
+          <h3 class="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wide">Logos del PDF</h3>
+          <div class="logo-inputs grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Company Logo -->
+            <div class="logo-input-group">
+              <label class="block text-sm text-gray-600 mb-1">
+                <span class="material-symbols-rounded text-sm align-middle">business</span>
+                Logo de la empresa (izquierda)
+              </label>
+              <div class="logo-input-row">
+                <input
+                  id="company-logo"
+                  type="url"
+                  class="logo-url-input flex-1"
+                  placeholder="https://ejemplo.com/logo-empresa.png"
+                  [value]="companyLogoUrl()"
+                  #companyLogoInput
+                  (blur)="onCompanyLogoUrlChanged(companyLogoInput.value)"
+                  (keydown.enter)="onCompanyLogoUrlChanged(companyLogoInput.value)"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  #companyLogoFile
+                  (change)="onCompanyLogoFileSelected($event)"
+                />
+                <button
+                  type="button"
+                  class="upload-btn"
+                  (click)="companyLogoFile.click()"
+                  [disabled]="uploadingCompanyLogo()">
+                  <span class="material-symbols-rounded">
+                    {{ uploadingCompanyLogo() ? 'progress_activity' : 'upload' }}
+                  </span>
+                </button>
+                @if (companyLogoUrl()) {
+                  <button
+                    type="button"
+                    class="clear-btn"
+                    (click)="clearCompanyLogo()">
+                    <span class="material-symbols-rounded">close</span>
+                  </button>
+                }
+              </div>
+              @if (companyLogoUrl()) {
+                <div class="logo-preview mt-2">
+                  <img [src]="companyLogoUrl()" alt="Logo empresa" class="h-10 object-contain" />
+                </div>
+              }
+            </div>
+
+            <!-- Supplier Logo -->
+            <div class="logo-input-group">
+              <label class="block text-sm text-gray-600 mb-1">
+                <span class="material-symbols-rounded text-sm align-middle">storefront</span>
+                Logo del proveedor (derecha, opcional)
+              </label>
+              <div class="logo-input-row">
+                <input
+                  id="supplier-logo"
+                  type="url"
+                  class="logo-url-input flex-1"
+                  placeholder="https://ejemplo.com/logo-proveedor.png"
+                  [value]="supplierLogoUrl()"
+                  #supplierLogoInput
+                  (blur)="onSupplierLogoUrlChanged(supplierLogoInput.value)"
+                  (keydown.enter)="onSupplierLogoUrlChanged(supplierLogoInput.value)"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  #supplierLogoFile
+                  (change)="onSupplierLogoFileSelected($event)"
+                />
+                <button
+                  type="button"
+                  class="upload-btn"
+                  (click)="supplierLogoFile.click()"
+                  [disabled]="uploadingSupplierLogo()">
+                  <span class="material-symbols-rounded">
+                    {{ uploadingSupplierLogo() ? 'progress_activity' : 'upload' }}
+                  </span>
+                </button>
+                @if (supplierLogoUrl()) {
+                  <button
+                    type="button"
+                    class="clear-btn"
+                    (click)="clearSupplierLogo()">
+                    <span class="material-symbols-rounded">close</span>
+                  </button>
+                }
+              </div>
+              @if (supplierLogoUrl()) {
+                <div class="logo-preview mt-2">
+                  <img [src]="supplierLogoUrl()" alt="Logo proveedor" class="h-8 object-contain" />
+                </div>
+              }
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Section 1: Text Blocks -->

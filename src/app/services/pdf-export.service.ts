@@ -29,6 +29,8 @@ export interface BudgetPdfPayload {
   materialsSectionTitle?: string;
   conditionsTitle?: string;
   conditions?: Condition[];
+  companyLogoUrl?: string;
+  supplierLogoUrl?: string;
   generatedAt: string;
 }
 
@@ -170,6 +172,17 @@ export class PdfExportService {
       }
     }
 
+    // Pre-process logo images
+    let companyLogoBase64: string | null = null;
+    let supplierLogoBase64: string | null = null;
+
+    if (payload.companyLogoUrl) {
+      companyLogoBase64 = await this.convertImageToBase64(payload.companyLogoUrl);
+    }
+    if (payload.supplierLogoUrl) {
+      supplierLogoBase64 = await this.convertImageToBase64(payload.supplierLogoUrl);
+    }
+
     // Pre-process blocks images
     const blocks = await Promise.all(payload.blocks.map(async block => {
       if (block.imageUrl) {
@@ -212,8 +225,8 @@ export class PdfExportService {
 
     return {
       pageSize: 'A4',
-      pageMargins: [40, 110, 40, 80],
-      header: (currentPage, pageCount) => this.buildHeader(payload, currentPage, pageCount),
+      pageMargins: [40, companyLogoBase64 || supplierLogoBase64 ? 185 : 110, 40, 80],
+      header: (currentPage, pageCount) => this.buildHeader(payload, currentPage, pageCount, companyLogoBase64, supplierLogoBase64),
       footer: (currentPage, pageCount) => this.buildFooter(payload, currentPage, pageCount),
       content,
       defaultStyle: {
@@ -331,101 +344,140 @@ export class PdfExportService {
     };
   }
 
-  private buildHeader(payload: BudgetPdfPayload, currentPage: number, pageCount: number): Content {
+  private buildHeader(
+    payload: BudgetPdfPayload,
+    currentPage: number,
+    pageCount: number,
+    companyLogoBase64?: string | null,
+    supplierLogoBase64?: string | null
+  ): Content {
     const title = (payload.metadata?.title ?? 'PRESUPUESTO').toUpperCase();
     const dateStr = this.formatDateLong(payload.generatedAt);
     const customer = payload.customer;
 
-    return {
-      margin: [40, 20, 40, 0] as [number, number, number, number],
-      stack: [
-        // Row 1
-        {
-          columns: [
-            { text: `${title}`, bold: true, alignment: 'left', fontSize: 10 },
-            { text: `Valencia a ${dateStr}`, alignment: 'center', fontSize: 10 },
-            { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 10 }
-          ],
-          margin: [0, 0, 0, 5] as [number, number, number, number]
+    const headerStack: Content[] = [];
+
+    // Logo row (if any logo is present)
+    if (companyLogoBase64 || supplierLogoBase64) {
+      // Use a table to ensure the company logo is always centered
+      headerStack.push({
+        table: {
+          widths: ['*', 'auto', '*'],
+          body: [[
+            // Left cell: empty (for balance)
+            { text: '', border: [false, false, false, false] },
+            // Center cell: Company logo
+            companyLogoBase64
+              ? { image: companyLogoBase64, width: 80, alignment: 'center', border: [false, false, false, false] }
+              : { text: '', border: [false, false, false, false] },
+            // Right cell: Supplier logo
+            supplierLogoBase64
+              ? { image: supplierLogoBase64, width: 50, alignment: 'right', border: [false, false, false, false] }
+              : { text: '', border: [false, false, false, false] }
+          ]]
         },
-        // Solid Line
+        layout: 'noBorders',
+        margin: [0, 0, 0, 10] as [number, number, number, number]
+      });
+    }
+
+    // Row 1: Title | Date | Page
+    headerStack.push({
+      columns: [
+        { text: `${title}`, bold: true, alignment: 'left', fontSize: 10 },
+        { text: `Valencia a ${dateStr}`, alignment: 'center', fontSize: 10 },
+        { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 10 }
+      ],
+      margin: [0, 0, 0, 5] as [number, number, number, number]
+    });
+
+    // Solid Line
+    headerStack.push({
+      canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1 }],
+      margin: [0, 0, 0, 5] as [number, number, number, number]
+    });
+
+    // Row 2: Name | DNI
+    headerStack.push({
+      columns: [
         {
-          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1 }],
-          margin: [0, 0, 0, 5] as [number, number, number, number]
+          width: '*',
+          text: [
+            { text: 'Nombre.  ', bold: false },
+            { text: (customer?.name ?? '').toUpperCase() }
+          ]
         },
-        // Row 2: Name | DNI
         {
-          columns: [
-            {
-              width: '*',
-              text: [
-                { text: 'Nombre.  ', bold: false },
-                { text: (customer?.name ?? '').toUpperCase() }
-              ]
-            },
-            {
-              width: 'auto',
-              text: [
-                { text: 'D.N.I.:  ', bold: false },
-                { text: this.getCustomerDocument(customer) }
-              ]
-            }
-          ],
-          margin: [0, 0, 0, 2] as [number, number, number, number]
-        },
-        // Dotted Line
-        {
-          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, dash: { length: 2, space: 2 } }],
-          margin: [0, 2, 0, 2] as [number, number, number, number]
-        },
-        // Row 3: Address | City
-        {
-          columns: [
-            {
-              width: '*',
-              text: [
-                { text: 'Dirección.  ', bold: false },
-                { text: this.buildAddressLine(customer) }
-              ]
-            },
-            {
-              width: 'auto',
-              text: (customer?.city ?? '').toUpperCase()
-            }
-          ],
-          margin: [0, 0, 0, 2] as [number, number, number, number]
-        },
-        // Dotted Line
-        {
-          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, dash: { length: 2, space: 2 } }],
-          margin: [0, 2, 0, 2] as [number, number, number, number]
-        },
-        // Row 4: Phone | Email
-        {
-          columns: [
-            {
-              width: '*',
-              text: [
-                { text: 'Tl. Contacto  ', bold: false },
-                { text: customer?.phone ?? '' }
-              ]
-            },
-            {
-              width: 'auto',
-              text: [
-                { text: 'E-mail:  ', bold: false },
-                { text: customer?.email ?? '' }
-              ]
-            }
-          ],
-          margin: [0, 0, 0, 2] as [number, number, number, number]
-        },
-        // Solid Line
-        {
-          canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1 }],
-          margin: [0, 2, 0, 0] as [number, number, number, number]
+          width: 'auto',
+          text: [
+            { text: 'D.N.I.:  ', bold: false },
+            { text: this.getCustomerDocument(customer) }
+          ]
         }
       ],
+      margin: [0, 0, 0, 2] as [number, number, number, number]
+    });
+
+    // Dotted Line
+    headerStack.push({
+      canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, dash: { length: 2, space: 2 } }],
+      margin: [0, 2, 0, 2] as [number, number, number, number]
+    });
+
+    // Row 3: Address | City
+    headerStack.push({
+      columns: [
+        {
+          width: '*',
+          text: [
+            { text: 'Dirección.  ', bold: false },
+            { text: this.buildAddressLine(customer) }
+          ]
+        },
+        {
+          width: 'auto',
+          text: (customer?.city ?? '').toUpperCase()
+        }
+      ],
+      margin: [0, 0, 0, 2] as [number, number, number, number]
+    });
+
+    // Dotted Line
+    headerStack.push({
+      canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, dash: { length: 2, space: 2 } }],
+      margin: [0, 2, 0, 2] as [number, number, number, number]
+    });
+
+    // Row 4: Phone | Email
+    headerStack.push({
+      columns: [
+        {
+          width: '*',
+          text: [
+            { text: 'Tl. Contacto  ', bold: false },
+            { text: customer?.phone ?? '' }
+          ]
+        },
+        {
+          width: 'auto',
+          text: [
+            { text: 'E-mail:  ', bold: false },
+            { text: customer?.email ?? '' }
+          ]
+        }
+      ],
+      margin: [0, 0, 0, 2] as [number, number, number, number]
+    });
+
+    // Solid Line
+    headerStack.push({
+      canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1 }],
+      margin: [0, 2, 0, 0] as [number, number, number, number]
+    });
+
+    return {
+      margin: [40, 20, 40, 0] as [number, number, number, number],
+      stack: headerStack,
       style: {
         fontSize: 10,
         color: '#1f2933'

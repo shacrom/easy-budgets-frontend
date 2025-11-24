@@ -71,6 +71,12 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   protected readonly budgetTitleInput = signal<string>('');
   protected readonly savingBudgetTitle = signal<boolean>(false);
 
+  // Logo URLs
+  protected readonly companyLogoUrl = signal<string>('');
+  protected readonly supplierLogoUrl = signal<string>('');
+  protected readonly uploadingCompanyLogo = signal<boolean>(false);
+  protected readonly uploadingSupplierLogo = signal<boolean>(false);
+
   // Visibility signals
   protected readonly showTextBlocks = signal<boolean>(true);
   protected readonly showMaterials = signal<boolean>(true);
@@ -202,6 +208,8 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       materialsSectionTitle: this.materialsSectionTitle(),
       conditionsTitle: this.conditionsTitle(),
       conditions: this.showConditions() ? this.conditionsList() : [],
+      companyLogoUrl: this.companyLogoUrl() || undefined,
+      supplierLogoUrl: this.supplierLogoUrl() || undefined,
       generatedAt: new Date().toISOString()
     };
   }
@@ -293,6 +301,10 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
 
       // Load materials section title
       this.materialsSectionTitle.set(budget.materialsSectionTitle ?? 'Materiales y equipamiento');
+
+      // Load logo URLs
+      this.companyLogoUrl.set(budget.companyLogoUrl ?? '');
+      this.supplierLogoUrl.set(budget.supplierLogoUrl ?? '');
 
       const relationalTables = Array.isArray(budget.materialTables) ? budget.materialTables : [];
       this.materialTables.set(relationalTables);
@@ -450,6 +462,74 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     } catch (error) {
       console.error('Error saving materials section title:', error);
     }
+  }
+
+  protected async onCompanyLogoUrlChanged(url: string): Promise<void> {
+    this.companyLogoUrl.set(url);
+
+    const id = this.currentBudgetId();
+    if (!id) return;
+
+    try {
+      await this.supabase.updateBudget(id, { companyLogoUrl: url || null });
+    } catch (error) {
+      console.error('Error saving company logo URL:', error);
+    }
+  }
+
+  protected async onSupplierLogoUrlChanged(url: string): Promise<void> {
+    this.supplierLogoUrl.set(url);
+
+    const id = this.currentBudgetId();
+    if (!id) return;
+
+    try {
+      await this.supabase.updateBudget(id, { supplierLogoUrl: url || null });
+    } catch (error) {
+      console.error('Error saving supplier logo URL:', error);
+    }
+  }
+
+  protected async onCompanyLogoFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.uploadingCompanyLogo.set(true);
+    try {
+      const result = await this.supabase.uploadPublicAsset(file, { folder: 'logos' });
+      await this.onCompanyLogoUrlChanged(result.publicUrl);
+    } catch (error) {
+      console.error('Error uploading company logo:', error);
+    } finally {
+      this.uploadingCompanyLogo.set(false);
+      input.value = ''; // Reset input for future uploads
+    }
+  }
+
+  protected async onSupplierLogoFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.uploadingSupplierLogo.set(true);
+    try {
+      const result = await this.supabase.uploadPublicAsset(file, { folder: 'logos' });
+      await this.onSupplierLogoUrlChanged(result.publicUrl);
+    } catch (error) {
+      console.error('Error uploading supplier logo:', error);
+    } finally {
+      this.uploadingSupplierLogo.set(false);
+      input.value = ''; // Reset input for future uploads
+    }
+  }
+
+  protected async clearCompanyLogo(): Promise<void> {
+    await this.onCompanyLogoUrlChanged('');
+  }
+
+  protected async clearSupplierLogo(): Promise<void> {
+    await this.onSupplierLogoUrlChanged('');
   }
 
   protected onTotalCountertopChanged(total: number) {

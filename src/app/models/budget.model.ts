@@ -17,6 +17,10 @@ export interface Budget {
   // Section titles
   materialsSectionTitle?: string;
 
+  // Logo URLs
+  companyLogoUrl?: string;
+  supplierLogoUrl?: string;
+
   // Visibility flags
   showTextBlocks: boolean;
   showMaterials: boolean;
