@@ -27,6 +27,8 @@ export class BudgetSummaryComponent {
   materials = input<Material[]>([]);
   materialTables = input<MaterialTable[]>([]);
 
+  // Inputs
+  budgetId = input<string | null>(null);
   // Local state for configuration
   protected readonly vatPercentage = signal<number>(21);
   protected readonly editMode = signal<boolean>(false);

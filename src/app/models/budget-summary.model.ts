@@ -8,6 +8,7 @@ export interface SummaryLine {
   concept: string;
   amount: number;
   conceptType: SummaryLineType;
+  orderIndex?: number;
 }
 
 /**
