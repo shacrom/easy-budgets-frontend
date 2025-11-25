@@ -807,6 +807,38 @@ export class SupabaseService {
     if (error) throw error;
   }
 
+  async saveAdditionalLines(budgetId: string, lines: any[]) {
+    if (!budgetId) {
+      throw new Error('Budget ID is required to save additional lines.');
+    }
+
+    // Delete existing additional lines for this budget
+    const { error: deleteError } = await this.supabase
+      .from('BudgetAdditionalLines')
+      .delete()
+      .eq('budgetId', budgetId);
+
+    if (deleteError) throw deleteError;
+
+    if (!lines || !lines.length) {
+      return;
+    }
+
+    const payloads = lines.map((line, index) => ({
+      budgetId,
+      concept: line.concept ?? '',
+      amount: line.amount ?? 0,
+      orderIndex: line.orderIndex ?? index,
+      conceptType: line.conceptType ?? 'adjustment'
+    }));
+
+    const { error: insertError } = await this.supabase
+      .from('BudgetAdditionalLines')
+      .insert(payloads);
+
+    if (insertError) throw insertError;
+  }
+
   // ============================================
   // GENERAL CONDITIONS
   // ============================================

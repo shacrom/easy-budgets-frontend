@@ -8,7 +8,7 @@ import { CustomerSelectorComponent } from '../../customers/components/customer-s
 import { BudgetTextBlock } from '../../../models/budget-text-block.model';
 import { Material, MaterialTable } from '../../../models/material.model';
 import { Customer } from '../../../models/customer.model';
-import { BudgetSummary } from '../../../models/budget-summary.model';
+import { BudgetSummary, SummaryLine } from '../../../models/budget-summary.model';
 import { Condition } from '../../../models/conditions.model';
 import { SupabaseService } from '../../../services/supabase.service';
 import { PdfExportService, BudgetPdfPayload, BudgetPdfMetadata } from '../../../services/pdf-export.service';
@@ -64,6 +64,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   private readonly cachedSelectedCustomer = signal<Customer | null>(null);
   protected readonly budgetMeta = signal<BudgetPdfMetadata | null>(null);
   protected readonly summarySnapshot = signal<BudgetSummary | null>(null);
+  protected readonly additionalLines = signal<SummaryLine[]>([]);
   protected readonly conditionsTitle = signal<string>('Condiciones generales');
   protected readonly conditionsList = signal<Condition[]>([]);
   protected readonly pdfGenerating = signal<boolean>(false);
@@ -108,6 +109,8 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   private latestCustomerSearchId = 0;
   private summaryPersistenceTimer: ReturnType<typeof setTimeout> | null = null;
   private pendingSummaryTotals: BudgetSummary | null = null;
+  private additionalLinesPersistenceTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingAdditionalLines: SummaryLine[] | null = null;
   private readonly SUMMARY_PERSIST_DEBOUNCE_MS = 500;
 
   constructor() {
@@ -315,6 +318,9 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       const customerId = budget?.customer?.id ?? budget?.customerId ?? null;
       this.selectedCustomerId.set(customerId);
   this.cachedSelectedCustomer.set((budget?.customer as Customer | null | undefined) ?? null);
+
+      // Additional lines (discounts, extras, etc.) — pass them to the summary component
+      this.additionalLines.set(budget.additionalLines ?? []);
 
       this.isInitialized.set(true);
     } catch (error) {
@@ -589,6 +595,41 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   protected onSummaryChanged(summary: BudgetSummary): void {
     this.summarySnapshot.set(summary);
     this.queueBudgetTotalsPersist(summary);
+    // Keep the local copy and schedule persistence of additional lines
+    this.additionalLines.set(summary.additionalLines ?? []);
+    this.queueAdditionalLinesPersist(summary.additionalLines ?? []);
+  }
+
+  private queueAdditionalLinesPersist(lines: SummaryLine[]): void {
+    this.pendingAdditionalLines = lines ?? [];
+
+    if (!this.currentBudgetId()) {
+      return;
+    }
+
+    if (this.additionalLinesPersistenceTimer) {
+      clearTimeout(this.additionalLinesPersistenceTimer);
+    }
+
+    this.additionalLinesPersistenceTimer = setTimeout(() => {
+      void this.persistAdditionalLines();
+    }, this.SUMMARY_PERSIST_DEBOUNCE_MS);
+  }
+
+  private async persistAdditionalLines(): Promise<void> {
+    const lines = this.pendingAdditionalLines;
+    const budgetId = this.currentBudgetId();
+    this.additionalLinesPersistenceTimer = null;
+
+    if (!budgetId) {
+      return;
+    }
+
+    try {
+      await this.supabase.saveAdditionalLines(budgetId, lines ?? []);
+    } catch (error) {
+      console.error('No se pudieron actualizar las líneas adicionales del presupuesto:', error);
+    }
   }
 
   protected onConditionsTitleChanged(title: string): void {
@@ -790,6 +831,14 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     if (this.summaryPersistenceTimer) {
       clearTimeout(this.summaryPersistenceTimer);
       this.summaryPersistenceTimer = null;
+    }
+    if (this.additionalLinesPersistenceTimer) {
+      clearTimeout(this.additionalLinesPersistenceTimer);
+      this.additionalLinesPersistenceTimer = null;
+    }
+    // Try to persist any pending additional lines before destroying (fire-and-forget)
+    if (this.pendingAdditionalLines && this.pendingAdditionalLines.length > 0 && this.currentBudgetId()) {
+      void this.persistAdditionalLines();
     }
 
     this.cleanupPdfBlobUrl();

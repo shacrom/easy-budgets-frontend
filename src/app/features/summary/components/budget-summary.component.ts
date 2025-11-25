@@ -37,6 +37,8 @@ export class BudgetSummaryComponent {
   // Local state for configuration
   protected readonly vatPercentage = signal<number>(21);
   protected readonly editMode = signal<boolean>(false);
+  // Input: initialAdditionalLines lets the parent pre-populate the state
+  initialAdditionalLines = input<SummaryLine[]>([]);
   protected readonly additionalLines = signal<SummaryLine[]>([]);
   protected readonly conceptTypeOptions: Array<{ value: SummaryLineType; label: string }> = [
     { value: 'adjustment', label: 'Recargo' },
@@ -50,6 +52,14 @@ export class BudgetSummaryComponent {
   readonly additionalLinesChanged = output<SummaryLine[]>();
 
   constructor() {
+    // Initialize internal additional lines from input
+    // Hydrate internal lines only when empty to avoid overriding user edits
+    effect(() => {
+      const lines = this.initialAdditionalLines();
+      if (Array.isArray(lines) && this.additionalLines().length === 0 && lines.length > 0) {
+        this.additionalLines.set(lines.map(line => this.normalizeLine(line)));
+      }
+    });
     effect(() => {
       const normalizedLines = this.additionalLines().map(line => this.normalizeLine(line));
       this.summaryChanged.emit({
