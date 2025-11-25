@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output, computed, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, computed, signal, effect, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Material } from '../../../models/material.model';
@@ -59,11 +59,20 @@ export class MaterialRowComponent {
   });
 
   private referenceDropdownTimeout: ReturnType<typeof setTimeout> | null = null;
+  @ViewChild('descTextarea') protected descTextareaRef?: ElementRef<HTMLTextAreaElement>;
 
   constructor() {
     effect(() => {
       const currentReference = this.material().reference ?? '';
       this.referenceSearchTerm.set(currentReference);
+    });
+
+    // When edit mode becomes true, ensure textarea resizes to content
+    effect(() => {
+      if (this.editMode()) {
+        // Defer to next tick so DOM is updated
+        setTimeout(() => this.resizeDescriptionTextarea(), 0);
+      }
     });
   }
 
@@ -130,5 +139,51 @@ export class MaterialRowComponent {
    */
   protected deleteMaterial(): void {
     this.materialDeleted.emit(this.material().id);
+  }
+
+  /**
+   * Handler for description change (ngModelChange). Emits updated material.
+   */
+  protected onDescriptionChange(value: string): void {
+    const updatedMaterial: Material = {
+      ...this.material(),
+      description: value
+    };
+    this.materialUpdated.emit(updatedMaterial);
+  }
+
+  /**
+   * Auto-resize textarea on input and emit updated material.
+   */
+  protected onDescriptionInput(event: Event): void {
+    const target = event.target as HTMLTextAreaElement | null;
+    if (!target) return;
+    // reset height to auto to correctly compute scrollHeight
+    target.style.height = 'auto';
+    const newHeight = Math.max(target.scrollHeight, 38);
+    target.style.height = `${newHeight}px`;
+    // emit updated material
+    this.onDescriptionChange(target.value);
+  }
+
+  protected resizeDescriptionTextarea(): void {
+    try {
+      const el = (this as any).descTextareaRef?.nativeElement as HTMLTextAreaElement | undefined;
+      // Query using the native DOM if ViewChild isn't set
+      const textarea = el ?? (document.activeElement instanceof HTMLTextAreaElement ? document.activeElement as HTMLTextAreaElement : null);
+      if (!textarea) {
+        // If not the active element, try to find via query (fallback)
+        const node = (document as any).querySelector('textarea');
+        if (node && node instanceof HTMLTextAreaElement) {
+          node.style.height = 'auto';
+          node.style.height = node.scrollHeight + 'px';
+        }
+        return;
+      }
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.max(textarea.scrollHeight, 38) + 'px';
+    } catch (e) {
+      // no-op
+    }
   }
 }

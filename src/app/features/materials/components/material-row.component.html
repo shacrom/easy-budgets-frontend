@@ -56,12 +56,15 @@
       </div>
     </td>
     <td class="material-cell description">
-      <input
-        type="text"
+      <textarea
+        #descTextarea
+        rows="2"
         [(ngModel)]="material().description"
-        (ngModelChange)="onValueChange()"
-        class="input-field"
-        style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+        (ngModelChange)="onDescriptionChange($event)"
+        (input)="onDescriptionInput($event)"
+        (focus)="onDescriptionInput($event)"
+        class="input-field textarea-field"
+        placeholder="Descripción del material"></textarea>
     </td>
     <td class="material-cell manufacturer">
       <input
