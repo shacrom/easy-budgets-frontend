@@ -76,6 +76,8 @@ export class GeneralConditionsComponent {
   /**
    * Adds a new empty condition
    */
+  private nextClientId = -1;
+
   protected addCondition(): void {
     const newCondition: Condition = {
       id: this.generateId(),
@@ -98,7 +100,7 @@ export class GeneralConditionsComponent {
   /**
    * Updates a specific field of a condition
    */
-  protected updateConditionField(conditionId: string, field: 'title' | 'text', event: Event): void {
+  protected updateConditionField(conditionId: number, field: 'title' | 'text', event: Event): void {
     const input = event.target as HTMLInputElement | HTMLTextAreaElement;
     this.conditions.update(conds =>
       conds.map(cond =>
@@ -112,7 +114,7 @@ export class GeneralConditionsComponent {
   /**
    * Deletes a condition
    */
-  protected deleteCondition(conditionId: string): void {
+  protected deleteCondition(conditionId: number): void {
     this.conditions.update(conds => conds.filter(cond => cond.id !== conditionId));
   }
 
@@ -129,7 +131,7 @@ export class GeneralConditionsComponent {
   /**
    * Generates a unique ID
    */
-  private generateId(): string {
-    return `condition-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  private generateId(): number {
+    return this.nextClientId--;
   }
 }

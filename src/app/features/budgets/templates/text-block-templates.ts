@@ -1,7 +1,7 @@
 import { DescriptionSection } from '../../../models/budget-text-block.model';
 
 export interface TextBlockTemplate {
-  id: string;
+  id: number;
   name: string;
   provider?: string;
   heading?: string;
@@ -10,7 +10,7 @@ export interface TextBlockTemplate {
 
 export const TEXT_BLOCK_TEMPLATES: TextBlockTemplate[] = [
   {
-    id: 'dica-standard',
+    id: 1,
     name: 'Plantilla Dica',
     provider: 'Dica',
     heading: 'Cocina Dica - Serie 45 Nude',
@@ -44,7 +44,7 @@ Módulos altos de h. 84m x fondo 35cm, con gola oculta para facilitar apertura s
     ]
   },
   {
-    id: 'diomo-jade',
+    id: 2,
     name: 'Plantilla Diomo',
     provider: 'Diomo',
     heading: 'Cocina Diomo - Serie Jade Verde Onix',

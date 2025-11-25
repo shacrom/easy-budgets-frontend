@@ -2,7 +2,7 @@
  * Modelo para un producto del catálogo
  */
 export interface Product {
-  id?: string;
+  id?: number;
   reference: string;
   description: string;
   manufacturer: string;

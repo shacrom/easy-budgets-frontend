@@ -5,8 +5,8 @@ import { Material } from './material.model';
 export type BudgetStatus = 'completed' | 'not_completed';
 
 export interface Budget {
-  id: string;
-  customerId?: string;
+  id: number;
+  customerId?: number;
   budgetNumber?: string;
   title?: string;
   status?: BudgetStatus;

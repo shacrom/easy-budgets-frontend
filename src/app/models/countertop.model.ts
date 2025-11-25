@@ -1,6 +1,6 @@
 export interface Countertop {
-  id?: string;
-  budgetId: string;
+  id?: number;
+  budgetId: number;
   model: string;
   description: string;
   price: number;

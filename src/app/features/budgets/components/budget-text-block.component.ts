@@ -29,7 +29,7 @@ export class BudgetTextBlockComponent {
   blockUpdated = output<BudgetTextBlock>();
 
   // Output: event when block is deleted
-  blockDeleted = output<string>();
+  blockDeleted = output<number>();
 
   // Local state for editing
   protected readonly isEditing = signal(false);
@@ -38,7 +38,7 @@ export class BudgetTextBlockComponent {
   protected readonly sections = signal<DescriptionSection[]>([]);
 
   protected readonly templateOptions = signal<TextBlockTemplate[]>(TEXT_BLOCK_TEMPLATES);
-  protected readonly selectedTemplateId = signal<string | null>(null);
+  protected readonly selectedTemplateId = signal<number | null>(null);
   protected readonly isApplyingTemplate = signal<boolean>(false);
   protected readonly isUploadingImage = signal<boolean>(false);
   protected readonly imageUploadError = signal<string | null>(null);
@@ -147,8 +147,8 @@ export class BudgetTextBlockComponent {
   /**
    * Updates a description section
    */
-  protected async updateDescriptionSection(sectionId: string | undefined, field: 'title' | 'text', event: Event): Promise<void> {
-    if (!sectionId) return;
+  protected async updateDescriptionSection(sectionId: number | undefined, field: 'title' | 'text', event: Event): Promise<void> {
+    if (!Number.isFinite(sectionId as number)) return;
 
     const input = event.target as HTMLInputElement | HTMLTextAreaElement;
     const value = input.value;
@@ -179,7 +179,7 @@ export class BudgetTextBlockComponent {
         // Then update in database
         const section = this.sections().find(s => s.id === sectionId);
         if (section) {
-          await this.supabase.updateTextBlockSection(sectionId, {
+          await this.supabase.updateTextBlockSection(sectionId as number, {
             title: section.title,
             text: section.text,
             orderIndex: section.orderIndex
@@ -194,15 +194,15 @@ export class BudgetTextBlockComponent {
   /**
    * Deletes a description section
    */
-  protected async deleteDescriptionSection(sectionId: string | undefined): Promise<void> {
-    if (!sectionId) return;
+  protected async deleteDescriptionSection(sectionId: number | undefined): Promise<void> {
+    if (!Number.isFinite(sectionId as number)) return;
 
     if (!confirm('¿Estás seguro de eliminar esta sección?')) {
       return;
     }
 
     try {
-      await this.supabase.deleteTextBlockSection(sectionId);
+      await this.supabase.deleteTextBlockSection(sectionId as number);
 
       // Remove from local state
       const updatedSections = this.sections().filter(s => s.id !== sectionId);
@@ -241,7 +241,7 @@ export class BudgetTextBlockComponent {
 
   protected onTemplateChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
-    const value = select.value || null;
+    const value = select.value ? Number(select.value) : null;
     this.selectedTemplateId.set(value);
   }
 
@@ -253,7 +253,8 @@ export class BudgetTextBlockComponent {
       return;
     }
 
-    const template = this.templateOptions().find(t => t.id === templateId);
+    const tid = templateId as number;
+    const template = this.templateOptions().find(t => t.id === tid);
     if (!template) {
       return;
     }
@@ -271,7 +272,7 @@ export class BudgetTextBlockComponent {
       await Promise.all(
         existingSections
           .filter(section => !!section.id)
-          .map(section => this.supabase.deleteTextBlockSection(section.id as string))
+          .map(section => this.supabase.deleteTextBlockSection(section.id as number))
       );
 
       // Create sections from template sequentially to preserve order

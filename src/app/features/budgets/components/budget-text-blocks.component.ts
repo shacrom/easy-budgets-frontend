@@ -19,7 +19,7 @@ export class BudgetTextBlocksComponent {
   private readonly supabase = inject(SupabaseService);
 
   // Input: Budget ID to load blocks for
-  budgetId = input.required<string>();
+  budgetId = input.required<number>();
 
   // List of text blocks
   protected readonly blocks = signal<BudgetTextBlock[]>([]);
@@ -63,7 +63,7 @@ export class BudgetTextBlocksComponent {
   /**
    * Load blocks from Supabase for the current budget
    */
-  private async loadBlocks(budgetId: string): Promise<void> {
+  private async loadBlocks(budgetId: number): Promise<void> {
     this.isLoading.set(true);
     try {
       const blocks = await this.supabase.getTextBlocksForBudget(budgetId);
@@ -80,6 +80,10 @@ export class BudgetTextBlocksComponent {
    */
   protected async addNewBlock(): Promise<void> {
     const budgetId = this.budgetId();
+    if (!Number.isFinite(budgetId)) {
+      console.error('Invalid budgetId, aborted add block');
+      return;
+    }
     if (!budgetId) {
       console.error('No budgetId available to create a text block.');
       return;
@@ -122,7 +126,7 @@ export class BudgetTextBlocksComponent {
   /**
    * Deletes a block by its ID
    */
-  protected deleteBlock(blockId: string): void {
+  protected deleteBlock(blockId: number): void {
     this.blocks.update(blocks => blocks.filter(block => block.id !== blockId));
   }
 

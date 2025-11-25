@@ -33,7 +33,7 @@ export class BudgetSummaryComponent {
   materialTables = input<MaterialTable[]>([]);
 
   // Inputs
-  budgetId = input<string | null>(null);
+  budgetId = input<number | null>(null);
   // Local state for configuration
   protected readonly vatPercentage = signal<number>(21);
   protected readonly editMode = signal<boolean>(false);
@@ -165,6 +165,8 @@ export class BudgetSummaryComponent {
   /**
    * Adds a new additional line (discount, extra, etc.)
    */
+  private nextClientId = -1;
+
   protected addAdditionalLine(): void {
     const newLine: SummaryLine = {
       id: this.generateId(),
@@ -190,7 +192,7 @@ export class BudgetSummaryComponent {
   /**
    * Deletes an additional line
    */
-  protected deleteAdditionalLine(lineId: string): void {
+  protected deleteAdditionalLine(lineId: number): void {
     this.additionalLines.update(lines => lines.filter(line => line.id !== lineId));
   }
 
@@ -226,8 +228,9 @@ export class BudgetSummaryComponent {
   /**
    * Generates a unique ID
    */
-  private generateId(): string {
-    return `line-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  private generateId(): number {
+    // Use decreasing negative numbers for client-only temporary ids
+    return this.nextClientId--;
   }
 
   protected tableSubtotal(table: MaterialTable): number {

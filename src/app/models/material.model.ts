@@ -3,9 +3,9 @@
  * Contiene: descripción, fabricante, cantidad, precio unitario y precio total
  */
 export interface Material {
-  id: string;
-  tableId?: string;
-  productId?: string;
+  id: number;
+  tableId?: number;
+  productId?: number;
   orderIndex: number;
   description: string;
   reference: string;
@@ -16,8 +16,8 @@ export interface Material {
 }
 
 export interface MaterialTable {
-  id: string;
-  budgetId?: string;
+  id: number;
+  budgetId?: number;
   orderIndex: number;
   title: string;
   rows: Material[];

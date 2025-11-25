@@ -89,14 +89,14 @@ export class MaterialsTableComponent {
   /**
    * Removes a table or clears it when it is the last one
    */
-  protected deleteTable(tableId: string): void {
+  protected deleteTable(tableId: number): void {
     this.mutateTables(tables => tables.filter(table => table.id !== tableId));
   }
 
   /**
    * Updates a table title
    */
-  protected updateTableTitle(tableId: string, event: Event): void {
+  protected updateTableTitle(tableId: number, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.mutateTables(tables =>
       tables.map(table => table.id === tableId ? { ...table, title: value } : table)
@@ -106,7 +106,7 @@ export class MaterialsTableComponent {
   /**
    * Adds a new empty material inside a table
    */
-  protected addNewMaterial(tableId: string): void {
+  protected addNewMaterial(tableId: number): void {
     this.mutateTables(tables =>
       tables.map(table =>
         table.id === tableId
@@ -119,7 +119,7 @@ export class MaterialsTableComponent {
   /**
    * Updates an existing material
    */
-  protected updateMaterial(tableId: string, updatedMaterial: Material): void {
+  protected updateMaterial(tableId: number, updatedMaterial: Material): void {
     this.mutateTables(tables =>
       tables.map(table =>
         table.id === tableId
@@ -139,7 +139,7 @@ export class MaterialsTableComponent {
   /**
    * Deletes a material by its ID
    */
-  protected deleteMaterial(tableId: string, materialId: string): void {
+  protected deleteMaterial(tableId: number, materialId: number): void {
     this.mutateTables(tables =>
       tables.map(table =>
         table.id === tableId
@@ -179,11 +179,10 @@ export class MaterialsTableComponent {
   /**
    * Generates a unique ID
    */
-  private generateId(): string {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-      return crypto.randomUUID();
-    }
-    return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  private tempIdCounter = -1;
+  private generateId(): number {
+    // Use negative numbers for client-generated temporary IDs. The server will supply positive autoincremented IDs.
+    return this.tempIdCounter--;
   }
 
   private createTable(title: string, orderIndex: number): MaterialTable {
@@ -196,7 +195,7 @@ export class MaterialsTableComponent {
     };
   }
 
-  private createMaterial(tableId: string, orderIndex: number): Material {
+  private createMaterial(tableId: number, orderIndex: number): Material {
     const id = this.generateId();
     return {
       id,

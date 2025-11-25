@@ -42,7 +42,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   @ViewChild('pdfIframe') pdfIframeRef!: ElementRef<HTMLIFrameElement>;
 
   // Budget ID - will be initialized on component creation
-  protected readonly currentBudgetId = signal<string>('');
+  protected readonly currentBudgetId = signal<number | null>(null);
   protected readonly isInitialized = signal<boolean>(false);
 
   // Totals from each section
@@ -60,7 +60,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   protected readonly customersLoading = signal<boolean>(false);
   protected readonly updatingCustomer = signal<boolean>(false);
   protected readonly customerError = signal<string | null>(null);
-  protected readonly selectedCustomerId = signal<string | null>(null);
+  protected readonly selectedCustomerId = signal<number | null>(null);
   private readonly cachedSelectedCustomer = signal<Customer | null>(null);
   protected readonly budgetMeta = signal<BudgetPdfMetadata | null>(null);
   protected readonly summarySnapshot = signal<BudgetSummary | null>(null);
@@ -115,8 +115,14 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
 
   constructor() {
     effect(() => {
-      const id = this.routeParams()?.get('id');
-      if (!id) {
+      const idParam = this.routeParams()?.get('id');
+      if (!idParam) {
+        this.isInitialized.set(false);
+        return;
+      }
+
+      const id = Number(idParam);
+      if (!Number.isFinite(id) || id <= 0) {
         this.isInitialized.set(false);
         return;
       }
@@ -282,7 +288,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     this.showPdfPreview.update(v => !v);
   }
 
-  private async loadBudget(id: string): Promise<void> {
+  private async loadBudget(id: number): Promise<void> {
     this.isInitialized.set(false);
     try {
       const budget = await this.supabase.getBudget(id);
@@ -408,8 +414,9 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     return trimmed.length >= 2;
   }
 
-  protected async onCustomerSelected(customerId: string | null): Promise<void> {
-    if (!this.currentBudgetId()) {
+  protected async onCustomerSelected(customerId: number | null): Promise<void> {
+    const currentBudgetId = this.currentBudgetId();
+    if (currentBudgetId == null) {
       return;
     }
 
@@ -421,7 +428,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     this.customerError.set(null);
 
     try {
-      await this.supabase.updateBudget(this.currentBudgetId(), { customerId });
+      await this.supabase.updateBudget(currentBudgetId, { customerId });
       this.selectedCustomerId.set(customerId);
 
       if (!customerId) {
@@ -603,7 +610,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   private queueAdditionalLinesPersist(lines: SummaryLine[]): void {
     this.pendingAdditionalLines = lines ?? [];
 
-    if (!this.currentBudgetId()) {
+    if (this.currentBudgetId() == null) {
       return;
     }
 
@@ -706,7 +713,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   }
 
   protected async exportBudgetPdf(): Promise<void> {
-    if (!this.currentBudgetId() || this.pdfGenerating()) {
+    if (this.currentBudgetId() == null || this.pdfGenerating()) {
       return;
     }
 
@@ -723,7 +730,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   }
 
   protected async previewBudgetPdf(): Promise<void> {
-    if (!this.currentBudgetId() || this.pdfGenerating()) {
+    if (this.currentBudgetId() == null || this.pdfGenerating()) {
       return;
     }
 
@@ -758,7 +765,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   private queueBudgetTotalsPersist(summary: BudgetSummary): void {
     this.pendingSummaryTotals = summary;
 
-    if (!this.currentBudgetId()) {
+    if (this.currentBudgetId() == null) {
       return;
     }
 

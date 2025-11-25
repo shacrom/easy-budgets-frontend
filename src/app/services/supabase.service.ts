@@ -20,6 +20,9 @@ export class SupabaseService {
     );
   }
 
+  // NOTE: IDs are now numeric autoincrement integers in the database.
+  // All service methods should accept and use numeric IDs only.
+
   get client() {
     return this.supabase;
   }
@@ -137,7 +140,7 @@ export class SupabaseService {
     };
   }
 
-  async updateProduct(id: string, updates: any) {
+  async updateProduct(id: number, updates: any) {
     const { data, error } = await this.supabase
       .from('Products')
       .update({
@@ -170,7 +173,7 @@ export class SupabaseService {
     };
   }
 
-  async deleteProduct(id: string) {
+  async deleteProduct(id: number) {
     const { error } = await this.supabase
       .from('Products')
       .delete()
@@ -193,11 +196,12 @@ export class SupabaseService {
     return (data ?? []) as Customer[];
   }
 
-  async getCustomer(id: string): Promise<Customer | null> {
+  async getCustomer(id: number): Promise<Customer | null> {
+    if (!Number.isFinite(id)) return null;
     const { data, error } = await this.supabase
       .from('Customers')
-      .select('*')
-        .eq('id', id)
+        .select('*')
+          .eq('id', id)
       .single();
 
     if (error) throw error;
@@ -248,7 +252,8 @@ export class SupabaseService {
     return data as Customer;
   }
 
-  async updateCustomer(id: string, updates: Partial<Customer>) {
+  async updateCustomer(id: number, updates: Partial<Customer>) {
+    if (!Number.isFinite(id)) throw new Error('Invalid customer id');
     const { data, error } = await this.supabase
       .from('Customers')
       .update(updates)
@@ -260,7 +265,8 @@ export class SupabaseService {
     return data as Customer;
   }
 
-  async deleteCustomer(id: string) {
+  async deleteCustomer(id: number) {
+    if (!Number.isFinite(id)) return;
     const { error } = await this.supabase
       .from('Customers')
       .delete()
@@ -312,8 +318,8 @@ export class SupabaseService {
     }));
   }
 
-  async updateBudgetTotals(budgetId: string, summary: BudgetSummary) {
-    if (!budgetId) {
+  async updateBudgetTotals(budgetId: number, summary: BudgetSummary) {
+    if (!Number.isFinite(budgetId)) {
       throw new Error('Budget ID is required to update totals.');
     }
 
@@ -338,7 +344,10 @@ export class SupabaseService {
     if (error) throw error;
   }
 
-  async getBudget(id: string) {
+  async getBudget(id: number) {
+    if (!Number.isFinite(id)) {
+      throw new Error('Budget ID is required');
+    }
     const { data, error } = await this.supabase
       .from('Budgets')
       .select(`
@@ -401,7 +410,8 @@ export class SupabaseService {
     return data;
   }
 
-  async updateBudget(id: string, updates: any) {
+  async updateBudget(id: number, updates: any) {
+    if (!Number.isFinite(id)) throw new Error('Invalid budget id');
     const { data, error } = await this.supabase
       .from('Budgets')
       .update(updates)
@@ -413,7 +423,8 @@ export class SupabaseService {
     return data;
   }
 
-  async deleteBudget(id: string) {
+  async deleteBudget(id: number) {
+    if (!Number.isFinite(id)) return;
     const { error } = await this.supabase
       .from('Budgets')
       .delete()
@@ -422,7 +433,7 @@ export class SupabaseService {
     if (error) throw error;
   }
 
-  async duplicateBudget(budgetId: string) {
+  async duplicateBudget(budgetId: number) {
     const original = await this.getBudget(budgetId);
 
     if (!original) {
@@ -544,7 +555,8 @@ export class SupabaseService {
   // TEXT BLOCKS
   // ============================================
 
-  async getTextBlocksForBudget(budgetId: string) {
+  async getTextBlocksForBudget(budgetId: number) {
+    if (!Number.isFinite(budgetId)) return [];
     const { data, error } = await this.supabase
       .from('BudgetTextBlocks')
       .select(`
@@ -581,7 +593,8 @@ export class SupabaseService {
     return data;
   }
 
-  async updateBudgetTextBlock(id: string, updates: any) {
+  async updateBudgetTextBlock(id: number, updates: any) {
+    if (!Number.isFinite(id)) throw new Error('Invalid text block id');
     const { data, error } = await this.supabase
       .from('BudgetTextBlocks')
       .update({
@@ -599,7 +612,8 @@ export class SupabaseService {
     return data;
   }
 
-  async deleteBudgetTextBlock(id: string) {
+  async deleteBudgetTextBlock(id: number) {
+    if (!Number.isFinite(id)) return;
     // Las secciones se eliminan automáticamente por CASCADE
     const { error } = await this.supabase
       .from('BudgetTextBlocks')
@@ -629,7 +643,8 @@ export class SupabaseService {
     return data;
   }
 
-  async updateTextBlockSection(id: string, updates: any) {
+  async updateTextBlockSection(id: number, updates: any) {
+    if (!Number.isFinite(id)) throw new Error('Invalid section id');
     const { data, error } = await this.supabase
       .from('BudgetTextBlockSections')
       .update({
@@ -645,7 +660,8 @@ export class SupabaseService {
     return data;
   }
 
-  async deleteTextBlockSection(id: string) {
+  async deleteTextBlockSection(id: number) {
+    if (!Number.isFinite(id)) return;
     const { error } = await this.supabase
       .from('BudgetTextBlockSections')
       .delete()
@@ -654,9 +670,10 @@ export class SupabaseService {
     if (error) throw error;
   }
 
-  async reorderTextBlockSections(textBlockId: string, sectionIds: string[]) {
+  async reorderTextBlockSections(textBlockId: number, sectionIds: number[]) {
+    if (!Number.isFinite(textBlockId)) return;
     // Actualizar el orderIndex de todas las secciones
-    const updates = sectionIds.map((id, index) =>
+    const updates = sectionIds.map((id: number, index: number) =>
       this.updateTextBlockSection(id, { orderIndex: index })
     );
 
@@ -667,11 +684,13 @@ export class SupabaseService {
   // MATERIALS
   // ============================================
 
-  async saveMaterialTables(budgetId: string, tables: MaterialTable[]) {
+  async saveMaterialTables(budgetId: number, tables: MaterialTable[]) {
+    if (!Number.isFinite(budgetId)) throw new Error('Budget ID is required');
+    const normalizedBudgetId = budgetId;
     const { error: deleteError } = await this.supabase
       .from('BudgetMaterialTables')
       .delete()
-      .eq('budgetId', budgetId);
+      .eq('budgetId', normalizedBudgetId);
 
     if (deleteError) throw deleteError;
 
@@ -680,8 +699,7 @@ export class SupabaseService {
     }
 
     const tablePayloads = tables.map(table => ({
-      id: table.id,
-      budgetId,
+      budgetId: normalizedBudgetId,
       title: table.title ?? '',
       orderIndex: table.orderIndex ?? 0
     }));
@@ -694,7 +712,6 @@ export class SupabaseService {
 
     const rowsPayload = tables.flatMap(table =>
       (table.rows ?? []).map(row => ({
-        id: row.id,
         tableId: table.id,
         productId: row.productId ?? null,
         reference: row.reference ?? '',
@@ -718,7 +735,7 @@ export class SupabaseService {
     if (insertRowsError) throw insertRowsError;
   }
 
-  private async cloneMaterialTables(budgetId: string, tables: MaterialTable[]) {
+  private async cloneMaterialTables(budgetId: number, tables: MaterialTable[]) {
     for (const [index, table] of tables.entries()) {
       const { data: insertedTable, error: tableError } = await this.supabase
         .from('BudgetMaterialTables')
@@ -781,7 +798,8 @@ export class SupabaseService {
     return data;
   }
 
-  async updateBudgetAdditionalLine(id: string, updates: any) {
+  async updateBudgetAdditionalLine(id: number, updates: any) {
+    if (!Number.isFinite(id)) throw new Error('Invalid line id');
     const payload = {
       ...updates,
       conceptType: updates?.conceptType ?? 'adjustment'
@@ -798,7 +816,8 @@ export class SupabaseService {
     return data;
   }
 
-  async deleteBudgetAdditionalLine(id: string) {
+  async deleteBudgetAdditionalLine(id: number) {
+    if (!Number.isFinite(id)) return;
     const { error } = await this.supabase
       .from('BudgetAdditionalLines')
       .delete()
@@ -807,8 +826,8 @@ export class SupabaseService {
     if (error) throw error;
   }
 
-  async saveAdditionalLines(budgetId: string, lines: any[]) {
-    if (!budgetId) {
+  async saveAdditionalLines(budgetId: number, lines: any[]) {
+    if (!Number.isFinite(budgetId)) {
       throw new Error('Budget ID is required to save additional lines.');
     }
 
@@ -825,7 +844,7 @@ export class SupabaseService {
     }
 
     const payloads = lines.map((line, index) => ({
-      budgetId,
+      budgetId: budgetId,
       concept: line.concept ?? '',
       amount: line.amount ?? 0,
       orderIndex: line.orderIndex ?? index,
@@ -857,7 +876,6 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('GeneralConditions')
       .select('*')
-      .eq('isDefault', true)
       .single();
 
     if (error) throw error;
@@ -875,7 +893,8 @@ export class SupabaseService {
     return data;
   }
 
-  async updateGeneralConditions(id: string, updates: any) {
+  async updateGeneralConditions(id: number, updates: any) {
+    if (!Number.isFinite(id)) throw new Error('Invalid conditions id');
     const { data, error } = await this.supabase
       .from('GeneralConditions')
       .update(updates)
@@ -891,7 +910,8 @@ export class SupabaseService {
   // COUNTERTOPS
   // ============================================
 
-  async getCountertopForBudget(budgetId: string) {
+  async getCountertopForBudget(budgetId: number) {
+    if (!Number.isFinite(budgetId)) return null;
     const { data, error } = await this.supabase
       .from('BudgetCountertops')
       .select('*')
@@ -913,7 +933,8 @@ export class SupabaseService {
     return data;
   }
 
-  async deleteCountertop(budgetId: string) {
+  async deleteCountertop(budgetId: number) {
+    if (!Number.isFinite(budgetId)) return;
     const { error } = await this.supabase
       .from('BudgetCountertops')
       .delete()

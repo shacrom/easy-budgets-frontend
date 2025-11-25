@@ -10,7 +10,7 @@ import { Condition } from '../models/conditions.model';
 import { Countertop } from '../models/countertop.model';
 
 export interface BudgetPdfMetadata {
-  id: string;
+  id: number;
   budgetNumber?: string | null;
   title?: string | null;
   status?: string | null;

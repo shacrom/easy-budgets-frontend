@@ -28,7 +28,7 @@ export class MaterialRowComponent {
   materialUpdated = output<Material>();
 
   // Output: event when material is deleted
-  materialDeleted = output<string>();
+  materialDeleted = output<number>();
 
   // Calculated total price
   protected readonly totalPrice = computed(() => {

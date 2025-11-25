@@ -13,13 +13,13 @@ import { Customer } from '../../../models/customer.model';
 export class CustomerSelectorComponent {
   customers = input<Customer[]>([]);
   searchTerm = input<string>('');
-  selectedCustomerId = input<string | null>(null);
+  selectedCustomerId = input<number | null>(null);
   selectedCustomer = input<Customer | null>(null);
   loading = input<boolean>(false);
   updating = input<boolean>(false);
   errorMessage = input<string | null>(null);
 
-  customerSelected = output<string | null>();
+  customerSelected = output<number | null>();
   searchChanged = output<string>();
   refreshRequested = output<void>();
 
@@ -42,7 +42,7 @@ export class CustomerSelectorComponent {
     this.searchChanged.emit('');
   }
 
-  protected selectCustomer(customerId: string): void {
+  protected selectCustomer(customerId: number): void {
     if (this.selectedCustomerId() === customerId || this.updating()) {
       return;
     }

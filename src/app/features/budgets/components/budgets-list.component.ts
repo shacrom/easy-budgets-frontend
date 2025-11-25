@@ -7,7 +7,7 @@ import { BudgetStatus } from '../../../models/budget.model';
 type SortField = 'createdAt' | 'updatedAt';
 
 interface BudgetListItem {
-  id: string;
+  id: number;
   budgetNumber: string;
   title: string;
   status: BudgetStatus;
@@ -36,8 +36,8 @@ export class BudgetsListComponent implements OnInit {
   protected readonly budgets = signal<BudgetListItem[]>([]);
   protected readonly isLoading = signal<boolean>(false);
   protected readonly isCreating = signal<boolean>(false);
-  protected readonly deletingBudgetId = signal<string | null>(null);
-  protected readonly duplicatingBudgetId = signal<string | null>(null);
+  protected readonly deletingBudgetId = signal<number | null>(null);
+  protected readonly duplicatingBudgetId = signal<number | null>(null);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly customerFilter = signal<string>('');
   protected readonly startDateFilter = signal<string>('');
@@ -164,7 +164,7 @@ export class BudgetsListComponent implements OnInit {
         showConditions: true
       });
 
-      await this.router.navigate(['/presupuestos', newBudget.id]);
+      await this.router.navigate(['/presupuestos', String(newBudget.id)]);
     } catch (error) {
       console.error('Error creating budget:', error);
       this.errorMessage.set('No se pudo crear el presupuesto.');
@@ -173,8 +173,8 @@ export class BudgetsListComponent implements OnInit {
     }
   }
 
-  protected openBudget(budgetId: string): void {
-    this.router.navigate(['/presupuestos', budgetId]);
+  protected openBudget(budgetId: number): void {
+    this.router.navigate(['/presupuestos', String(budgetId)]);
   }
 
   protected async deleteBudget(budget: BudgetListItem): Promise<void> {

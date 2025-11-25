@@ -233,7 +233,7 @@
       @if (showTextBlocks()) {
         <section class="section-divider">
           <app-budget-text-blocks
-            [budgetId]="currentBudgetId()"
+            [budgetId]="currentBudgetId() ?? 0"
             (totalChanged)="onTotalBlocksChanged($event)"
             (blocksChanged)="onBlocksChanged($event)">
           </app-budget-text-blocks>
@@ -258,7 +258,7 @@
       @if (showCountertop()) {
         <section class="section-divider">
           <app-countertop-editor
-            [budgetId]="currentBudgetId()"
+            [budgetId]="currentBudgetId() ?? 0"
             (totalChanged)="onTotalCountertopChanged($event)"
             (countertopChanged)="onCountertopChanged($event)">
           </app-countertop-editor>
@@ -267,7 +267,7 @@
 
       <!-- Section 3: Budget Summary -->
       <section class="section-divider">
-        <app-budget-summary
+          <app-budget-summary
           [totalBlocks]="totalBlocks()"
           [totalMaterials]="totalMaterials()"
           [totalCountertop]="totalCountertop()"
@@ -278,7 +278,7 @@
           [materials]="materials()"
           [materialTables]="materialTables()"
           [initialAdditionalLines]="additionalLines()"
-          [budgetId]="currentBudgetId()"
+          [budgetId]="currentBudgetId() ?? 0"
           (summaryChanged)="onSummaryChanged($event)">
         </app-budget-summary>
       </section>

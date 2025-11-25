@@ -14,10 +14,11 @@ import { Countertop } from '../../../models/countertop.model';
 export class CountertopEditorComponent {
   private readonly supabase = inject(SupabaseService);
 
-  budgetId = input.required<string>();
+  // budgetId may be null if not initialized; keep optional to avoid errors when no budget selected
+  budgetId = input<number | null>(null);
 
   protected readonly countertop = signal<Countertop>({
-    budgetId: '',
+    budgetId: 0,
     model: '',
     description: '',
     price: 0
@@ -40,7 +41,7 @@ export class CountertopEditorComponent {
     });
   }
 
-  private async loadCountertop(budgetId: string) {
+  private async loadCountertop(budgetId: number) {
     this.isLoading.set(true);
     try {
       const data = await this.supabase.getCountertopForBudget(budgetId);

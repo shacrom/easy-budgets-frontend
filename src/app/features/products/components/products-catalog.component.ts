@@ -233,7 +233,7 @@ export class ProductsCatalogComponent {
   /**
    * Elimina un producto
    */
-  protected async deleteProduct(productId: string): Promise<void> {
+  protected async deleteProduct(productId: number): Promise<void> {
     if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
       return;
     }
