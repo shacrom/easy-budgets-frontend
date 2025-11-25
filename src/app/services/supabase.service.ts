@@ -684,7 +684,7 @@ export class SupabaseService {
   // MATERIALS
   // ============================================
 
-  async saveMaterialTables(budgetId: number, tables: MaterialTable[]) {
+  async saveMaterialTables(budgetId: number, tables: MaterialTable[]): Promise<{ tables: any[]; rows: any[] } | void> {
     if (!Number.isFinite(budgetId)) throw new Error('Budget ID is required');
     const normalizedBudgetId = budgetId;
     const { error: deleteError } = await this.supabase
@@ -704,15 +704,19 @@ export class SupabaseService {
       orderIndex: table.orderIndex ?? 0
     }));
 
-    const { error: insertTablesError } = await this.supabase
+    // Insert tables and get the generated DB ids
+    const { data: insertedTablesData, error: insertTablesError } = await this.supabase
       .from('BudgetMaterialTables')
-      .insert(tablePayloads);
+      .insert(tablePayloads)
+      .select();
 
     if (insertTablesError) throw insertTablesError;
 
-    const rowsPayload = tables.flatMap(table =>
+    // Map rows to inserted table ids. We assume insert returned tables in the same order.
+    const insertedTables = insertedTablesData ?? [] as any[];
+    const rowsPayload = tables.flatMap((table, tableIndex) =>
       (table.rows ?? []).map(row => ({
-        tableId: table.id,
+        tableId: (insertedTables[tableIndex] && insertedTables[tableIndex].id) || table.id,
         productId: row.productId ?? null,
         reference: row.reference ?? '',
         description: row.description ?? '',
@@ -728,11 +732,18 @@ export class SupabaseService {
       return;
     }
 
-    const { error: insertRowsError } = await this.supabase
+    const { data: insertedRowsData, error: insertRowsError } = await this.supabase
       .from('BudgetMaterialTableRows')
-      .insert(rowsPayload);
+      .insert(rowsPayload)
+      .select();
 
     if (insertRowsError) throw insertRowsError;
+
+    // Return inserted tables and rows so the caller can update local state with real ids
+    return {
+      tables: insertedTables,
+      rows: insertedRowsData ?? []
+    };
   }
 
   private async cloneMaterialTables(budgetId: number, tables: MaterialTable[]) {

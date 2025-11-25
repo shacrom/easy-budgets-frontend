@@ -592,7 +592,34 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     const id = this.currentBudgetId();
     if (id) {
       try {
-        await this.supabase.saveMaterialTables(id, tables);
+        const result = await this.supabase.saveMaterialTables(id, tables);
+        // If result contains inserted data, map it back to the UI
+        if (result && result.tables && result.rows) {
+          const insertedTables = result.tables as any[];
+          const insertedRows = result.rows as any[];
+          const updatedTables = insertedTables.map(t => ({
+            id: t.id,
+            budgetId: t.budgetId,
+            orderIndex: t.orderIndex,
+            title: t.title,
+            rows: (insertedRows.filter(r => r.tableId === t.id) || []).map(r => ({
+              id: r.id,
+              tableId: r.tableId,
+              productId: r.productId,
+              orderIndex: r.orderIndex,
+              reference: r.reference,
+              description: r.description,
+              manufacturer: r.manufacturer,
+              quantity: Number(r.quantity ?? 0),
+              unitPrice: Number(r.unitPrice ?? 0),
+              totalPrice: Number(r.totalPrice ?? 0)
+            }))
+          } as MaterialTable));
+
+          this.materialTables.set(updatedTables);
+          // Also update flattened materials list
+          this.materials.set(updatedTables.flatMap(t => t.rows ?? []));
+        }
       } catch (error) {
         console.error('Error saving material tables:', error);
       }
