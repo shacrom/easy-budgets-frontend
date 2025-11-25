@@ -884,22 +884,8 @@ export class PdfExportService {
       hLineColor: () => borderColor,
       paddingLeft: (index: number) => (index === 0 ? 12 : 8),
       paddingRight: () => 8,
-      paddingTop: () => 4,
-      paddingBottom: () => 4
-    };
-  }
-
-  private summaryTotalsLayout(): TableLayout {
-    // Only apply background color to each total row, not to breakdown lines
-    const backgrounds = ['#fff7ed', '#fffbeb', '#fff4e6'];
-    return {
-      fillColor: (rowIndex: number) => backgrounds[rowIndex] ?? null,
-      hLineWidth: () => 0,
-      vLineWidth: () => 0,
-      paddingLeft: (index: number) => (index === 0 ? 16 : 8),
-      paddingRight: () => 8,
-      paddingTop: () => 12,
-      paddingBottom: () => 12
+      paddingTop: () => 0,
+      paddingBottom: () => 0
     };
   }
 
@@ -912,16 +898,16 @@ export class PdfExportService {
       vLineColor: () => borderColor,
       paddingLeft: () => 18,
       paddingRight: () => 18,
-      paddingTop: () => 16,
-      paddingBottom: () => 16
+      paddingTop: () => 0,
+      paddingBottom: () => 0
     };
   }
 
   private summaryCategoryRow(label: string, value: number, isChild = false): TableCell[] {
     const safeLabel = label?.trim() ? label : 'Concepto';
     const color = isChild ? '#4b5563' : '#1f2933';
-    const leftMargin: [number, number, number, number] = isChild ? [12, 4, 0, 4] : [0, 6, 0, 6];
-    const rightMargin: [number, number, number, number] = isChild ? [0, 4, 0, 4] : [0, 6, 0, 6];
+    const leftMargin: [number, number, number, number] = isChild ? [10, 2, 0, 2] : [0, 3, 0, 3];
+    const rightMargin: [number, number, number, number] = isChild ? [0, 2, 0, 2] : [0, 3, 0, 3];
 
     return [
       {
@@ -951,7 +937,7 @@ export class PdfExportService {
         bold: true,
         fontSize,
         color,
-        margin: [0, 6, 0, 6] as [number, number, number, number]
+        margin: [0, 1, 0, 1] as [number, number, number, number]
       },
       {
         text: this.formatCurrency(value),
@@ -959,7 +945,7 @@ export class PdfExportService {
         bold: true,
         fontSize,
         color,
-        margin: [0, 6, 0, 6] as [number, number, number, number],
+        margin: [0, 1, 0, 1] as [number, number, number, number],
         decoration: emphasize ? 'underline' : undefined
       }
     ];
@@ -1168,8 +1154,8 @@ export class PdfExportService {
       vLineWidth: () => 0,
       paddingLeft: (index: number) => (index === 0 ? 16 : 8),
       paddingRight: () => 8,
-      paddingTop: () => 12,
-      paddingBottom: () => 12
+      paddingTop: () => 2,
+      paddingBottom: () => 2
     };
 
     const header = this.buildSectionHero({
@@ -1193,7 +1179,7 @@ export class PdfExportService {
           body: totalsRows
         },
         layout: summaryTotalsLayoutWithGrayIva,
-        margin: [0, breakdownRows.length ? 12 : 0, 0, 0] as [number, number, number, number]
+        margin: [0, breakdownRows.length ? 6 : 0, 0, 0] as [number, number, number, number]
       }
     ]);
 
@@ -1206,9 +1192,12 @@ export class PdfExportService {
       }
     ], '#f4ede5');
 
+    const summaryCard = this.buildCard(cardContent) as Content & { margin?: number[] };
+    summaryCard.margin = [0, 0, 0, 6];
+
     const stack: Content[] = [
       header,
-      this.buildCard(cardContent),
+      summaryCard,
       grandTotalCard
     ];
 
