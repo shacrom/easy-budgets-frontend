@@ -72,7 +72,8 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   protected readonly savingBudgetTitle = signal<boolean>(false);
 
   // Logo URLs
-  protected readonly companyLogoUrl = signal<string>('');
+  private readonly DEFAULT_COMPANY_LOGO = 'https://dbqwvbwvqsnihrdczpxs.supabase.co/storage/v1/object/public/budget-assets/logos/logo-entrecuinesweb.png';
+  protected readonly companyLogoUrl = signal<string>(this.DEFAULT_COMPANY_LOGO);
   protected readonly supplierLogoUrl = signal<string>('');
   protected readonly uploadingCompanyLogo = signal<boolean>(false);
   protected readonly uploadingSupplierLogo = signal<boolean>(false);
@@ -302,8 +303,8 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       // Load materials section title
       this.materialsSectionTitle.set(budget.materialsSectionTitle ?? 'Materiales y equipamiento');
 
-      // Load logo URLs
-      this.companyLogoUrl.set(budget.companyLogoUrl ?? '');
+      // Load logo URLs (use default company logo if not set)
+      this.companyLogoUrl.set(budget.companyLogoUrl || this.DEFAULT_COMPANY_LOGO);
       this.supplierLogoUrl.set(budget.supplierLogoUrl ?? '');
 
       const relationalTables = Array.isArray(budget.materialTables) ? budget.materialTables : [];

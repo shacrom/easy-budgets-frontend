@@ -368,7 +368,7 @@ export class PdfExportService {
             { text: '', border: [false, false, false, false] },
             // Center cell: Company logo
             companyLogoBase64
-              ? { image: companyLogoBase64, width: 80, alignment: 'center', border: [false, false, false, false] }
+              ? { image: companyLogoBase64, width: 130, alignment: 'center', border: [false, false, false, false] }
               : { text: '', border: [false, false, false, false] },
             // Right cell: Supplier logo
             supplierLogoBase64
