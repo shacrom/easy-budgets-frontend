@@ -329,6 +329,12 @@ export class PdfExportService {
           bold: true,
           color: '#1f2933'
         },
+        additionalHeader: {
+          fontSize: 10,
+          bold: true,
+          color: '#1f2933',
+          margin: [0, 6, 0, 2] as [number, number, number, number]
+        },
         signatureLabel: {
           fontSize: 9,
           bold: true,
@@ -1095,6 +1101,13 @@ export class PdfExportService {
     }
 
     if (summary.additionalLines?.length) {
+      // Add an explicit header for additional lines so they don't appear visually
+      // under other categories (e.g., 'Total encimera') in the table.
+      breakdownRows.push([
+        { text: 'Conceptos adicionales', style: 'additionalHeader', colSpan: 2 },
+        {}
+      ] as TableCell[]);
+
       summary.additionalLines.forEach(line => {
         const type = this.resolveSummaryLineType(line);
         const label = this.formatSummaryLineLabel(line);
