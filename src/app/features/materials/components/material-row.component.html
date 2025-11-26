@@ -20,10 +20,10 @@
       <div class="reference-field">
         <input
           type="text"
-          [(ngModel)]="material().reference"
-          (ngModelChange)="onReferenceChange($event)"
+          [value]="localReference()"
+          (input)="onReferenceChange($any($event.target).value)"
+          (blur)="onBlur()"
           (focus)="openReferenceDropdown()"
-          (blur)="closeReferenceDropdown()"
           autocomplete="off"
           class="input-field"
           placeholder="Buscar referencia">
@@ -59,25 +59,27 @@
       <textarea
         #descTextarea
         rows="2"
-        [(ngModel)]="material().description"
-        (ngModelChange)="onDescriptionChange($event)"
+        [value]="localDescription()"
         (input)="onDescriptionInput($event)"
-        (focus)="onDescriptionInput($event)"
+        (blur)="onBlur()"
+        (focus)="resizeDescriptionTextarea()"
         class="input-field textarea-field"
         placeholder="Descripción del material"></textarea>
     </td>
     <td class="material-cell manufacturer">
       <input
         type="text"
-        [(ngModel)]="material().manufacturer"
-        (ngModelChange)="onValueChange()"
+        [value]="localManufacturer()"
+        (input)="onManufacturerChange($any($event.target).value)"
+        (blur)="onBlur()"
         class="input-field">
     </td>
     <td class="material-cell quantity">
       <input
         type="number"
-        [(ngModel)]="material().quantity"
-        (ngModelChange)="onValueChange()"
+        [value]="localQuantity()"
+        (input)="onQuantityChange($any($event.target).valueAsNumber)"
+        (blur)="onBlur()"
         min="0"
         class="input-field text-right"
         placeholder="0">
@@ -85,8 +87,9 @@
     <td class="material-cell price">
       <input
         type="number"
-        [(ngModel)]="material().unitPrice"
-        (ngModelChange)="onValueChange()"
+        [value]="localUnitPrice()"
+        (input)="onUnitPriceChange($any($event.target).valueAsNumber)"
+        (blur)="onBlur()"
         min="0"
         step="0.01"
         class="input-field text-right"

@@ -51,6 +51,10 @@ export class MaterialsTableComponent {
   // Backward compatibility: flattened materials collection
   materialsChanged = output<Material[]>();
 
+  // Track if initial sync from input has been done
+  private initialSyncDone = false;
+  private lastInputTablesSignature = '';
+
   constructor() {
     // Sync section title from input
     effect(() => {
@@ -60,14 +64,31 @@ export class MaterialsTableComponent {
       }
     });
 
+    // Only sync from input on initial load or when table structure changes (not content)
     effect(() => {
       const incomingTables = this.tablesInput() ?? [];
+      const signature = this.getTablesSignature(incomingTables);
+
+      // Skip if signature hasn't changed (same tables, just content updates)
+      if (this.initialSyncDone && signature === this.lastInputTablesSignature) {
+        return;
+      }
+
+      this.lastInputTablesSignature = signature;
       this.tables.set(this.prepareTables(incomingTables));
+      this.initialSyncDone = true;
       this.emitChanges({ skipTableOutput: true });
     });
 
     this.emitChanges({ skipTableOutput: true });
     void this.loadProducts();
+  }
+
+  /**
+   * Creates a signature based on table/row IDs to detect structural changes
+   */
+  private getTablesSignature(tables: MaterialTable[]): string {
+    return tables.map(t => `${t.id}:[${t.rows.map(r => r.id).join(',')}]`).join('|');
   }
 
   /**
@@ -94,13 +115,23 @@ export class MaterialsTableComponent {
   }
 
   /**
-   * Updates a table title
+   * Updates a table title without causing re-render
    */
   protected updateTableTitle(tableId: number, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
-    this.mutateTables(tables =>
-      tables.map(table => table.id === tableId ? { ...table, title: value } : table)
-    );
+    const currentTables = this.tables();
+    const tableIndex = currentTables.findIndex(t => t.id === tableId);
+    if (tableIndex === -1) return;
+
+    // Update in place
+    currentTables[tableIndex].title = value;
+
+    // Trigger signal update but skip parent output to prevent loop
+    this.tables.set([...currentTables]);
+
+    // Emit to parent outputs but skip tablesChanged to prevent loop
+    this.totalChanged.emit(this.totalMaterials());
+    this.materialsChanged.emit(this.flattenMaterials(currentTables));
   }
 
   /**
@@ -117,23 +148,26 @@ export class MaterialsTableComponent {
   }
 
   /**
-   * Updates an existing material
+   * Updates an existing material without causing re-render
    */
   protected updateMaterial(tableId: number, updatedMaterial: Material): void {
-    this.mutateTables(tables =>
-      tables.map(table =>
-        table.id === tableId
-          ? {
-              ...table,
-              rows: table.rows.map(material =>
-                material.id === updatedMaterial.id
-                  ? { ...updatedMaterial, tableId: table.id }
-                  : material
-              )
-            }
-          : table
-      )
-    );
+    const currentTables = this.tables();
+    const tableIndex = currentTables.findIndex(t => t.id === tableId);
+    if (tableIndex === -1) return;
+
+    const table = currentTables[tableIndex];
+    const rowIndex = table.rows.findIndex(r => r.id === updatedMaterial.id);
+    if (rowIndex === -1) return;
+
+    // Update in place
+    table.rows[rowIndex] = { ...updatedMaterial, tableId: table.id, orderIndex: rowIndex };
+
+    // Trigger signal update but skip parent output to prevent loop
+    this.tables.set([...currentTables]);
+
+    // Emit to parent outputs but skip tablesChanged to prevent loop
+    this.totalChanged.emit(this.totalMaterials());
+    this.materialsChanged.emit(this.flattenMaterials(currentTables));
   }
 
   /**
