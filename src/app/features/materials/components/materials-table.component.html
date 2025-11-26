@@ -20,17 +20,17 @@
     </div>
     <div class="header-actions">
       @if (hasUnsavedChanges()) {
-        <button 
-          type="button" 
-          class="btn ghost" 
+        <button
+          type="button"
+          class="btn ghost"
           (click)="discardChanges()"
           [disabled]="isSaving()">
           <span class="material-symbols-rounded" aria-hidden="true">undo</span>
           <span>Descartar</span>
         </button>
       }
-      <button 
-        type="button" 
+      <button
+        type="button"
         [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
         (click)="saveChanges()"
         [disabled]="isSaving() || !hasUnsavedChanges()">

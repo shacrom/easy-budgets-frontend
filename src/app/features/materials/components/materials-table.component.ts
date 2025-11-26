@@ -187,7 +187,7 @@ export class MaterialsTableComponent {
    */
   protected saveChanges(): void {
     this.isSaving.set(true);
-    
+
     // Collect current values from all material-row components
     const updatedTables = this.tables().map(table => ({
       ...table,
@@ -200,19 +200,19 @@ export class MaterialsTableComponent {
         return rowComponent ? rowComponent.getCurrentMaterial() : row;
       })
     }));
-    
+
     // Update local state with collected values
     this.tables.set(updatedTables);
-    
+
     // Emit all changes
     this.sectionTitleChanged.emit(this.sectionTitle());
     this.totalChanged.emit(this.totalMaterials());
     this.materialsChanged.emit(this.flattenMaterials(updatedTables));
     this.tablesChanged.emit(updatedTables);
-    
+
     // Mark as saved
     this.hasUnsavedChanges.set(false);
-    
+
     // Simulate async save (remove timeout if actual async operation)
     setTimeout(() => {
       this.isSaving.set(false);

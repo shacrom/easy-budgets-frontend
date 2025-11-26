@@ -157,7 +157,7 @@ export class MaterialRowComponent implements OnInit {
     this.localUnitPrice.set(resolvedUnitPrice);
     this.referenceSearchTerm.set(product.reference);
     this.referenceDropdownOpen.set(false);
-    
+
     // Notify parent of changes
     this.localValuesChanged.emit();
   }
