@@ -11,8 +11,32 @@
       } @else {
         <h2>{{ sectionTitle() || 'Materiales y equipamiento' }}</h2>
       }
+      @if (hasUnsavedChanges()) {
+        <span class="unsaved-indicator">
+          <span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
+          <span>Cambios sin guardar</span>
+        </span>
+      }
     </div>
     <div class="header-actions">
+      @if (hasUnsavedChanges()) {
+        <button 
+          type="button" 
+          class="btn ghost" 
+          (click)="discardChanges()"
+          [disabled]="isSaving()">
+          <span class="material-symbols-rounded" aria-hidden="true">undo</span>
+          <span>Descartar</span>
+        </button>
+      }
+      <button 
+        type="button" 
+        [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
+        (click)="saveChanges()"
+        [disabled]="isSaving() || !hasUnsavedChanges()">
+        <span class="material-symbols-rounded" aria-hidden="true">save</span>
+        <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
+      </button>
       <button type="button" class="btn ghost" (click)="toggleEditMode()">
         @if (editMode()) {
           <span class="material-symbols-rounded" aria-hidden="true">visibility</span>
@@ -116,8 +140,8 @@
                     [material]="material"
                     [editMode]="editMode()"
                     [products]="products()"
-                    (materialUpdated)="updateMaterial(table.id, $event)"
-                    (materialDeleted)="deleteMaterial(table.id, $event)">
+                    (deleteRequested)="deleteMaterial(table.id, $event)"
+                    (localValuesChanged)="onMaterialLocalChange()">
                   </app-material-row>
                 }
               }

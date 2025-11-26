@@ -24,13 +24,13 @@ export class MaterialRowComponent implements OnInit {
   // Input: available products for reference search
   products = input<Product[]>([]);
 
-  // Output: event when material is updated
-  materialUpdated = output<Material>();
+  // Output: event when user requests to delete material
+  deleteRequested = output<number>();
 
-  // Output: event when material is deleted
-  materialDeleted = output<number>();
+  // Output: event when local values change (not saved yet)
+  localValuesChanged = output<void>();
 
-  // Local signals for form values to prevent focus loss on re-render
+  // Local signals for form values
   protected readonly localReference = signal('');
   protected readonly localDescription = signal('');
   protected readonly localManufacturer = signal('');
@@ -39,19 +39,6 @@ export class MaterialRowComponent implements OnInit {
 
   // Track if local values have been initialized
   private initialized = false;
-
-  // Debounce timer for update emissions
-  private updateDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-  private readonly DEBOUNCE_MS = 300;
-
-  // Track last emitted values to avoid unnecessary updates
-  private lastEmittedValues = {
-    reference: '',
-    description: '',
-    manufacturer: '',
-    quantity: 0,
-    unitPrice: 0
-  };
 
   // Calculated total price using local values
   protected readonly totalPrice = computed(() => {
@@ -110,132 +97,42 @@ export class MaterialRowComponent implements OnInit {
     this.localQuantity.set(mat.quantity ?? 0);
     this.localUnitPrice.set(mat.unitPrice ?? 0);
     this.referenceSearchTerm.set(mat.reference ?? '');
-
-    // Initialize last emitted values
-    this.updateLastEmittedValues();
     this.initialized = true;
   }
 
   /**
-   * Checks if local values have changed from last emission
-   */
-  private hasChanges(): boolean {
-    return (
-      this.localReference() !== this.lastEmittedValues.reference ||
-      this.localDescription() !== this.lastEmittedValues.description ||
-      this.localManufacturer() !== this.lastEmittedValues.manufacturer ||
-      this.localQuantity() !== this.lastEmittedValues.quantity ||
-      this.localUnitPrice() !== this.lastEmittedValues.unitPrice
-    );
-  }
-
-  /**
-   * Updates last emitted values cache
-   */
-  private updateLastEmittedValues(): void {
-    this.lastEmittedValues = {
-      reference: this.localReference(),
-      description: this.localDescription(),
-      manufacturer: this.localManufacturer(),
-      quantity: this.localQuantity(),
-      unitPrice: this.localUnitPrice()
-    };
-  }
-
-  /**
-   * Builds and emits the updated material from local signals (debounced)
-   */
-  private emitUpdate(): void {
-    // Clear existing debounce timer
-    if (this.updateDebounceTimer) {
-      clearTimeout(this.updateDebounceTimer);
-    }
-
-    // Debounce the update to avoid re-renders on every keystroke
-    this.updateDebounceTimer = setTimeout(() => {
-      // Only emit if values have actually changed
-      if (!this.hasChanges()) {
-        this.updateDebounceTimer = null;
-        return;
-      }
-
-      const updatedMaterial: Material = {
-        ...this.material(),
-        reference: this.localReference(),
-        description: this.localDescription(),
-        manufacturer: this.localManufacturer(),
-        quantity: this.localQuantity(),
-        unitPrice: this.localUnitPrice(),
-        totalPrice: this.localQuantity() * this.localUnitPrice()
-      };
-      this.updateLastEmittedValues();
-      this.materialUpdated.emit(updatedMaterial);
-      this.updateDebounceTimer = null;
-    }, this.DEBOUNCE_MS);
-  }
-
-  /**
-   * Emits update immediately without debounce (for blur events)
-   */
-  private emitUpdateImmediate(): void {
-    if (this.updateDebounceTimer) {
-      clearTimeout(this.updateDebounceTimer);
-      this.updateDebounceTimer = null;
-    }
-
-    // Only emit if values have actually changed
-    if (!this.hasChanges()) {
-      return;
-    }
-
-    const updatedMaterial: Material = {
-      ...this.material(),
-      reference: this.localReference(),
-      description: this.localDescription(),
-      manufacturer: this.localManufacturer(),
-      quantity: this.localQuantity(),
-      unitPrice: this.localUnitPrice(),
-      totalPrice: this.localQuantity() * this.localUnitPrice()
-    };
-    this.updateLastEmittedValues();
-    this.materialUpdated.emit(updatedMaterial);
-  }
-
-  /**
-   * Updates local reference and emits change
+   * Updates local reference
    */
   protected onReferenceChange(value: string): void {
     this.localReference.set(value);
     this.referenceSearchTerm.set(value);
     this.openReferenceDropdown();
-    this.emitUpdate();
+    this.localValuesChanged.emit();
   }
 
   /**
-   * Updates local manufacturer and emits change
+   * Updates local manufacturer
    */
   protected onManufacturerChange(value: string): void {
     this.localManufacturer.set(value);
-    this.emitUpdate();
+    this.localValuesChanged.emit();
   }
 
   /**
-   * Updates local quantity and emits change
+   * Updates local quantity
    */
   protected onQuantityChange(value: number): void {
     this.localQuantity.set(value ?? 0);
-    this.emitUpdate();
+    this.localValuesChanged.emit();
   }
 
   /**
-   * Updates local unit price and emits change
+   * Updates local unit price
    */
   protected onUnitPriceChange(value: number): void {
     this.localUnitPrice.set(value ?? 0);
-    this.emitUpdate();
-  }
-
-  protected openReferenceDropdown(): void {
+    this.localValuesChanged.emit();
+  }  protected openReferenceDropdown(): void {
     this.clearDropdownTimeout();
     this.referenceDropdownOpen.set(true);
   }
@@ -245,19 +142,10 @@ export class MaterialRowComponent implements OnInit {
     this.referenceDropdownTimeout = setTimeout(() => this.referenceDropdownOpen.set(false), 120);
   }
 
-  /**
-   * Handles blur event on any input - emits update immediately
-   */
-  protected onBlur(): void {
-    this.closeReferenceDropdown();
-    this.emitUpdateImmediate();
-  }
-
   protected applyProductFromSuggestion(event: MouseEvent, product: Product): void {
     event.preventDefault();
     this.clearDropdownTimeout();
 
-    const currentMaterial = this.material();
     const resolvedQuantity = this.localQuantity() > 0 ? this.localQuantity() : 1;
     const resolvedUnitPrice = product.basePrice ?? this.localUnitPrice();
 
@@ -269,20 +157,9 @@ export class MaterialRowComponent implements OnInit {
     this.localUnitPrice.set(resolvedUnitPrice);
     this.referenceSearchTerm.set(product.reference);
     this.referenceDropdownOpen.set(false);
-
-    const updatedMaterial: Material = {
-      ...currentMaterial,
-      productId: product.id ?? currentMaterial.productId,
-      reference: product.reference,
-      description: product.description,
-      manufacturer: product.manufacturer,
-      quantity: resolvedQuantity,
-      unitPrice: resolvedUnitPrice,
-      totalPrice: resolvedQuantity * resolvedUnitPrice
-    };
-
-    this.updateLastEmittedValues();
-    this.materialUpdated.emit(updatedMaterial);
+    
+    // Notify parent of changes
+    this.localValuesChanged.emit();
   }
 
   private clearDropdownTimeout(): void {
@@ -293,22 +170,38 @@ export class MaterialRowComponent implements OnInit {
   }
 
   /**
-   * Deletes the material
-   */
-  protected deleteMaterial(): void {
-    this.materialDeleted.emit(this.material().id);
-  }
-
-  /**
-   * Handler for description change. Updates local signal and emits updated material.
+   * Handler for description change
    */
   protected onDescriptionChange(value: string): void {
     this.localDescription.set(value);
-    this.emitUpdate();
+    this.localValuesChanged.emit();
   }
 
   /**
-   * Auto-resize textarea on input and emit updated material.
+   * Returns the current material with local values applied
+   * Used by parent component when saving
+   */
+  getCurrentMaterial(): Material {
+    return {
+      ...this.material(),
+      reference: this.localReference(),
+      description: this.localDescription(),
+      manufacturer: this.localManufacturer(),
+      quantity: this.localQuantity(),
+      unitPrice: this.localUnitPrice(),
+      totalPrice: this.localQuantity() * this.localUnitPrice()
+    };
+  }
+
+  /**
+   * Requests deletion of this material
+   */
+  protected requestDelete(): void {
+    this.deleteRequested.emit(this.material().id);
+  }
+
+  /**
+   * Auto-resize textarea on input
    */
   protected onDescriptionInput(event: Event): void {
     const target = event.target as HTMLTextAreaElement | null;
@@ -317,7 +210,7 @@ export class MaterialRowComponent implements OnInit {
     target.style.height = 'auto';
     const newHeight = Math.max(target.scrollHeight, 38);
     target.style.height = `${newHeight}px`;
-    // emit updated material
+    // update local signal
     this.onDescriptionChange(target.value);
   }
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal, computed, output, inject, input, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, computed, output, inject, input, effect, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialRowComponent } from './material-row.component';
 import { Material, MaterialTable } from '../../../models/material.model';
@@ -37,6 +37,10 @@ export class MaterialsTableComponent {
   // Edit mode
   protected readonly editMode = signal<boolean>(true);
 
+  // Track unsaved changes
+  protected readonly hasUnsavedChanges = signal<boolean>(false);
+  protected readonly isSaving = signal<boolean>(false);
+
   // Total calculated from all materials
   protected readonly totalMaterials = computed(() => {
     return this.tables().reduce((sum, table) => sum + this.calculateTableTotal(table), 0);
@@ -54,6 +58,9 @@ export class MaterialsTableComponent {
   // Track if initial sync from input has been done
   private initialSyncDone = false;
   private lastInputTablesSignature = '';
+
+  // Reference to all material-row components
+  @ViewChildren(MaterialRowComponent) materialRowComponents!: QueryList<MaterialRowComponent>;
 
   constructor() {
     // Sync section title from input
@@ -97,7 +104,7 @@ export class MaterialsTableComponent {
   protected updateSectionTitle(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.sectionTitle.set(value);
-    this.sectionTitleChanged.emit(value);
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -105,6 +112,7 @@ export class MaterialsTableComponent {
    */
   protected addTable(): void {
     this.mutateTables(tables => [...tables, this.createTable(this.defaultTableTitle, tables.length)]);
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -112,10 +120,11 @@ export class MaterialsTableComponent {
    */
   protected deleteTable(tableId: number): void {
     this.mutateTables(tables => tables.filter(table => table.id !== tableId));
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
-   * Updates a table title without causing re-render
+   * Updates a table title
    */
   protected updateTableTitle(tableId: number, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
@@ -126,12 +135,9 @@ export class MaterialsTableComponent {
     // Update in place
     currentTables[tableIndex].title = value;
 
-    // Trigger signal update but skip parent output to prevent loop
+    // Trigger signal update
     this.tables.set([...currentTables]);
-
-    // Emit to parent outputs but skip tablesChanged to prevent loop
-    this.totalChanged.emit(this.totalMaterials());
-    this.materialsChanged.emit(this.flattenMaterials(currentTables));
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -145,29 +151,7 @@ export class MaterialsTableComponent {
           : table
       )
     );
-  }
-
-  /**
-   * Updates an existing material without causing re-render
-   */
-  protected updateMaterial(tableId: number, updatedMaterial: Material): void {
-    const currentTables = this.tables();
-    const tableIndex = currentTables.findIndex(t => t.id === tableId);
-    if (tableIndex === -1) return;
-
-    const table = currentTables[tableIndex];
-    const rowIndex = table.rows.findIndex(r => r.id === updatedMaterial.id);
-    if (rowIndex === -1) return;
-
-    // Update in place
-    table.rows[rowIndex] = { ...updatedMaterial, tableId: table.id, orderIndex: rowIndex };
-
-    // Trigger signal update but skip parent output to prevent loop
-    this.tables.set([...currentTables]);
-
-    // Emit to parent outputs but skip tablesChanged to prevent loop
-    this.totalChanged.emit(this.totalMaterials());
-    this.materialsChanged.emit(this.flattenMaterials(currentTables));
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -181,6 +165,14 @@ export class MaterialsTableComponent {
           : table
       )
     );
+    this.hasUnsavedChanges.set(true);
+  }
+
+  /**
+   * Called when a material-row component has local changes
+   */
+  protected onMaterialLocalChange(): void {
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -188,6 +180,54 @@ export class MaterialsTableComponent {
    */
   protected toggleEditMode(): void {
     this.editMode.update(mode => !mode);
+  }
+
+  /**
+   * Saves all changes and emits to parent
+   */
+  protected saveChanges(): void {
+    this.isSaving.set(true);
+    
+    // Collect current values from all material-row components
+    const updatedTables = this.tables().map(table => ({
+      ...table,
+      rows: table.rows.map(row => {
+        // Find the corresponding MaterialRowComponent
+        const rowComponent = this.materialRowComponents?.find(
+          comp => comp.material().id === row.id
+        );
+        // Return the current material from the component if found, otherwise keep original
+        return rowComponent ? rowComponent.getCurrentMaterial() : row;
+      })
+    }));
+    
+    // Update local state with collected values
+    this.tables.set(updatedTables);
+    
+    // Emit all changes
+    this.sectionTitleChanged.emit(this.sectionTitle());
+    this.totalChanged.emit(this.totalMaterials());
+    this.materialsChanged.emit(this.flattenMaterials(updatedTables));
+    this.tablesChanged.emit(updatedTables);
+    
+    // Mark as saved
+    this.hasUnsavedChanges.set(false);
+    
+    // Simulate async save (remove timeout if actual async operation)
+    setTimeout(() => {
+      this.isSaving.set(false);
+    }, 300);
+  }
+
+  /**
+   * Discards all unsaved changes
+   */
+  protected discardChanges(): void {
+    // Reset to last saved state from input
+    const incomingTables = this.tablesInput() ?? [];
+    this.tables.set(this.prepareTables(incomingTables));
+    this.sectionTitle.set(this.sectionTitleInput() || this.defaultSectionTitle);
+    this.hasUnsavedChanges.set(false);
   }
 
   /**
@@ -275,11 +315,10 @@ export class MaterialsTableComponent {
   }
 
   private mutateTables(
-    mutator: (tables: MaterialTable[]) => MaterialTable[],
-    options?: { skipTableOutput?: boolean }
+    mutator: (tables: MaterialTable[]) => MaterialTable[]
   ): void {
     this.tables.update(current => this.normalizeTables(mutator(this.cloneTables(current))));
-    this.emitChanges(options);
+    // No auto-emit - changes are only emitted when saveChanges() is called
   }
 
   private async loadProducts(): Promise<void> {
