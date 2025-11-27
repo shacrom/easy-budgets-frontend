@@ -28,6 +28,15 @@ export class CountertopEditorComponent {
   protected readonly isSaving = signal<boolean>(false);
   protected readonly isUploadingImage = signal<boolean>(false);
   protected readonly imageUploadError = signal<string | null>(null);
+  protected readonly hasUnsavedChanges = signal<boolean>(false);
+
+  // Store original loaded state for discard
+  private originalCountertop = signal<Countertop>({
+    budgetId: 0,
+    model: '',
+    description: '',
+    price: 0
+  });
 
   totalChanged = output<number>();
   countertopChanged = output<Countertop>();
@@ -47,16 +56,18 @@ export class CountertopEditorComponent {
       const data = await this.supabase.getCountertopForBudget(budgetId);
       if (data) {
         this.countertop.set(data);
-        this.totalChanged.emit(data.price || 0);
-        this.countertopChanged.emit(data);
+        this.originalCountertop.set(data);
       } else {
-        this.countertop.set({
+        const emptyCountertop = {
           budgetId,
           model: '',
           description: '',
           price: 0
-        });
+        };
+        this.countertop.set(emptyCountertop);
+        this.originalCountertop.set(emptyCountertop);
       }
+      this.hasUnsavedChanges.set(false);
     } catch (error) {
       console.error('Error loading countertop:', error);
     } finally {
@@ -64,7 +75,7 @@ export class CountertopEditorComponent {
     }
   }
 
-  async save() {
+  async saveChanges() {
     const current = this.countertop();
     if (!current.budgetId) return;
 
@@ -72,6 +83,10 @@ export class CountertopEditorComponent {
     try {
       const saved = await this.supabase.upsertCountertop(current);
       this.countertop.set(saved);
+      this.originalCountertop.set(saved);
+      this.hasUnsavedChanges.set(false);
+      
+      // Emit after successful save
       this.totalChanged.emit(saved.price || 0);
       this.countertopChanged.emit(saved);
     } catch (error) {
@@ -81,32 +96,40 @@ export class CountertopEditorComponent {
     }
   }
 
+  discardChanges() {
+    this.countertop.set(this.originalCountertop());
+    this.hasUnsavedChanges.set(false);
+  }
+
   updateModel(value: string) {
     this.countertop.update(c => ({ ...c, model: value }));
+    this.hasUnsavedChanges.set(true);
   }
 
   updateDescription(value: string) {
     this.countertop.update(c => ({ ...c, description: value }));
+    this.hasUnsavedChanges.set(true);
   }
 
   updatePrice(value: number) {
     this.countertop.update(c => ({ ...c, price: value }));
-    this.totalChanged.emit(value); // Emit immediately for UI update
+    this.hasUnsavedChanges.set(true);
   }
 
   setImageUrl(value: string) {
     if (!value) return;
     this.updateImageUrl(value);
-    this.save();
+    this.hasUnsavedChanges.set(true);
   }
 
   updateImageUrl(value: string) {
     this.countertop.update(c => ({ ...c, imageUrl: value }));
+    this.hasUnsavedChanges.set(true);
   }
 
   clearImageUrl() {
     this.countertop.update(c => ({ ...c, imageUrl: null }));
-    this.save();
+    this.hasUnsavedChanges.set(true);
   }
 
   protected async onImageFileSelected(event: Event): Promise<void> {
@@ -133,7 +156,7 @@ export class CountertopEditorComponent {
       });
 
       this.countertop.update(c => ({ ...c, imageUrl: publicUrl }));
-      await this.save();
+      this.hasUnsavedChanges.set(true);
     } catch (error) {
       console.error('Error uploading countertop image:', error);
       this.imageUploadError.set('No se pudo subir la imagen. Inténtalo de nuevo.');

@@ -22,17 +22,11 @@ export class BudgetTextBlockComponent {
   // Input: text block data
   block = input.required<BudgetTextBlock>();
 
-  // Input: edit mode
-  editMode = input<boolean>(false);
-
   // Output: event when block is updated
   blockUpdated = output<BudgetTextBlock>();
 
   // Output: event when block is deleted
   blockDeleted = output<number>();
-
-  // Local state for editing
-  protected readonly isEditing = signal(false);
 
   // Local state for sections (writable version)
   protected readonly sections = signal<DescriptionSection[]>([]);
@@ -54,43 +48,6 @@ export class BudgetTextBlockComponent {
         this.sections.set([...currentBlock.descriptions]);
       }
     });
-  }
-
-  /**
-   * Activates edit mode
-   */
-  protected startEdit(): void {
-    this.isEditing.set(true);
-  }
-
-  /**
-   * Saves changes and emits update event
-   */
-  protected async saveChanges(): Promise<void> {
-    const blockId = this.block().id;
-    if (!blockId) return;
-
-    try {
-      await this.supabase.updateBudgetTextBlock(blockId, {
-        heading: this.block().heading,
-        link: this.block().link,
-        imageUrl: this.block().imageUrl,
-        subtotal: this.block().subtotal,
-        orderIndex: this.block().orderIndex
-      });
-
-      this.isEditing.set(false);
-      this.blockUpdated.emit(this.block());
-    } catch (error) {
-      console.error('Error saving block:', error);
-    }
-  }
-
-  /**
-   * Cancels editing
-   */
-  protected cancelEdit(): void {
-    this.isEditing.set(false);
   }
 
   /**

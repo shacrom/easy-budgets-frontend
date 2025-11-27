@@ -1,6 +1,29 @@
 <div class="countertop-container">
   <div class="header">
     <h2>Encimera</h2>
+    <div class="header-actions">
+      @if (hasUnsavedChanges()) {
+        <span class="unsaved-indicator">Cambios sin guardar</span>
+      }
+      <button
+        type="button"
+        (click)="saveChanges()"
+        [disabled]="!hasUnsavedChanges() || isSaving()"
+        [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
+        class="save-btn">
+        <span class="material-symbols-rounded">save</span>
+        {{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
+      @if (hasUnsavedChanges()) {
+        <button
+          type="button"
+          (click)="discardChanges()"
+          class="btn ghost discard-btn">
+          <span class="material-symbols-rounded">cancel</span>
+          Descartar
+        </button>
+      }
+    </div>
   </div>
 
   <div class="content">
@@ -10,7 +33,6 @@
         type="text"
         [ngModel]="countertop().model"
         (ngModelChange)="updateModel($event)"
-        (blur)="save()"
         placeholder="Ej: PETRA CREMA ABUJARDADO"
         class="form-input">
     </div>
@@ -20,7 +42,6 @@
       <textarea
         [ngModel]="countertop().description"
         (ngModelChange)="updateDescription($event)"
-        (blur)="save()"
         rows="3"
         class="form-textarea"></textarea>
     </div>
@@ -84,7 +105,6 @@
         type="number"
         [ngModel]="countertop().price"
         (ngModelChange)="updatePrice($event)"
-        (blur)="save()"
         class="price-input">
       <span class="currency">€</span>
     </div>

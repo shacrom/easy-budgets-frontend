@@ -1,69 +1,7 @@
 <div class="budget-text-block">
-  @if (!isEditing()) {
-    <!-- Vista de solo lectura -->
-    <div class="block-view">
-      <div class="block-header">
-        <h3 class="text-xl font-bold text-gray-800">
-          {{ block().heading }}
-        </h3>
-        @if (editMode()) {
-          <div class="actions">
-            <button
-              (click)="startEdit()"
-              class="btn-edit"
-              type="button"
-              title="Editar">
-              <span class="material-icons">edit</span>
-            </button>
-            <button
-              (click)="deleteBlock()"
-              class="btn-delete"
-              type="button"
-              title="Eliminar">
-              <span class="material-icons">delete</span>
-            </button>
-          </div>
-        }
-      </div>
-
-      <div class="block-content">
-        <!-- Secciones de descripción -->
-        @for (descripcion of sections(); track descripcion.id) {
-          <div class="description-section">
-            <h3 class="description-title">{{ descripcion.title }}</h3>
-            <p class="description-text">{{ descripcion.text }}</p>
-          </div>
-        }
-
-        @if (block().link) {
-          <a
-            [href]="block().link"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-blue-600 hover:underline mt-2 inline-block">
-            Ver más información
-          </a>
-        }
-
-        @if (block().imageUrl) {
-          <div class="block-image mt-4">
-            <img
-              [src]="block().imageUrl"
-              [alt]="block().heading"
-              class="max-w-full h-auto rounded-lg shadow-md">
-          </div>
-        }
-      </div>
-
-      <div class="block-footer">
-        <span class="text-lg font-semibold text-gray-900">
-          Total: {{ block().subtotal | currency:'EUR':'symbol':'1.2-2':'es' }}
-        </span>
-      </div>
-    </div>
-  } @else {
-    <!-- Vista de edición -->
-    <div class="block-edit">
+  <!-- Vista de edición permanente -->
+  <div class="block-edit">
+    <div class="block-header-edit">
       <div class="form-group">
         <label for="encabezado-{{ block().id }}" class="form-label">
           Encabezado
@@ -76,9 +14,17 @@
           class="form-input"
           placeholder="Título del bloque">
       </div>
+      <button
+        (click)="deleteBlock()"
+        class="btn-delete"
+        type="button"
+        title="Eliminar bloque">
+        <span class="material-icons">delete</span>
+      </button>
+    </div>
 
-      <!-- Secciones de descripción -->
-      <div class="descriptions-section">
+    <!-- Secciones de descripción -->
+    <div class="descriptions-section">
         <div class="descriptions-header">
           <label class="form-label">Secciones de Descripción</label>
           <button
@@ -219,21 +165,5 @@
           class="form-input"
           placeholder="0.00">
       </div>
-
-      <div class="form-actions">
-        <button
-          (click)="saveChanges()"
-          class="btn-save"
-          type="button">
-          Guardar
-        </button>
-        <button
-          (click)="cancelEdit()"
-          class="btn-cancel"
-          type="button">
-          Cancelar
-        </button>
-      </div>
-    </div>
-  }
+  </div>
 </div>

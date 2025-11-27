@@ -30,18 +30,20 @@ export class GeneralConditionsComponent {
   // Available templates
   protected readonly templates = CONDITION_TEMPLATES;
 
-  // Outputs to notify parent components
+  // Manual save pattern
+  protected readonly hasUnsavedChanges = signal<boolean>(false);
+  protected readonly isSaving = signal<boolean>(false);
+
+  // Store original state for discard
+  private readonly originalTitle = signal<string>('CONDICIONES GENERALES');
+  private readonly originalConditions = signal<Condition[]>([...DEFAULT_CONDITIONS]);
+
+  // Outputs to notify parent components (only on manual save)
   readonly titleChanged = output<string>();
   readonly conditionsChanged = output<Condition[]>();
 
   constructor() {
-    effect(() => {
-      this.titleChanged.emit(this.title());
-    });
-
-    effect(() => {
-      this.conditionsChanged.emit(this.conditions());
-    });
+    // No automatic effects - removed all auto-emit logic
   }
 
   /**
@@ -57,6 +59,7 @@ export class GeneralConditionsComponent {
   protected updateTitle(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.title.set(input.value);
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -70,6 +73,7 @@ export class GeneralConditionsComponent {
     if (template) {
       this.selectedTemplate.set(templateId);
       this.conditions.set([...template.conditions]);
+      this.hasUnsavedChanges.set(true);
     }
   }
 
@@ -86,6 +90,7 @@ export class GeneralConditionsComponent {
     };
 
     this.conditions.update(conds => [...conds, newCondition]);
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -95,6 +100,7 @@ export class GeneralConditionsComponent {
     this.conditions.update(conds =>
       conds.map(cond => cond.id === updatedCondition.id ? updatedCondition : cond)
     );
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -109,6 +115,7 @@ export class GeneralConditionsComponent {
           : cond
       )
     );
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -116,6 +123,7 @@ export class GeneralConditionsComponent {
    */
   protected deleteCondition(conditionId: number): void {
     this.conditions.update(conds => conds.filter(cond => cond.id !== conditionId));
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -125,7 +133,35 @@ export class GeneralConditionsComponent {
     const template = CONDITION_TEMPLATES.find(t => t.id === this.selectedTemplate());
     if (template) {
       this.conditions.set([...template.conditions]);
+      this.hasUnsavedChanges.set(true);
     }
+  }
+
+  /**
+   * Saves all changes and emits to parent
+   */
+  saveChanges(): void {
+    this.isSaving.set(true);
+    
+    // Update original state
+    this.originalTitle.set(this.title());
+    this.originalConditions.set(this.conditions());
+    
+    // Emit to parent
+    this.titleChanged.emit(this.title());
+    this.conditionsChanged.emit(this.conditions());
+    
+    this.hasUnsavedChanges.set(false);
+    this.isSaving.set(false);
+  }
+
+  /**
+   * Discards all changes and restores original state
+   */
+  discardChanges(): void {
+    this.title.set(this.originalTitle());
+    this.conditions.set(this.originalConditions());
+    this.hasUnsavedChanges.set(false);
   }
 
   /**

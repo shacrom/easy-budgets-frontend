@@ -11,6 +11,27 @@
       <h2 class="text-2xl font-bold text-gray-900">{{ title() }}</h2>
     }
     <div class="header-actions">
+      @if (hasUnsavedChanges()) {
+        <span class="unsaved-indicator">Cambios sin guardar</span>
+      }
+      <button
+        type="button"
+        (click)="saveChanges()"
+        [disabled]="!hasUnsavedChanges() || isSaving()"
+        [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
+        class="save-btn">
+        <span class="material-symbols-rounded">save</span>
+        {{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
+      @if (hasUnsavedChanges()) {
+        <button
+          type="button"
+          (click)="discardChanges()"
+          class="btn ghost discard-btn">
+          <span class="material-symbols-rounded">cancel</span>
+          Descartar
+        </button>
+      }
       <button
         (click)="toggleEditMode()"
         class="btn-toggle-edit"

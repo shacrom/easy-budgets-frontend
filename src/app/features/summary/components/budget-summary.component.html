@@ -3,15 +3,38 @@
     <div>
       <h2>Resumen del presupuesto</h2>
     </div>
-    <button type="button" class="btn ghost" (click)="toggleEditMode()">
-      @if (editMode()) {
-        <span class="material-symbols-rounded" aria-hidden="true">visibility</span>
-        <span>Vista previa</span>
-      } @else {
-        <span class="material-symbols-rounded" aria-hidden="true">tune</span>
-        <span>Configurar</span>
+    <div class="header-actions">
+      @if (hasUnsavedChanges()) {
+        <span class="unsaved-indicator">Cambios sin guardar</span>
       }
-    </button>
+      <button
+        type="button"
+        (click)="saveChanges()"
+        [disabled]="!hasUnsavedChanges() || isSaving()"
+        [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
+        class="save-btn">
+        <span class="material-symbols-rounded">save</span>
+        {{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
+      @if (hasUnsavedChanges()) {
+        <button
+          type="button"
+          (click)="discardChanges()"
+          class="btn ghost discard-btn">
+          <span class="material-symbols-rounded">cancel</span>
+          Descartar
+        </button>
+      }
+      <button type="button" class="btn ghost" (click)="toggleEditMode()">
+        @if (editMode()) {
+          <span class="material-symbols-rounded" aria-hidden="true">visibility</span>
+          <span>Vista previa</span>
+        } @else {
+          <span class="material-symbols-rounded" aria-hidden="true">tune</span>
+          <span>Configurar</span>
+        }
+      </button>
+    </div>
   </header>
 
   <div class="summary-card">

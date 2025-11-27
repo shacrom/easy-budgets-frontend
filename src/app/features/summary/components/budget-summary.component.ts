@@ -34,9 +34,11 @@ export class BudgetSummaryComponent {
 
   // Inputs
   budgetId = input<number | null>(null);
+  
   // Local state for configuration
   protected readonly vatPercentage = signal<number>(21);
   protected readonly editMode = signal<boolean>(false);
+  
   // Input: initialAdditionalLines lets the parent pre-populate the state
   initialAdditionalLines = input<SummaryLine[]>([]);
   protected readonly additionalLines = signal<SummaryLine[]>([]);
@@ -47,41 +49,31 @@ export class BudgetSummaryComponent {
     { value: 'note', label: 'Nota' }
   ];
 
+  // Manual save pattern
+  protected readonly hasUnsavedChanges = signal<boolean>(false);
+  protected readonly isSaving = signal<boolean>(false);
+
+  // Store original state for discard
+  private readonly originalVatPercentage = signal<number>(21);
+  private readonly originalAdditionalLines = signal<SummaryLine[]>([]);
+
+  // Outputs (only on manual save)
   readonly summaryChanged = output<BudgetSummary>();
   readonly vatPercentageChanged = output<number>();
   readonly additionalLinesChanged = output<SummaryLine[]>();
 
   constructor() {
     // Initialize internal additional lines from input
-    // Hydrate internal lines only when empty to avoid overriding user edits
     effect(() => {
       const lines = this.initialAdditionalLines();
       if (Array.isArray(lines) && this.additionalLines().length === 0 && lines.length > 0) {
-        this.additionalLines.set(lines.map(line => this.normalizeLine(line)));
+        const normalized = lines.map(line => this.normalizeLine(line));
+        this.additionalLines.set(normalized);
+        this.originalAdditionalLines.set(normalized);
       }
     });
-    effect(() => {
-      const normalizedLines = this.additionalLines().map(line => this.normalizeLine(line));
-      this.summaryChanged.emit({
-        totalBlocks: this.effectiveTotalBlocks(),
-        totalMaterials: this.effectiveTotalMaterials(),
-        totalCountertop: this.effectiveTotalCountertop(),
-        taxableBase: this.taxableBase(),
-        vat: this.vat(),
-        vatPercentage: this.vatPercentage(),
-        grandTotal: this.grandTotal(),
-        additionalLines: normalizedLines
-      });
-    });
-
-    effect(() => {
-      this.vatPercentageChanged.emit(this.vatPercentage());
-    });
-
-    effect(() => {
-      const normalizedLines = this.additionalLines().map(line => this.normalizeLine(line));
-      this.additionalLinesChanged.emit(normalizedLines);
-    });
+    
+    // No automatic effects - removed all auto-emit logic
   }
 
   // Dropdown states (expanded by default)
@@ -176,6 +168,7 @@ export class BudgetSummaryComponent {
     };
 
     this.additionalLines.update(lines => [...lines, newLine]);
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -187,6 +180,7 @@ export class BudgetSummaryComponent {
     this.additionalLines.update(lines =>
       lines.map(line => line.id === normalized.id ? normalized : line)
     );
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -194,6 +188,7 @@ export class BudgetSummaryComponent {
    */
   protected deleteAdditionalLine(lineId: number): void {
     this.additionalLines.update(lines => lines.filter(line => line.id !== lineId));
+    this.hasUnsavedChanges.set(true);
   }
 
   protected updateLineType(line: SummaryLine, type: SummaryLineType): void {
@@ -223,6 +218,47 @@ export class BudgetSummaryComponent {
       return;
     }
     this.vatPercentage.set(Math.max(0, parsed));
+    this.hasUnsavedChanges.set(true);
+  }
+
+  /**
+   * Saves all changes and emits to parent
+   */
+  saveChanges(): void {
+    this.isSaving.set(true);
+    
+    // Update original state
+    this.originalVatPercentage.set(this.vatPercentage());
+    this.originalAdditionalLines.set(this.additionalLines());
+    
+    // Emit all outputs
+    const normalizedLines = this.additionalLines().map(line => this.normalizeLine(line));
+    
+    this.summaryChanged.emit({
+      totalBlocks: this.effectiveTotalBlocks(),
+      totalMaterials: this.effectiveTotalMaterials(),
+      totalCountertop: this.effectiveTotalCountertop(),
+      taxableBase: this.taxableBase(),
+      vat: this.vat(),
+      vatPercentage: this.vatPercentage(),
+      grandTotal: this.grandTotal(),
+      additionalLines: normalizedLines
+    });
+    
+    this.vatPercentageChanged.emit(this.vatPercentage());
+    this.additionalLinesChanged.emit(normalizedLines);
+    
+    this.hasUnsavedChanges.set(false);
+    this.isSaving.set(false);
+  }
+
+  /**
+   * Discards all changes and restores original state
+   */
+  discardChanges(): void {
+    this.vatPercentage.set(this.originalVatPercentage());
+    this.additionalLines.set(this.originalAdditionalLines());
+    this.hasUnsavedChanges.set(false);
   }
 
   /**

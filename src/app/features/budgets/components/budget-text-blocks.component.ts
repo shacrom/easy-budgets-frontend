@@ -30,19 +30,19 @@ export class BudgetTextBlocksComponent {
   // Creating state
   protected readonly isCreating = signal<boolean>(false);
 
-  // Edit mode
-  protected readonly editMode = signal<boolean>(true);
-
   // Total calculated from all blocks
   protected readonly grandTotal = computed(() => {
     return this.blocks().reduce((sum, block) => sum + (block.subtotal || 0), 0);
   });
 
-  // Output: emits total when it changes
+  // Output: emits total when it changes (only on manual save)
   totalChanged = output<number>();
 
-  // Output: emits blocks when they change
+  // Output: emits blocks when they change (only on manual save)
   blocksChanged = output<BudgetTextBlock[]>();
+
+  // Manual save pattern
+  protected readonly hasUnsavedChanges = signal<boolean>(false);
 
   constructor() {
     // Load blocks when budgetId changes
@@ -53,11 +53,7 @@ export class BudgetTextBlocksComponent {
       }
     });
 
-    // Emit total and blocks when they change
-    effect(() => {
-      this.totalChanged.emit(this.grandTotal());
-      this.blocksChanged.emit(this.blocks());
-    });
+    // No automatic effects - removed all auto-emit logic
   }
 
   /**
@@ -121,6 +117,7 @@ export class BudgetTextBlocksComponent {
     this.blocks.update(blocks =>
       blocks.map(block => block.id === updatedBlock.id ? updatedBlock : block)
     );
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -128,12 +125,16 @@ export class BudgetTextBlocksComponent {
    */
   protected deleteBlock(blockId: number): void {
     this.blocks.update(blocks => blocks.filter(block => block.id !== blockId));
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
-   * Toggles edit mode
+   * Saves changes and emits to parent
    */
-  protected toggleEditMode(): void {
-    this.editMode.update(mode => !mode);
+  saveChanges(): void {
+    // Emit current state
+    this.totalChanged.emit(this.grandTotal());
+    this.blocksChanged.emit(this.blocks());
+    this.hasUnsavedChanges.set(false);
   }
 }

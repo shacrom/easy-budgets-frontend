@@ -2,29 +2,29 @@
   <div class="header">
     <h2 class="text-2xl font-light text-gray-900 uppercase" style="letter-spacing: 0.15em;">Bloques de Texto</h2>
     <div class="header-actions">
+      @if (hasUnsavedChanges()) {
+        <span class="unsaved-indicator">Cambios sin guardar</span>
+      }
       <button
-        (click)="toggleEditMode()"
-        class="btn-toggle-edit"
-        type="button">
-        @if (editMode()) {
-          <span>Vista Previa</span>
+        type="button"
+        (click)="saveChanges()"
+        [disabled]="!hasUnsavedChanges()"
+        [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
+        class="save-btn">
+        <span class="material-symbols-rounded">save</span>
+        Guardar cambios
+      </button>
+      <button
+        (click)="addNewBlock()"
+        class="btn-add-block"
+        type="button"
+        [disabled]="isCreating()">
+        @if (isCreating()) {
+          <span>Creando...</span>
         } @else {
-          <span>Modo Edición</span>
+          <span>Añadir Bloque</span>
         }
       </button>
-      @if (editMode()) {
-        <button
-          (click)="addNewBlock()"
-          class="btn-add-block"
-          type="button"
-          [disabled]="isCreating()">
-          @if (isCreating()) {
-            <span>Creando...</span>
-          } @else {
-            <span>Añadir Bloque</span>
-          }
-        </button>
-      }
     </div>
   </div>
 
@@ -43,7 +43,6 @@
       @for (block of blocks(); track block.id) {
         <app-budget-text-block
           [block]="block"
-          [editMode]="editMode()"
           (blockUpdated)="updateBlock($event)"
           (blockDeleted)="deleteBlock($event)">
         </app-budget-text-block>
