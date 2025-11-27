@@ -185,7 +185,6 @@
             <input
               class="input-field amount"
               type="number"
-              step="0.01"
               [disabled]="isNote(line)"
               [(ngModel)]="line.amount"
               (ngModelChange)="updateAdditionalLine(line)"
@@ -223,7 +222,6 @@
             class="input-field"
             min="0"
             max="100"
-            step="0.5"
             [ngModel]="vatPercentage()"
             (ngModelChange)="updateVatPercentage($event)"
             placeholder="21" />
