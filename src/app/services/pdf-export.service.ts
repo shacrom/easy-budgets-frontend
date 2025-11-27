@@ -1076,6 +1076,9 @@ export class PdfExportService {
       }))
       .filter(line => Number.isFinite(line.value));
 
+    // Calcular el subtotal base para los descuentos porcentuales
+    const baseSubtotal = (summary.totalBlocks ?? 0) + (summary.totalMaterials ?? 0) + (summary.totalCountertop ?? 0);
+
     const breakdownRows: TableCell[][] = [];
     const pushCategory = (
       label: string,
@@ -1104,13 +1107,14 @@ export class PdfExportService {
       // Add an explicit header for additional lines so they don't appear visually
       // under other categories (e.g., 'Total encimera') in the table.
       breakdownRows.push([
-        { text: 'Conceptos adicionales', style: 'additionalHeader', colSpan: 2 },
+        { text: 'Conceptos adicionales', style: 'additionalHeader', colSpan:
+         2 },
         {}
       ] as TableCell[]);
 
       summary.additionalLines.forEach(line => {
         const type = this.resolveSummaryLineType(line);
-        const label = this.formatSummaryLineLabel(line);
+        const label = this.formatSummaryLineLabel(line, baseSubtotal);
 
         if (type === 'note') {
           breakdownRows.push([
@@ -1132,7 +1136,7 @@ export class PdfExportService {
           return;
         }
 
-        const row = this.summaryCategoryRow(label, this.formatSummaryLineAmount(line), true) as [TableCell, TableCell];
+        const row = this.summaryCategoryRow(label, this.formatSummaryLineAmount(line, baseSubtotal), true) as [TableCell, TableCell];
 
         if (type === 'optional') {
           const labelCell = row[0] as TableCell & Record<string, unknown>;
@@ -1230,14 +1234,29 @@ export class PdfExportService {
     return line?.conceptType ?? 'adjustment';
   }
 
-  private formatSummaryLineAmount(line: SummaryLine): number {
+  private formatSummaryLineAmount(line: SummaryLine, baseSubtotal: number): number {
+    const type = this.resolveSummaryLineType(line);
     const amount = Math.abs(Number(line?.amount ?? 0)) || 0;
-    return this.resolveSummaryLineType(line) === 'discount' ? -amount : amount;
+
+    if (type === 'discount') {
+      // Calcular el descuento como porcentaje del subtotal base
+      const discountAmount = baseSubtotal * (amount / 100);
+      return -discountAmount;
+    }
+
+    return amount;
   }
 
-  private formatSummaryLineLabel(line: SummaryLine): string {
+  private formatSummaryLineLabel(line: SummaryLine, baseSubtotal?: number): string {
+    const type = this.resolveSummaryLineType(line);
     const base = line.concept?.trim() || 'Concepto adicional';
-    return this.resolveSummaryLineType(line) === 'optional' ? `${base} *` : base;
+
+    if (type === 'discount' && baseSubtotal !== undefined) {
+      const percentage = Math.abs(Number(line?.amount ?? 0)) || 0;
+      return `${base} (${percentage}%)`;
+    }
+
+    return type === 'optional' ? `${base} *` : base;
   }
 
   private hasOptionalSummaryLines(lines?: SummaryLine[] | null): boolean {

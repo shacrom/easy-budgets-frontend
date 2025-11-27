@@ -186,6 +186,18 @@
   @apply flex-none w-28 text-right;
 }
 
+.amount-display {
+  @apply flex items-center gap-2;
+}
+
+.unit-label {
+  @apply text-sm font-semibold text-gray-600;
+}
+
+.calculated-amount {
+  @apply text-sm font-semibold text-gray-700 min-w-20 text-right;
+}
+
 .icon-button {
   @apply inline-flex items-center justify-center border border-gray-300 px-3 py-2 text-gray-800 transition-colors hover:bg-gray-100;
 }

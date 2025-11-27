@@ -64,6 +64,10 @@ export class BudgetTextBlocksComponent {
     try {
       const blocks = await this.supabase.getTextBlocksForBudget(budgetId);
       this.blocks.set(blocks);
+
+      // Emit to parent immediately after loading to sync initial state
+      this.blocksChanged.emit(blocks);
+      this.totalChanged.emit(this.grandTotal());
     } catch (error) {
       console.error('Error loading text blocks:', error);
     } finally {

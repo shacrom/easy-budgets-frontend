@@ -57,6 +57,10 @@ export class CountertopEditorComponent {
       if (data) {
         this.countertop.set(data);
         this.originalCountertop.set(data);
+
+        // Emit to parent immediately after loading to sync initial state
+        this.countertopChanged.emit(data);
+        this.totalChanged.emit(data.price || 0);
       } else {
         const emptyCountertop = {
           budgetId,
@@ -66,6 +70,10 @@ export class CountertopEditorComponent {
         };
         this.countertop.set(emptyCountertop);
         this.originalCountertop.set(emptyCountertop);
+
+        // Emit empty countertop to parent
+        this.countertopChanged.emit(emptyCountertop);
+        this.totalChanged.emit(0);
       }
       this.hasUnsavedChanges.set(false);
     } catch (error) {

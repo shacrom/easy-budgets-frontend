@@ -66,14 +66,43 @@ export class BudgetSummaryComponent {
     // Initialize internal additional lines from input
     effect(() => {
       const lines = this.initialAdditionalLines();
-      if (Array.isArray(lines) && this.additionalLines().length === 0 && lines.length > 0) {
+      if (Array.isArray(lines)) {
         const normalized = lines.map(line => this.normalizeLine(line));
-        this.additionalLines.set(normalized);
-        this.originalAdditionalLines.set(normalized);
+
+        // Only update if different to avoid infinite loops
+        const currentLines = this.additionalLines();
+        if (currentLines.length === 0 && normalized.length > 0) {
+          this.additionalLines.set(normalized);
+          this.originalAdditionalLines.set(normalized);
+        }
       }
     });
 
-    // No automatic effects - removed all auto-emit logic
+    // Auto-emit summary when totals change (needed for PDF recalculation)
+    effect(() => {
+      // Register all dependencies - when any changes, recalculate
+      const totalBlocks = this.totalBlocks();
+      const totalMaterials = this.totalMaterials();
+      const totalCountertop = this.totalCountertop();
+      this.additionalLines(); // Track changes to additional lines too
+      this.vatPercentage(); // Track VAT changes
+
+      // Emit whenever totals change (for PDF updates with recalculated discounts)
+      if (totalBlocks > 0 || totalMaterials > 0 || totalCountertop > 0) {
+        const normalizedLines = this.additionalLines().map(line => this.normalizeLine(line));
+
+        this.summaryChanged.emit({
+          totalBlocks: this.effectiveTotalBlocks(),
+          totalMaterials: this.effectiveTotalMaterials(),
+          totalCountertop: this.effectiveTotalCountertop(),
+          taxableBase: this.taxableBase(),
+          vat: this.vat(),
+          vatPercentage: this.vatPercentage(),
+          grandTotal: this.grandTotal(),
+          additionalLines: normalizedLines
+        });
+      }
+    });
   }
 
   // Dropdown states (expanded by default)
@@ -92,12 +121,15 @@ export class BudgetSummaryComponent {
   });
 
   protected readonly netAdjustments = computed(() => {
+    const base = this.baseSubtotal();
     return this.additionalLines().reduce((sum, line) => {
       const amount = this.resolveLineAmount(line);
       const type = this.resolveLineType(line);
 
       if (type === 'discount') {
-        return sum - amount;
+        // Descuento como porcentaje del subtotal base
+        const discountAmount = base * (amount / 100);
+        return sum - discountAmount;
       }
 
       if (type === 'adjustment') {
@@ -194,7 +226,39 @@ export class BudgetSummaryComponent {
 
   protected displayAmount(line: SummaryLine): number {
     const amount = this.resolveLineAmount(line);
-    return this.resolveLineType(line) === 'discount' ? -amount : amount;
+    const type = this.resolveLineType(line);
+
+    if (type === 'discount') {
+      // Para descuentos, mostrar el porcentaje como negativo
+      return -amount;
+    }
+
+    return amount;
+  }
+
+  protected displayCalculatedAmount(line: SummaryLine): number {
+    const amount = this.resolveLineAmount(line);
+    const type = this.resolveLineType(line);
+
+    if (type === 'discount') {
+      // Calcular el valor real del descuento en euros
+      const discountAmount = this.baseSubtotal() * (amount / 100);
+      return -discountAmount;
+    }
+
+    if (type === 'adjustment') {
+      return amount;
+    }
+
+    return 0;
+  }
+
+  protected isDiscount(line: SummaryLine): boolean {
+    return this.resolveLineType(line) === 'discount';
+  }
+
+  protected isAdjustment(line: SummaryLine): boolean {
+    return this.resolveLineType(line) === 'adjustment';
   }
 
   protected isNote(line: SummaryLine): boolean {
