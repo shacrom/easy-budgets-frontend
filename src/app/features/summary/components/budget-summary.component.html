@@ -5,26 +5,29 @@
     </div>
     <div class="header-actions">
       @if (hasUnsavedChanges()) {
-        <span class="unsaved-indicator">Cambios sin guardar</span>
+        <span class="unsaved-indicator">
+          <span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
+          <span>Cambios sin guardar</span>
+        </span>
       }
-      <button
-        type="button"
-        (click)="saveChanges()"
-        [disabled]="!hasUnsavedChanges() || isSaving()"
-        [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
-        class="save-btn">
-        <span class="material-symbols-rounded">save</span>
-        {{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}
-      </button>
       @if (hasUnsavedChanges()) {
         <button
           type="button"
+          class="btn ghost"
           (click)="discardChanges()"
-          class="btn ghost discard-btn">
-          <span class="material-symbols-rounded">cancel</span>
-          Descartar
+          [disabled]="isSaving()">
+          <span class="material-symbols-rounded" aria-hidden="true">undo</span>
+          <span>Descartar</span>
         </button>
       }
+      <button
+        type="button"
+        [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
+        (click)="saveChanges()"
+        [disabled]="isSaving() || !hasUnsavedChanges()">
+        <span class="material-symbols-rounded" aria-hidden="true">save</span>
+        <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
+      </button>
     </div>
   </header>
 
@@ -156,7 +159,7 @@
           <span class="material-symbols-rounded" aria-hidden="true">playlist_add</span>
           <p>Conceptos adicionales</p>
         </div>
-        <button type="button" class="btn ghost" (click)="addAdditionalLine()">
+        <button type="button" class="btn solid" (click)="addAdditionalLine()">
           <span class="material-symbols-rounded" aria-hidden="true">control_point</span>
           <span>Añadir</span>
         </button>

@@ -211,7 +211,12 @@ export class BudgetSummaryComponent {
   /**
    * Deletes an additional line
    */
-  protected deleteAdditionalLine(lineId: number): void {
+  protected deleteAdditionalLine(lineId: number | undefined): void {
+    if (lineId === undefined || lineId === null) {
+      console.warn('Cannot delete line: invalid ID');
+      return;
+    }
+
     this.additionalLines.update(lines => lines.filter(line => line.id !== lineId));
     this.hasUnsavedChanges.set(true);
   }

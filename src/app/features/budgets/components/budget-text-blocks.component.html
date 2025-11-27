@@ -3,16 +3,18 @@
     <h2 class="text-2xl font-light text-gray-900 uppercase" style="letter-spacing: 0.15em;">Bloques de Texto</h2>
     <div class="header-actions">
       @if (hasUnsavedChanges()) {
-        <span class="unsaved-indicator">Cambios sin guardar</span>
+        <span class="unsaved-indicator">
+          <span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
+          <span>Cambios sin guardar</span>
+        </span>
       }
       <button
         type="button"
-        (click)="saveChanges()"
-        [disabled]="!hasUnsavedChanges() || isSaving()"
         [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
-        class="save-btn">
-        <span class="material-symbols-rounded">save</span>
-        {{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}
+        (click)="saveChanges()"
+        [disabled]="isSaving() || !hasUnsavedChanges()">
+        <span class="material-symbols-rounded" aria-hidden="true">save</span>
+        <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
       </button>
       <button
         (click)="addNewBlock()"

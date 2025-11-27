@@ -17,11 +17,15 @@
 }
 
 .unsaved-indicator {
-  @apply text-xs font-semibold text-amber-700 bg-amber-100 px-3 py-1.5 border border-amber-300 uppercase tracking-wide;
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  @apply inline-flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1;
+  animation: pulse-subtle 2s ease-in-out infinite;
 }
 
-@keyframes pulse {
+.unsaved-indicator .material-symbols-rounded {
+  font-size: 1rem;
+}
+
+@keyframes pulse-subtle {
   0%, 100% {
     opacity: 1;
   }
@@ -31,15 +35,19 @@
 }
 
 .btn {
-  @apply px-4 py-2 font-medium flex items-center gap-2 transition-all cursor-pointer border;
+  @apply inline-flex items-center gap-2 border px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] transition-colors;
+}
+
+.btn .material-symbols-rounded {
+  font-size: 1.1rem;
 }
 
 .btn.solid {
-  @apply bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:border-blue-700;
+  @apply border-gray-900 bg-gray-900 text-white hover:bg-black;
 }
 
 .btn.ghost {
-  @apply bg-white text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400;
+  @apply border-gray-300 text-gray-800 hover:bg-gray-100;
 }
 
 .btn:disabled {
