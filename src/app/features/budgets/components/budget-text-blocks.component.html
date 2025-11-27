@@ -8,11 +8,11 @@
       <button
         type="button"
         (click)="saveChanges()"
-        [disabled]="!hasUnsavedChanges()"
+        [disabled]="!hasUnsavedChanges() || isSaving()"
         [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
         class="save-btn">
         <span class="material-symbols-rounded">save</span>
-        Guardar cambios
+        {{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}
       </button>
       <button
         (click)="addNewBlock()"

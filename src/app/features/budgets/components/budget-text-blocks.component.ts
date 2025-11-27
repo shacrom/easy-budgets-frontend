@@ -43,6 +43,7 @@ export class BudgetTextBlocksComponent {
 
   // Manual save pattern
   protected readonly hasUnsavedChanges = signal<boolean>(false);
+  protected readonly isSaving = signal<boolean>(false);
 
   constructor() {
     // Load blocks when budgetId changes
@@ -135,10 +136,33 @@ export class BudgetTextBlocksComponent {
   /**
    * Saves changes and emits to parent
    */
-  saveChanges(): void {
-    // Emit current state
-    this.totalChanged.emit(this.grandTotal());
-    this.blocksChanged.emit(this.blocks());
-    this.hasUnsavedChanges.set(false);
+  async saveChanges(): Promise<void> {
+    this.isSaving.set(true);
+
+    try {
+      // Save each block to the database
+      const currentBlocks = this.blocks();
+
+      for (const block of currentBlocks) {
+        if (block.id) {
+          await this.supabase.updateBudgetTextBlock(block.id, {
+            heading: block.heading,
+            link: block.link,
+            imageUrl: block.imageUrl,
+            subtotal: block.subtotal,
+            orderIndex: block.orderIndex
+          });
+        }
+      }
+
+      // Emit current state to parent
+      this.totalChanged.emit(this.grandTotal());
+      this.blocksChanged.emit(currentBlocks);
+      this.hasUnsavedChanges.set(false);
+    } catch (error) {
+      console.error('Error saving text blocks:', error);
+    } finally {
+      this.isSaving.set(false);
+    }
   }
 }
