@@ -85,7 +85,7 @@ export class CountertopEditorComponent {
       this.countertop.set(saved);
       this.originalCountertop.set(saved);
       this.hasUnsavedChanges.set(false);
-      
+
       // Emit after successful save
       this.totalChanged.emit(saved.price || 0);
       this.countertopChanged.emit(saved);

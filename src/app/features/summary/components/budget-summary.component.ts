@@ -34,11 +34,11 @@ export class BudgetSummaryComponent {
 
   // Inputs
   budgetId = input<number | null>(null);
-  
+
   // Local state for configuration
   protected readonly vatPercentage = signal<number>(21);
   protected readonly editMode = signal<boolean>(false);
-  
+
   // Input: initialAdditionalLines lets the parent pre-populate the state
   initialAdditionalLines = input<SummaryLine[]>([]);
   protected readonly additionalLines = signal<SummaryLine[]>([]);
@@ -72,7 +72,7 @@ export class BudgetSummaryComponent {
         this.originalAdditionalLines.set(normalized);
       }
     });
-    
+
     // No automatic effects - removed all auto-emit logic
   }
 
@@ -226,14 +226,14 @@ export class BudgetSummaryComponent {
    */
   saveChanges(): void {
     this.isSaving.set(true);
-    
+
     // Update original state
     this.originalVatPercentage.set(this.vatPercentage());
     this.originalAdditionalLines.set(this.additionalLines());
-    
+
     // Emit all outputs
     const normalizedLines = this.additionalLines().map(line => this.normalizeLine(line));
-    
+
     this.summaryChanged.emit({
       totalBlocks: this.effectiveTotalBlocks(),
       totalMaterials: this.effectiveTotalMaterials(),
@@ -244,10 +244,10 @@ export class BudgetSummaryComponent {
       grandTotal: this.grandTotal(),
       additionalLines: normalizedLines
     });
-    
+
     this.vatPercentageChanged.emit(this.vatPercentage());
     this.additionalLinesChanged.emit(normalizedLines);
-    
+
     this.hasUnsavedChanges.set(false);
     this.isSaving.set(false);
   }

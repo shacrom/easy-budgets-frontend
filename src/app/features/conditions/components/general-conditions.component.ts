@@ -142,15 +142,15 @@ export class GeneralConditionsComponent {
    */
   saveChanges(): void {
     this.isSaving.set(true);
-    
+
     // Update original state
     this.originalTitle.set(this.title());
     this.originalConditions.set(this.conditions());
-    
+
     // Emit to parent
     this.titleChanged.emit(this.title());
     this.conditionsChanged.emit(this.conditions());
-    
+
     this.hasUnsavedChanges.set(false);
     this.isSaving.set(false);
   }
