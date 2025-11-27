@@ -134,13 +134,6 @@ export class BudgetSummaryComponent {
   protected readonly hasOptionalLines = computed(() => this.optionalLinesTotal() > 0);
 
   /**
-   * Toggles edit mode
-   */
-  protected toggleEditMode(): void {
-    this.editMode.update(mode => !mode);
-  }
-
-  /**
    * Toggles blocks dropdown
    */
   protected toggleBlocksExpanded(): void {

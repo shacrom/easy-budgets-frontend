@@ -1,16 +1,12 @@
 <section class="materials-module">
   <header class="module-header">
     <div class="module-title">
-      @if (editMode()) {
-        <input
-          class="section-title-input"
-          type="text"
-          [value]="sectionTitle()"
-          placeholder="Título de la sección"
-          (input)="updateSectionTitle($event)">
-      } @else {
-        <h2>{{ sectionTitle() || 'Materiales y equipamiento' }}</h2>
-      }
+      <input
+        class="section-title-input"
+        type="text"
+        [value]="sectionTitle()"
+        placeholder="Título de la sección"
+        (input)="updateSectionTitle($event)">
       @if (hasUnsavedChanges()) {
         <span class="unsaved-indicator">
           <span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
@@ -37,21 +33,10 @@
         <span class="material-symbols-rounded" aria-hidden="true">save</span>
         <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
       </button>
-      <button type="button" class="btn ghost" (click)="toggleEditMode()">
-        @if (editMode()) {
-          <span class="material-symbols-rounded" aria-hidden="true">visibility</span>
-          <span>Vista previa</span>
-        } @else {
-          <span class="material-symbols-rounded" aria-hidden="true">edit</span>
-          <span>Modo edición</span>
-        }
+      <button type="button" class="btn solid" (click)="addTable()">
+        <span class="material-symbols-rounded" aria-hidden="true">post_add</span>
+        <span>Nueva tabla</span>
       </button>
-      @if (editMode()) {
-        <button type="button" class="btn solid" (click)="addTable()">
-          <span class="material-symbols-rounded" aria-hidden="true">post_add</span>
-          <span>Nueva tabla</span>
-        </button>
-      }
     </div>
   </header>
 
@@ -60,41 +45,33 @@
       <div class="tables-empty">
         <span class="material-symbols-rounded" aria-hidden="true">grid_on</span>
         <p>Añade tu primera tabla para empezar a desglosar materiales.</p>
-        @if (editMode()) {
-          <p class="hint">Utiliza “Nueva tabla” para crear el bloque inicial.</p>
-        }
+        <p class="hint">Utiliza "Nueva tabla" para crear el bloque inicial.</p>
       </div>
     } @else {
       @for (table of tables(); track table.id; let index = $index) {
       <article class="materials-card">
         <div class="card-header">
           <div class="title-group">
-            @if (editMode()) {
-              <input
-                class="table-title-input"
-                [value]="table.title"
-                type="text"
-                placeholder="Título de la tabla"
-                (input)="updateTableTitle(table.id, $event)">
-            } @else {
-              <h3>{{ table.title || 'Título' }}</h3>
-            }
+            <input
+              class="table-title-input"
+              [value]="table.title"
+              type="text"
+              placeholder="Título de la tabla"
+              (input)="updateTableTitle(table.id, $event)">
             <p class="card-subtitle">Bloque {{ index + 1 }}</p>
           </div>
           <div class="card-actions">
-            @if (editMode()) {
-              <button type="button" class="btn icon" (click)="addNewMaterial(table.id)">
-                <span class="material-symbols-rounded" aria-hidden="true">add</span>
-                <span>Fila</span>
-              </button>
-              <button
-                type="button"
-                class="btn icon danger"
-                (click)="deleteTable(table.id)">
-                <span class="material-symbols-rounded" aria-hidden="true">delete</span>
-                <span>Tabla</span>
-              </button>
-            }
+            <button type="button" class="btn icon" (click)="addNewMaterial(table.id)">
+              <span class="material-symbols-rounded" aria-hidden="true">add</span>
+              <span>Fila</span>
+            </button>
+            <button
+              type="button"
+              class="btn icon danger"
+              (click)="deleteTable(table.id)">
+              <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+              <span>Tabla</span>
+            </button>
           </div>
         </div>
 
@@ -126,19 +103,16 @@
                   <td colspan="7" class="empty-state">
                     <span class="material-symbols-rounded" aria-hidden="true">table_rows_narrow</span>
                     <p>Este bloque aún no tiene conceptos.</p>
-                    @if (editMode()) {
-                      <button type="button" class="btn ghost" (click)="addNewMaterial(table.id)">
-                        <span class="material-symbols-rounded" aria-hidden="true">add</span>
-                        <span>Añadir fila</span>
-                      </button>
-                    }
+                    <button type="button" class="btn ghost" (click)="addNewMaterial(table.id)">
+                      <span class="material-symbols-rounded" aria-hidden="true">add</span>
+                      <span>Añadir fila</span>
+                    </button>
                   </td>
                 </tr>
               } @else {
                 @for (material of table.rows; track material.id) {
                   <app-material-row
                     [material]="material"
-                    [editMode]="editMode()"
                     [products]="products()"
                     (deleteRequested)="deleteMaterial(table.id, $event)"
                     (localValuesChanged)="onMaterialLocalChange()">

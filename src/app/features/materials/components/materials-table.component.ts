@@ -34,9 +34,6 @@ export class MaterialsTableComponent {
   protected readonly products = signal<Product[]>([]);
   protected readonly loadingProducts = signal<boolean>(false);
 
-  // Edit mode
-  protected readonly editMode = signal<boolean>(true);
-
   // Track unsaved changes
   protected readonly hasUnsavedChanges = signal<boolean>(false);
   protected readonly isSaving = signal<boolean>(false);
@@ -173,13 +170,6 @@ export class MaterialsTableComponent {
    */
   protected onMaterialLocalChange(): void {
     this.hasUnsavedChanges.set(true);
-  }
-
-  /**
-   * Toggles edit mode
-   */
-  protected toggleEditMode(): void {
-    this.editMode.update(mode => !mode);
   }
 
   /**

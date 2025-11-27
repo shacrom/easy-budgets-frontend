@@ -25,15 +25,6 @@
           Descartar
         </button>
       }
-      <button type="button" class="btn ghost" (click)="toggleEditMode()">
-        @if (editMode()) {
-          <span class="material-symbols-rounded" aria-hidden="true">visibility</span>
-          <span>Vista previa</span>
-        } @else {
-          <span class="material-symbols-rounded" aria-hidden="true">tune</span>
-          <span>Configurar</span>
-        }
-      </button>
     </div>
   </header>
 
@@ -159,81 +150,55 @@
     </div>
 
     <!-- Additional lines -->
-    @if (additionalLines().length > 0 || editMode()) {
-      <div class="extras">
-        <div class="extras-header">
-          <div>
-            <span class="material-symbols-rounded" aria-hidden="true">playlist_add</span>
-            <p>Conceptos adicionales</p>
-          </div>
-          @if (editMode()) {
-            <button type="button" class="btn ghost" (click)="addAdditionalLine()">
-              <span class="material-symbols-rounded" aria-hidden="true">control_point</span>
-              <span>Añadir</span>
-            </button>
-          }
+    <div class="extras">
+      <div class="extras-header">
+        <div>
+          <span class="material-symbols-rounded" aria-hidden="true">playlist_add</span>
+          <p>Conceptos adicionales</p>
         </div>
-
-        @for (line of additionalLines(); track line.id) {
-          <div class="extra-row" [class.is-optional]="isOptional(line)" [class.is-note]="isNote(line)">
-            @if (!editMode()) {
-              <div class="extra-content">
-                <span class="type-pill">{{ lineTypeLabel(line.conceptType) }}</span>
-                <span class="concept-text" [class.with-strike]="isOptional(line)">
-                  {{ line.concept || 'Concepto' }}
-                  @if (isOptional(line)) {
-                    <sup>*</sup>
-                  }
-                </span>
-              </div>
-              @if (!isNote(line)) {
-                <strong
-                  [class.negative]="line.conceptType === 'discount'"
-                  [class.optional-price]="isOptional(line)">
-                  {{ displayAmount(line) | currency:'EUR':'symbol':'1.2-2':'es' }}
-                  @if (isOptional(line)) {
-                    <sup>*</sup>
-                  }
-                </strong>
-              }
-            } @else {
-              <select
-                class="input-field type-select"
-                [(ngModel)]="line.conceptType"
-                (ngModelChange)="updateLineType(line, $event)">
-                @for (option of conceptTypeOptions; track option.value) {
-                  <option [ngValue]="option.value">{{ option.label }}</option>
-                }
-              </select>
-              <input
-                class="input-field"
-                type="text"
-                [(ngModel)]="line.concept"
-                (ngModelChange)="updateAdditionalLine(line)"
-                placeholder="Descripción" />
-              <input
-                class="input-field amount"
-                type="number"
-                step="0.01"
-                [disabled]="isNote(line)"
-                [(ngModel)]="line.amount"
-                (ngModelChange)="updateAdditionalLine(line)"
-                placeholder="0,00" />
-              <button type="button" class="icon-button" (click)="deleteAdditionalLine(line.id)">
-                <span class="material-symbols-rounded" aria-hidden="true">delete</span>
-              </button>
-            }
-          </div>
-        }
-
-        @if (additionalLines().length > 0) {
-          <div class="extra-row total">
-            <span>Base imponible con adicionales</span>
-            <strong>{{ taxableBaseWithAdditionals() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
-          </div>
-        }
+        <button type="button" class="btn ghost" (click)="addAdditionalLine()">
+          <span class="material-symbols-rounded" aria-hidden="true">control_point</span>
+          <span>Añadir</span>
+        </button>
       </div>
-    }
+
+      @for (line of additionalLines(); track line.id) {
+        <div class="extra-row" [class.is-optional]="isOptional(line)" [class.is-note]="isNote(line)">
+          <select
+            class="input-field type-select"
+            [(ngModel)]="line.conceptType"
+            (ngModelChange)="updateLineType(line, $event)">
+            @for (option of conceptTypeOptions; track option.value) {
+              <option [ngValue]="option.value">{{ option.label }}</option>
+            }
+          </select>
+          <input
+            class="input-field"
+            type="text"
+            [(ngModel)]="line.concept"
+            (ngModelChange)="updateAdditionalLine(line)"
+            placeholder="Descripción" />
+          <input
+            class="input-field amount"
+            type="number"
+            step="0.01"
+            [disabled]="isNote(line)"
+            [(ngModel)]="line.amount"
+            (ngModelChange)="updateAdditionalLine(line)"
+            placeholder="0,00" />
+          <button type="button" class="icon-button" (click)="deleteAdditionalLine(line.id)">
+            <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+          </button>
+        </div>
+      }
+
+      @if (additionalLines().length > 0) {
+        <div class="extra-row total">
+          <span>Base imponible con adicionales</span>
+          <strong>{{ taxableBaseWithAdditionals() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+        </div>
+      }
+    </div>
 
     <div class="taxes">
       <div class="tax-row">
@@ -242,20 +207,16 @@
           <p>IVA</p>
         </div>
         <div class="tax-controls">
-          @if (editMode()) {
-            <input
-              type="number"
-              class="input-field"
-              min="0"
-              max="100"
-              step="0.5"
-              [ngModel]="vatPercentage()"
-              (ngModelChange)="updateVatPercentage($event)"
-              placeholder="21" />
-            <span>%</span>
-          } @else {
-            <span>{{ vatPercentage() }} %</span>
-          }
+          <input
+            type="number"
+            class="input-field"
+            min="0"
+            max="100"
+            step="0.5"
+            [ngModel]="vatPercentage()"
+            (ngModelChange)="updateVatPercentage($event)"
+            placeholder="21" />
+          <span>%</span>
           <strong>{{ vat() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
         </div>
       </div>

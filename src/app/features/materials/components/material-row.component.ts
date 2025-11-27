@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output, computed, signal, effect, ViewChild, ElementRef, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, computed, signal, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Material } from '../../../models/material.model';
@@ -17,9 +17,6 @@ import { Product } from '../../../models/product.model';
 export class MaterialRowComponent implements OnInit {
   // Input: material data
   material = input.required<Material>();
-
-  // Input: edit mode
-  editMode = input<boolean>(false);
 
   // Input: available products for reference search
   products = input<Product[]>([]);
@@ -69,16 +66,6 @@ export class MaterialRowComponent implements OnInit {
 
   private referenceDropdownTimeout: ReturnType<typeof setTimeout> | null = null;
   @ViewChild('descTextarea') protected descTextareaRef?: ElementRef<HTMLTextAreaElement>;
-
-  constructor() {
-    // When edit mode becomes true, ensure textarea resizes to content
-    effect(() => {
-      if (this.editMode()) {
-        // Defer to next tick so DOM is updated
-        setTimeout(() => this.resizeDescriptionTextarea(), 0);
-      }
-    });
-  }
 
   ngOnInit(): void {
     // Initialize local signals from input only once

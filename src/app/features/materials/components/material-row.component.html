@@ -1,21 +1,5 @@
-@if (!editMode()) {
-  <!-- Read-only view -->
-  <tr class="material-row" [class.dropdown-active]="referenceDropdownOpen()">
-    <td class="material-cell reference">{{ material().reference || '—' }}</td>
-    <td class="material-cell description">{{ material().description }}</td>
-    <td class="material-cell manufacturer">{{ material().manufacturer }}</td>
-    <td class="material-cell quantity">{{ material().quantity }}</td>
-    <td class="material-cell price">
-      {{ material().unitPrice | currency:'EUR':'symbol':'1.2-2':'es' }}
-    </td>
-    <td class="material-cell price-total">
-      {{ totalPrice() | currency:'EUR':'symbol':'1.2-2':'es' }}
-    </td>
-    <td class="material-cell actions"></td>
-  </tr>
-} @else {
-  <!-- Edit view -->
-  <tr class="material-row edit-mode" [class.dropdown-active]="referenceDropdownOpen()">
+<!-- Edit view permanente -->
+<tr class="material-row edit-mode" [class.dropdown-active]="referenceDropdownOpen()">
     <td class="material-cell reference">
       <div class="reference-field">
         <input
@@ -97,15 +81,12 @@
       </span>
     </td>
     <td class="material-cell actions">
-      @if (editMode()) {
-        <button
-          (click)="requestDelete()"
-          class="btn-delete-row no-bg"
-          type="button"
-          title="Eliminar material">
-          <span class="material-symbols-rounded" aria-hidden="true">delete</span>
-        </button>
-      }
+      <button
+        (click)="requestDelete()"
+        class="btn-delete-row no-bg"
+        type="button"
+        title="Eliminar material">
+        <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+      </button>
     </td>
   </tr>
-}
