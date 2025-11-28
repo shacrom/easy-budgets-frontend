@@ -55,12 +55,17 @@
 .budgets-page .actions-cell {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 0.4rem;
+  height: 100%;
+  flex-wrap: nowrap;
+  min-width: 150px;
 }
 
 .budgets-page .actions-cell .btn.icon {
   border-color: #d1d5db;
   background: #f9fafb;
+  flex-shrink: 0;
 }
 
 .budgets-page .actions-cell .btn.icon.danger {
@@ -72,10 +77,13 @@
 .budgets-page .status-chip {
   display: inline-flex;
   align-items: center;
-  padding: 0.1rem 0.6rem;
+  justify-content: center;
+  padding: 0.25rem 0.75rem;
   border-radius: 999px;
   font-size: 0.75rem;
   text-transform: capitalize;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .budgets-page .status-completed {
@@ -95,4 +103,12 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.budgets-page .status-cell {
+  vertical-align: middle;
+}
+
+.budgets-page .status-cell .badge {
+  height: fit-content;
 }
