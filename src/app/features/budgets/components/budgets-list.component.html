@@ -154,10 +154,9 @@
               <span>Resultados por página</span>
               <select
                 id="budgets-page-size"
-                [value]="pageSize()"
                 (change)="onPageSizeChange($event)">
                 @for (option of pageSizeOptions; track option) {
-                  <option [value]="option">{{ option }}</option>
+                  <option [value]="option" [selected]="option === pageSize()">{{ option }}</option>
                 }
               </select>
             </label>
