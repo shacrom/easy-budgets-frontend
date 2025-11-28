@@ -122,6 +122,24 @@
             <span class="material-symbols-rounded">gavel</span>
             <span>Condiciones</span>
           </button>
+
+          <button
+            type="button"
+            class="toggle-btn"
+            [class.active]="showSummary()"
+            (click)="toggleSection('summary')">
+            <span class="material-symbols-rounded">summarize</span>
+            <span>Resumen</span>
+          </button>
+
+          <button
+            type="button"
+            class="toggle-btn"
+            [class.active]="showSignature()"
+            (click)="toggleSection('signature')">
+            <span class="material-symbols-rounded">draw</span>
+            <span>Firma</span>
+          </button>
         </div>
 
         <!-- Logo Configuration -->
@@ -266,22 +284,24 @@
       }
 
       <!-- Section 3: Budget Summary -->
-      <section class="section-divider">
-          <app-budget-summary
-          [totalBlocks]="totalBlocks()"
-          [totalMaterials]="totalMaterials()"
-          [totalCountertop]="totalCountertop()"
-          [showBlocks]="showTextBlocks()"
-          [showMaterials]="showMaterials()"
-          [showCountertop]="showCountertop()"
-          [blocks]="blocks()"
+      @if (showSummary()) {
+        <section class="section-divider">
+            <app-budget-summary
+            [totalBlocks]="totalBlocks()"
+            [totalMaterials]="totalMaterials()"
+            [totalCountertop]="totalCountertop()"
+            [showBlocks]="showTextBlocks()"
+            [showMaterials]="showMaterials()"
+            [showCountertop]="showCountertop()"
+            [blocks]="blocks()"
           [materials]="materials()"
           [materialTables]="materialTables()"
           [initialAdditionalLines]="additionalLines()"
           [budgetId]="currentBudgetId() ?? 0"
           (summaryChanged)="onSummaryChanged($event)">
         </app-budget-summary>
-      </section>
+        </section>
+      }
 
       <!-- Section 4: General Conditions -->
       @if (showConditions()) {

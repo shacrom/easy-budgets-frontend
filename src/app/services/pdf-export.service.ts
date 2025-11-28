@@ -31,6 +31,7 @@ export interface BudgetPdfPayload {
   conditions?: Condition[];
   companyLogoUrl?: string;
   supplierLogoUrl?: string;
+  showSignature?: boolean;
   generatedAt: string;
 }
 
@@ -213,7 +214,7 @@ export class PdfExportService {
       countertopSectionTitle
     );
     const conditionsContent = this.buildConditionsSection(payload.conditionsTitle, payload.conditions);
-    const signatureContent = this.buildSignatureSection(payload.customer);
+    const signatureContent = payload.showSignature !== false ? this.buildSignatureSection(payload.customer) : null;
 
     // Agrupar secciones con su contenido (solo las que tienen contenido)
     const sections: Content[][] = [

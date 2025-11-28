@@ -84,6 +84,8 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   protected readonly showMaterials = signal<boolean>(true);
   protected readonly showCountertop = signal<boolean>(false);
   protected readonly showConditions = signal<boolean>(true);
+  protected readonly showSummary = signal<boolean>(true);
+  protected readonly showSignature = signal<boolean>(true);
   protected readonly togglingStatus = signal<boolean>(false);
 
   // PDF Preview
@@ -146,6 +148,8 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
         this.showMaterials();
         this.showCountertop();
         this.showConditions();
+        this.showSummary();
+        this.showSignature();
         this.budgetMeta();
         this.conditionsTitle();
 
@@ -214,12 +218,13 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       materials: this.showMaterials() ? this.materials() : [],
       materialTables: this.showMaterials() ? this.materialTables() : [],
       countertop: this.showCountertop() ? this.countertopData() : null,
-      summary: filteredSummary,
+      summary: this.showSummary() ? filteredSummary : null,
       materialsSectionTitle: this.materialsSectionTitle(),
       conditionsTitle: this.conditionsTitle(),
       conditions: this.showConditions() ? this.conditionsList() : [],
       companyLogoUrl: this.companyLogoUrl() || undefined,
       supplierLogoUrl: this.supplierLogoUrl() || undefined,
+      showSignature: this.showSignature(),
       generatedAt: new Date().toISOString()
     };
   }
@@ -308,6 +313,8 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       this.showMaterials.set(budget.showMaterials ?? true);
       this.showCountertop.set(budget.showCountertop ?? false);
       this.showConditions.set(budget.showConditions ?? true);
+      this.showSummary.set(budget.showSummary ?? true);
+      this.showSignature.set(budget.showSignature ?? true);
 
       // Load materials section title
       this.materialsSectionTitle.set(budget.materialsSectionTitle ?? 'Materiales y equipamiento');
@@ -827,7 +834,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  async toggleSection(section: 'textBlocks' | 'materials' | 'countertop' | 'conditions') {
+  async toggleSection(section: 'textBlocks' | 'materials' | 'countertop' | 'conditions' | 'summary' | 'signature') {
     const id = this.currentBudgetId();
     if (!id) return;
 
@@ -852,6 +859,16 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
         const newConditions = !this.showConditions();
         this.showConditions.set(newConditions);
         updates = { showConditions: newConditions };
+        break;
+      case 'summary':
+        const newSummary = !this.showSummary();
+        this.showSummary.set(newSummary);
+        updates = { showSummary: newSummary };
+        break;
+      case 'signature':
+        const newSignature = !this.showSignature();
+        this.showSignature.set(newSignature);
+        updates = { showSignature: newSignature };
         break;
     }
 
