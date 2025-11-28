@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal, computed, output, inject, input, effect, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MaterialRowComponent } from './material-row.component';
 import { Material, MaterialTable } from '../../../models/material.model';
 import { Product } from '../../../models/product.model';
@@ -13,7 +14,7 @@ import { SupabaseService } from '../../../services/supabase.service';
   selector: 'app-materials-table',
   templateUrl: './materials-table.component.html',
   styleUrls: ['./materials-table.component.css'],
-  imports: [CommonModule, MaterialRowComponent],
+  imports: [CommonModule, MaterialRowComponent, CdkDropList, CdkDrag],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MaterialsTableComponent {
@@ -169,6 +170,30 @@ export class MaterialsTableComponent {
    * Called when a material-row component has local changes
    */
   protected onMaterialLocalChange(): void {
+    this.hasUnsavedChanges.set(true);
+  }
+
+  /**
+   * Handles drag & drop reordering of materials within a table
+   */
+  protected drop(event: CdkDragDrop<Material[]>, tableId: number): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    this.mutateTables(tables =>
+      tables.map(table => {
+        if (table.id !== tableId) return table;
+
+        const reorderedRows = [...table.rows];
+        moveItemInArray(reorderedRows, event.previousIndex, event.currentIndex);
+
+        return {
+          ...table,
+          rows: reorderedRows
+        };
+      })
+    );
     this.hasUnsavedChanges.set(true);
   }
 

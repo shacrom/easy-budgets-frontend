@@ -131,7 +131,7 @@
                 <th class="text-center">Acciones</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody cdkDropList (cdkDropListDropped)="drop($event, table.id)">
               @if (table.rows.length === 0) {
                 <tr>
                   <td [attr.colspan]="6" class="empty-state">
@@ -145,18 +145,25 @@
                 </tr>
               } @else {
                 @for (material of table.rows; track material.id) {
-                  <app-material-row
-                    [material]="material"
-                    [products]="products()"
-                    [showReference]="table.showReference ?? true"
-                    [showDescription]="table.showDescription ?? true"
-                    [showManufacturer]="table.showManufacturer ?? true"
-                    [showQuantity]="table.showQuantity ?? true"
-                    [showUnitPrice]="table.showUnitPrice ?? true"
-                    [showTotalPrice]="table.showTotalPrice ?? true"
-                    (deleteRequested)="deleteMaterial(table.id, $event)"
-                    (localValuesChanged)="onMaterialLocalChange()">
-                  </app-material-row>
+                  <tr cdkDrag class="draggable-row">
+                    <td colspan="7" class="drag-cell">
+                      <div class="drag-handle" cdkDragHandle>
+                        <span class="material-symbols-rounded">drag_indicator</span>
+                      </div>
+                      <app-material-row
+                        [material]="material"
+                        [products]="products()"
+                        [showReference]="table.showReference ?? true"
+                        [showDescription]="table.showDescription ?? true"
+                        [showManufacturer]="table.showManufacturer ?? true"
+                        [showQuantity]="table.showQuantity ?? true"
+                        [showUnitPrice]="table.showUnitPrice ?? true"
+                        [showTotalPrice]="table.showTotalPrice ?? true"
+                        (deleteRequested)="deleteMaterial(table.id, $event)"
+                        (localValuesChanged)="onMaterialLocalChange()">
+                      </app-material-row>
+                    </td>
+                  </tr>
                 }
               }
             </tbody>

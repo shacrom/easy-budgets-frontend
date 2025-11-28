@@ -216,3 +216,55 @@
 .module-footer h3 {
   @apply text-2xl font-semibold text-gray-900;
 }
+
+/* Drag & Drop Styles */
+.draggable-row {
+  @apply cursor-move;
+  position: relative;
+}
+
+.drag-cell {
+  @apply p-0;
+  position: relative;
+}
+
+.drag-handle {
+  @apply absolute left-0 top-0 h-full flex items-center justify-center bg-gray-100 border-r border-gray-200 cursor-grab;
+  width: 2rem;
+  z-index: 1;
+}
+
+.drag-handle:active {
+  @apply cursor-grabbing;
+}
+
+.drag-handle .material-symbols-rounded {
+  @apply text-gray-400;
+  font-size: 1.25rem;
+}
+
+.draggable-row app-material-row {
+  @apply block;
+  margin-left: 2rem;
+}
+
+.cdk-drag-preview {
+  @apply opacity-80 shadow-lg bg-white border border-gray-300;
+  z-index: 1000;
+}
+
+.cdk-drag-preview app-material-row {
+  margin-left: 2rem;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drop-list-dragging .draggable-row:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drag-placeholder {
+  @apply opacity-40 bg-gray-100;
+}
