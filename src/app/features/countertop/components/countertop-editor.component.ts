@@ -13,9 +13,12 @@ import { Countertop } from '../../../models/countertop.model';
 })
 export class CountertopEditorComponent {
   private readonly supabase = inject(SupabaseService);
+  private readonly defaultSectionTitle = 'Encimera';
 
   // budgetId may be null if not initialized; keep optional to avoid errors when no budget selected
   budgetId = input<number | null>(null);
+
+  protected readonly sectionTitle = signal<string>(this.defaultSectionTitle);
 
   protected readonly countertop = signal<Countertop>({
     budgetId: 0,
@@ -58,6 +61,13 @@ export class CountertopEditorComponent {
         this.countertop.set(data);
         this.originalCountertop.set(data);
 
+        // Load section title if exists
+        if (data.sectionTitle) {
+          this.sectionTitle.set(data.sectionTitle);
+        } else {
+          this.sectionTitle.set(this.defaultSectionTitle);
+        }
+
         // Emit to parent immediately after loading to sync initial state
         this.countertopChanged.emit(data);
         this.totalChanged.emit(data.price || 0);
@@ -70,6 +80,7 @@ export class CountertopEditorComponent {
         };
         this.countertop.set(emptyCountertop);
         this.originalCountertop.set(emptyCountertop);
+        this.sectionTitle.set(this.defaultSectionTitle);
 
         // Emit empty countertop to parent
         this.countertopChanged.emit(emptyCountertop);
@@ -89,7 +100,11 @@ export class CountertopEditorComponent {
 
     this.isSaving.set(true);
     try {
-      const saved = await this.supabase.upsertCountertop(current);
+      const countertopWithSectionTitle = {
+        ...current,
+        sectionTitle: this.sectionTitle()
+      };
+      const saved = await this.supabase.upsertCountertop(countertopWithSectionTitle);
       this.countertop.set(saved);
       this.originalCountertop.set(saved);
       this.hasUnsavedChanges.set(false);
@@ -105,8 +120,16 @@ export class CountertopEditorComponent {
   }
 
   discardChanges() {
-    this.countertop.set(this.originalCountertop());
+    const original = this.originalCountertop();
+    this.countertop.set(original);
+    this.sectionTitle.set(original.sectionTitle || this.defaultSectionTitle);
     this.hasUnsavedChanges.set(false);
+  }
+
+  protected updateSectionTitle(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.sectionTitle.set(value);
+    this.hasUnsavedChanges.set(true);
   }
 
   updateModel(value: string) {

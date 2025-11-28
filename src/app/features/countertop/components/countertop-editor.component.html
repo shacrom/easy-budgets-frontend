@@ -1,6 +1,11 @@
 <div class="countertop-container">
   <div class="header">
-    <h2>Encimera</h2>
+    <input
+      class="section-title-input"
+      type="text"
+      [value]="sectionTitle()"
+      placeholder="Título de la sección"
+      (input)="updateSectionTitle($event)">
     <div class="header-actions">
       @if (hasUnsavedChanges()) {
         <span class="unsaved-indicator">

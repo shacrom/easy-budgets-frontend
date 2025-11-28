@@ -531,13 +531,14 @@ export class PdfExportService {
   }
 
   private buildTextBlocksSection(blocks: BudgetTextBlock[]): Content[] {
-    if (!blocks?.length) {
+     if (!blocks?.length) {
       return [];
     }
 
     const totalMobiliario = blocks.reduce((sum, block) => sum + (block.subtotal || 0), 0);
+    const sectionTitle = blocks[0]?.sectionTitle || 'Mobiliario';
     const header = this.buildSectionHero({
-      title: 'Mobiliario',
+      title: sectionTitle,
       background: '#cbb39a'
     });
 
@@ -1004,8 +1005,10 @@ export class PdfExportService {
 
   private buildCountertopSection(countertop: Countertop | null): Content | null {
     if (!countertop) return null;
+    // Obtener el título de la sección, o usar 'Encimera' por defecto
+    const sectionTitle = countertop.sectionTitle || 'Encimera';
     const header = this.buildSectionHero({
-      title: 'Encimera',
+      title: sectionTitle,
       background: '#cbb39a'
     });
 

@@ -8,8 +8,12 @@
   @apply mb-4 pb-2 border-b border-gray-200 flex items-center justify-between;
 }
 
-.header h2 {
-  @apply text-lg font-medium text-gray-900;
+.section-title-input {
+  @apply text-lg font-medium text-gray-900 bg-transparent border-b-2 border-dashed border-gray-300 focus:border-gray-900 focus:outline-none transition-colors px-0 py-1;
+}
+
+.section-title-input::placeholder {
+  @apply text-gray-400 font-normal;
 }
 
 .header-actions {

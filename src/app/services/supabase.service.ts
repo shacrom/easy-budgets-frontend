@@ -598,6 +598,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('BudgetTextBlocks')
       .update({
+        sectionTitle: updates.sectionTitle,
         orderIndex: updates.orderIndex,
         heading: updates.heading,
         link: updates.link,

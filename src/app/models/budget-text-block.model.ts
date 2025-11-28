@@ -21,6 +21,7 @@ export interface BudgetTextBlock {
   id?: number;                      // Autoincremental generado por Supabase
   budgetId: number;                 // Referencia al presupuesto
   orderIndex: number;               // Orden del bloque en el presupuesto
+  sectionTitle?: string;            // Título personalizable de la sección
   heading: string;                  // Encabezado principal del bloque
   descriptions?: DescriptionSection[]; // Secciones de descripción (relación 1:N)
   link?: string;                    // Link opcional

@@ -1,6 +1,11 @@
 <div class="budget-text-blocks-container">
   <div class="header">
-    <h2 class="text-2xl font-light text-gray-900 uppercase" style="letter-spacing: 0.15em;">Bloques de Texto</h2>
+    <input
+      class="section-title-input"
+      type="text"
+      [value]="sectionTitle()"
+      placeholder="Título de la sección"
+      (input)="updateSectionTitle($event)">
     <div class="header-actions">
       @if (hasUnsavedChanges()) {
         <span class="unsaved-indicator">

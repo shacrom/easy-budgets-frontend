@@ -17,9 +17,13 @@ import { SupabaseService } from '../../../services/supabase.service';
 })
 export class BudgetTextBlocksComponent {
   private readonly supabase = inject(SupabaseService);
+  private readonly defaultSectionTitle = 'Mobiliario';
 
   // Input: Budget ID to load blocks for
   budgetId = input.required<number>();
+
+  // Section title (editable)
+  protected readonly sectionTitle = signal<string>(this.defaultSectionTitle);
 
   // List of text blocks
   protected readonly blocks = signal<BudgetTextBlock[]>([]);
@@ -66,6 +70,13 @@ export class BudgetTextBlocksComponent {
       const blocks = await this.supabase.getTextBlocksForBudget(budgetId);
       this.blocks.set(blocks);
 
+      // Load section title from first block if exists
+      if (blocks.length > 0 && blocks[0].sectionTitle) {
+        this.sectionTitle.set(blocks[0].sectionTitle);
+      } else {
+        this.sectionTitle.set(this.defaultSectionTitle);
+      }
+
       // Emit to parent immediately after loading to sync initial state
       this.blocksChanged.emit(blocks);
       this.totalChanged.emit(this.grandTotal());
@@ -74,6 +85,15 @@ export class BudgetTextBlocksComponent {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  /**
+   * Updates the section title
+   */
+  protected updateSectionTitle(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.sectionTitle.set(value);
+    this.hasUnsavedChanges.set(true);
   }
 
   /**
@@ -142,10 +162,12 @@ export class BudgetTextBlocksComponent {
     try {
       // Save each block to the database
       const currentBlocks = this.blocks();
+      const currentSectionTitle = this.sectionTitle();
 
       for (const block of currentBlocks) {
         if (block.id) {
           await this.supabase.updateBudgetTextBlock(block.id, {
+            sectionTitle: currentSectionTitle,
             heading: block.heading,
             link: block.link,
             imageUrl: block.imageUrl,
@@ -155,9 +177,18 @@ export class BudgetTextBlocksComponent {
         }
       }
 
+      // Update blocks in memory with the sectionTitle
+      const updatedBlocks = currentBlocks.map(block => ({
+        ...block,
+        sectionTitle: currentSectionTitle
+      }));
+
+      // Update the signal with the complete data
+      this.blocks.set(updatedBlocks);
+
       // Emit current state to parent
       this.totalChanged.emit(this.grandTotal());
-      this.blocksChanged.emit(currentBlocks);
+      this.blocksChanged.emit(updatedBlocks);
       this.hasUnsavedChanges.set(false);
     } catch (error) {
       console.error('Error saving text blocks:', error);
