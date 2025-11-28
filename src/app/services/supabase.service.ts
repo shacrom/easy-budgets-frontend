@@ -701,7 +701,14 @@ export class SupabaseService {
     const tablePayloads = tables.map(table => ({
       budgetId: normalizedBudgetId,
       title: table.title ?? '',
-      orderIndex: table.orderIndex ?? 0
+      orderIndex: table.orderIndex ?? 0,
+      // Column visibility for PDF export
+      showReference: table.showReference ?? true,
+      showDescription: table.showDescription ?? true,
+      showManufacturer: table.showManufacturer ?? true,
+      showQuantity: table.showQuantity ?? true,
+      showUnitPrice: table.showUnitPrice ?? true,
+      showTotalPrice: table.showTotalPrice ?? true
     }));
 
     // Insert tables and get the generated DB ids
@@ -750,7 +757,18 @@ export class SupabaseService {
     for (const [index, table] of tables.entries()) {
       const { data: insertedTable, error: tableError } = await this.supabase
         .from('BudgetMaterialTables')
-        .insert([{ budgetId, title: table.title ?? '', orderIndex: table.orderIndex ?? index }])
+        .insert([{
+          budgetId,
+          title: table.title ?? '',
+          orderIndex: table.orderIndex ?? index,
+          // Clone column visibility settings
+          showReference: table.showReference ?? true,
+          showDescription: table.showDescription ?? true,
+          showManufacturer: table.showManufacturer ?? true,
+          showQuantity: table.showQuantity ?? true,
+          showUnitPrice: table.showUnitPrice ?? true,
+          showTotalPrice: table.showTotalPrice ?? true
+        }])
         .select()
         .single();
 
