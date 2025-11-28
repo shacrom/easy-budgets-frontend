@@ -93,7 +93,7 @@ describe('BudgetTextBlockComponent', () => {
     expect(updatedBlock?.descriptions?.length).toBe(2);
   });
 
-  it('should update description section with debounce', fakeAsync(() => {
+  it('should update description section locally and emit event', () => {
     const event = { target: { value: 'New Title' } } as any;
 
     let updatedBlock: BudgetTextBlock | undefined;
@@ -102,21 +102,16 @@ describe('BudgetTextBlockComponent', () => {
     // Simulamos la escritura del usuario
     component['updateDescriptionSection'](10, 'title', event);
 
-    // El estado local debe actualizarse inmediatamente para la UI
+    // El estado local debe actualizarse inmediatamente
     expect(component['sections']()[0].title).toBe('New Title');
 
-    // El servicio NO debe llamarse inmediatamente (debounce)
+    // El servicio NO debe llamarse NUNCA (ahora se guarda en el padre)
     expect(supabaseServiceSpy.updateTextBlockSection).not.toHaveBeenCalled();
 
-    // Avanzamos el tiempo 800ms
-    tick(800);
-
-    // Ahora sí debe haberse llamado al servicio y emitido el evento
-    expect(supabaseServiceSpy.updateTextBlockSection).toHaveBeenCalledWith(10, jasmine.objectContaining({ title: 'New Title' }));
+    // Debe emitir el evento inmediatamente
     expect(updatedBlock).toBeDefined();
-  }));
-
-  it('should delete description section', async () => {
+    expect(updatedBlock?.descriptions?.[0].title).toBe('New Title');
+  });  it('should delete description section', async () => {
     spyOn(window, 'confirm').and.returnValue(true);
     supabaseServiceSpy.deleteTextBlockSection.and.returnValue(Promise.resolve());
 

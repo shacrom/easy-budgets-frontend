@@ -175,6 +175,19 @@ export class BudgetTextBlocksComponent {
             subtotal: block.subtotal,
             orderIndex: block.orderIndex
           });
+
+          // Save descriptions (sections)
+          if (block.descriptions) {
+            for (const section of block.descriptions) {
+              if (section.id) {
+                await this.supabase.updateTextBlockSection(section.id, {
+                  title: section.title,
+                  text: section.text,
+                  orderIndex: section.orderIndex
+                });
+              }
+            }
+          }
         }
       }
 
