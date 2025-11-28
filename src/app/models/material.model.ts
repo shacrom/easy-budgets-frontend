@@ -21,4 +21,11 @@ export interface MaterialTable {
   orderIndex: number;
   title: string;
   rows: Material[];
+  // Column visibility for PDF export (per table)
+  showReference?: boolean;
+  showDescription?: boolean;
+  showManufacturer?: boolean;
+  showQuantity?: boolean;
+  showUnitPrice?: boolean;
+  showTotalPrice?: boolean;
 }
