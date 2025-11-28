@@ -108,7 +108,10 @@ export class BudgetSummaryComponent {
   // Dropdown states (expanded by default)
   protected readonly blocksExpanded = signal<boolean>(true);
   protected readonly materialsExpanded = signal<boolean>(true);
+  protected readonly hasBlocks = computed(() => this.showBlocks() && this.blocks().length > 0);
+  protected readonly hasMaterials = computed(() => this.showMaterials() && (this.materials().length > 0 || this.materialTables().length > 0));
   protected readonly hasMaterialTables = computed(() => this.materialTables().length > 0);
+  protected readonly hasCountertop = computed(() => this.showCountertop());
 
   // Computed values
   // Computed: effective totals based on visibility

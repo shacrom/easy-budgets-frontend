@@ -163,6 +163,7 @@ export class BudgetTextBlocksComponent {
       // Save each block to the database
       const currentBlocks = this.blocks();
       const currentSectionTitle = this.sectionTitle();
+      const currentBudgetId = this.budgetId();
 
       for (const block of currentBlocks) {
         if (block.id) {
@@ -177,18 +178,9 @@ export class BudgetTextBlocksComponent {
         }
       }
 
-      // Update blocks in memory with the sectionTitle
-      const updatedBlocks = currentBlocks.map(block => ({
-        ...block,
-        sectionTitle: currentSectionTitle
-      }));
+      // Reload blocks from database to ensure we have the latest data
+      await this.loadBlocks(currentBudgetId);
 
-      // Update the signal with the complete data
-      this.blocks.set(updatedBlocks);
-
-      // Emit current state to parent
-      this.totalChanged.emit(this.grandTotal());
-      this.blocksChanged.emit(updatedBlocks);
       this.hasUnsavedChanges.set(false);
     } catch (error) {
       console.error('Error saving text blocks:', error);

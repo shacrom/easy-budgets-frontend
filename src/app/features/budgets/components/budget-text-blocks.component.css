@@ -9,7 +9,7 @@
 }
 
 .section-title-input {
-  @apply text-2xl font-light text-gray-900 bg-transparent border-b-2 border-dashed border-gray-300 focus:border-gray-900 focus:outline-none transition-colors px-0 py-1 uppercase;
+  @apply text-2xl font-light text-gray-900 bg-transparent border-b-2 border-dashed border-gray-300 focus:border-gray-900 focus:outline-none transition-colors px-0 py-1;
   letter-spacing: 0.15em;
 }
 

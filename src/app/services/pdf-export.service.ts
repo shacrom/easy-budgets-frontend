@@ -199,7 +199,19 @@ export class PdfExportService {
     const textBlocksContent = this.buildTextBlocksSection(blocks);
     const materialsContent = this.buildMaterialsSection(payload.materialTables, payload.materials, payload.materialsSectionTitle);
     const countertopContent = this.buildCountertopSection(countertop);
-    const summaryContent = this.buildSummarySection(payload.summary, blocks, payload.materialTables, payload.materialsSectionTitle);
+
+    // Obtener títulos personalizados
+    const blocksSectionTitle = blocks[0]?.sectionTitle || 'Mobiliario';
+    const countertopSectionTitle = countertop?.sectionTitle || 'Encimera';
+
+    const summaryContent = this.buildSummarySection(
+      payload.summary,
+      blocks,
+      payload.materialTables,
+      payload.materialsSectionTitle,
+      blocksSectionTitle,
+      countertopSectionTitle
+    );
     const conditionsContent = this.buildConditionsSection(payload.conditionsTitle, payload.conditions);
     const signatureContent = this.buildSignatureSection(payload.customer);
 
@@ -1097,7 +1109,9 @@ export class PdfExportService {
     summary: BudgetSummary | null,
     blocks: BudgetTextBlock[],
     materialTables: MaterialTable[],
-    materialsSectionTitle?: string
+    materialsSectionTitle?: string,
+    blocksSectionTitle?: string,
+    countertopSectionTitle?: string
   ): Content | null {
     if (!summary) {
       return null;
@@ -1133,7 +1147,7 @@ export class PdfExportService {
     };
 
     if (summary.totalBlocks > 0) {
-      pushCategory('Total mobiliario', summary.totalBlocks, blockBreakdown);
+      pushCategory(`Total ${blocksSectionTitle || 'mobiliario'}`, summary.totalBlocks, blockBreakdown);
     }
 
     if (summary.totalMaterials > 0) {
@@ -1141,7 +1155,7 @@ export class PdfExportService {
     }
 
     if (summary.totalCountertop && summary.totalCountertop > 0) {
-      pushCategory('Total encimera', summary.totalCountertop);
+      pushCategory(`Total ${countertopSectionTitle || 'encimera'}`, summary.totalCountertop);
     }
 
     if (summary.additionalLines?.length) {

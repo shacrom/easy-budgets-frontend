@@ -595,16 +595,24 @@ export class SupabaseService {
 
   async updateBudgetTextBlock(id: number, updates: any) {
     if (!Number.isFinite(id)) throw new Error('Invalid text block id');
+
+    // Build update object conditionally to handle cases where sectionTitle column doesn't exist
+    const updateData: any = {
+      orderIndex: updates.orderIndex,
+      heading: updates.heading,
+      link: updates.link,
+      imageUrl: updates.imageUrl,
+      subtotal: updates.subtotal
+    };
+
+    // Only include sectionTitle if it's provided
+    if (updates.sectionTitle !== undefined) {
+      updateData.sectionTitle = updates.sectionTitle;
+    }
+
     const { data, error } = await this.supabase
       .from('BudgetTextBlocks')
-      .update({
-        sectionTitle: updates.sectionTitle,
-        orderIndex: updates.orderIndex,
-        heading: updates.heading,
-        link: updates.link,
-        imageUrl: updates.imageUrl,
-        subtotal: updates.subtotal
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

@@ -34,7 +34,7 @@
   <div class="summary-card">
     <div class="accordion">
       <!-- Blocks accordion -->
-      @if (effectiveTotalBlocks() > 0) {
+      @if (hasBlocks()) {
         <div class="accordion-item">
           <button type="button" class="accordion-trigger" (click)="toggleBlocksExpanded()">
             <div class="trigger-label">
@@ -72,7 +72,7 @@
       }
 
       <!-- Materials accordion -->
-      @if (effectiveTotalMaterials() > 0) {
+      @if (hasMaterials()) {
         <div class="accordion-item">
           <button type="button" class="accordion-trigger" (click)="toggleMaterialsExpanded()">
             <div class="trigger-label">
@@ -130,7 +130,7 @@
       }
 
       <!-- Countertop section -->
-      @if (effectiveTotalCountertop() > 0) {
+      @if (hasCountertop()) {
         <div class="accordion-item">
           <div class="accordion-trigger" style="cursor: default;">
             <div class="trigger-label">
