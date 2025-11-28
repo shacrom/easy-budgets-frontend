@@ -145,8 +145,7 @@
 }
 
 .table-wrapper {
-  @apply w-full;
-  overflow: visible !important;
+  @apply w-full overflow-x-auto;
 }
 
 .materials-table {
