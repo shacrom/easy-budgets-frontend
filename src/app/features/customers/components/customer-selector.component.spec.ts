@@ -1,29 +1,116 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CustomerSelectorComponent } from './customer-selector.component';
-import { SupabaseService } from '../../../services/supabase.service';
+import { Customer } from '../../../models/customer.model';
 
 describe('CustomerSelectorComponent', () => {
   let component: CustomerSelectorComponent;
   let fixture: ComponentFixture<CustomerSelectorComponent>;
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
+
+  const mockCustomers: Customer[] = [
+    { id: 1, name: 'John Doe', email: 'john@example.com' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
+  ];
 
   beforeEach(async () => {
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', ['getCustomers']);
-    supabaseServiceSpy.getCustomers.and.returnValue(Promise.resolve([]));
-
     await TestBed.configureTestingModule({
-      imports: [CustomerSelectorComponent],
-      providers: [
-        { provide: SupabaseService, useValue: supabaseServiceSpy }
-      ]
+      imports: [CustomerSelectorComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(CustomerSelectorComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('customers', mockCustomers);
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should compute hasCustomers correctly', () => {
+    expect(component['hasCustomers']()).toBeTrue();
+
+    fixture.componentRef.setInput('customers', []);
+    fixture.detectChanges();
+    expect(component['hasCustomers']()).toBeFalse();
+  });
+
+  it('should compute meetsSearchThreshold correctly', () => {
+    fixture.componentRef.setInput('searchTerm', 'a');
+    fixture.detectChanges();
+    expect(component['meetsSearchThreshold']()).toBeFalse();
+
+    fixture.componentRef.setInput('searchTerm', 'ab');
+    fixture.detectChanges();
+    expect(component['meetsSearchThreshold']()).toBeTrue();
+  });
+
+  it('should emit searchChanged on updateSearch', () => {
+    let emittedValue: string | undefined;
+    component.searchChanged.subscribe(val => emittedValue = val);
+
+    const event = { target: { value: 'test' } } as any;
+    component['updateSearch'](event);
+
+    expect(emittedValue).toBe('test');
+  });
+
+  it('should emit refreshRequested on retrySearch', () => {
+    let emitted = false;
+    component.refreshRequested.subscribe(() => emitted = true);
+
+    component['retrySearch']();
+
+    expect(emitted).toBeTrue();
+  });
+
+  it('should emit searchChanged with empty string on clearSearch', () => {
+    let emittedValue: string | undefined;
+    component.searchChanged.subscribe(val => emittedValue = val);
+
+    component['clearSearch']();
+
+    expect(emittedValue).toBe('');
+  });
+
+  it('should NOT emit clearSearch if loading', () => {
+    fixture.componentRef.setInput('loading', true);
+    fixture.detectChanges();
+
+    let emitted = false;
+    component.searchChanged.subscribe(() => emitted = true);
+
+    component['clearSearch']();
+
+    expect(emitted).toBeFalse();
+  });
+
+  it('should emit customerSelected on selectCustomer', () => {
+    let emittedId: number | null | undefined;
+    component.customerSelected.subscribe(id => emittedId = id);
+
+    component['selectCustomer'](1);
+
+    expect(emittedId).toBe(1);
+  });
+
+  it('should NOT emit customerSelected if already selected', () => {
+    fixture.componentRef.setInput('selectedCustomerId', 1);
+    fixture.detectChanges();
+
+    let emitted = false;
+    component.customerSelected.subscribe(() => emitted = true);
+
+    component['selectCustomer'](1);
+
+    expect(emitted).toBeFalse();
+  });
+
+  it('should emit null on clearSelection', () => {
+    let emittedId: number | null | undefined;
+    component.customerSelected.subscribe(id => emittedId = id);
+
+    component['clearSelection']();
+
+    expect(emittedId).toBeNull();
   });
 });
