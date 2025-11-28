@@ -21,6 +21,14 @@ export class MaterialRowComponent implements OnInit {
   // Input: available products for reference search
   products = input<Product[]>([]);
 
+  // Input: visibility of columns for this row
+  showReference = input<boolean>(true);
+  showDescription = input<boolean>(true);
+  showManufacturer = input<boolean>(true);
+  showQuantity = input<boolean>(true);
+  showUnitPrice = input<boolean>(true);
+  showTotalPrice = input<boolean>(true);
+
   // Output: event when user requests to delete material
   deleteRequested = output<number>();
 

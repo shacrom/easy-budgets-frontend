@@ -602,6 +602,12 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
             budgetId: t.budgetId,
             orderIndex: t.orderIndex,
             title: t.title,
+            showReference: t.showReference ?? true,
+            showDescription: t.showDescription ?? true,
+            showManufacturer: t.showManufacturer ?? true,
+            showQuantity: t.showQuantity ?? true,
+            showUnitPrice: t.showUnitPrice ?? true,
+            showTotalPrice: t.showTotalPrice ?? true,
             rows: (insertedRows.filter(r => r.tableId === t.id) || []).map(r => ({
               id: r.id,
               tableId: r.tableId,

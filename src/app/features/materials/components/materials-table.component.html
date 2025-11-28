@@ -77,30 +77,64 @@
 
         <div class="table-wrapper">
           <table class="materials-table">
-            <colgroup>
-              <col style="width: 26%;">
-              <col style="width: 22%;">
-              <col style="width: 16%;">
-              <col style="width: 10%;">
-              <col style="width: 14%;">
-              <col style="width: 14%;">
-              <col style="width: 8%;">
-            </colgroup>
+            <!-- colgroup removed: column widths are dynamic based on visible columns -->
             <thead>
               <tr>
-                <th>Referencia</th>
-                <th>Descripción</th>
-                <th>Fabricante</th>
-                <th>Cantidad</th>
-                <th>Precio unit.</th>
-                <th>Precio total</th>
-                <th>Acciones</th>
+                <th>
+                  <div class="th-content">
+                    <span>Referencia</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showReference')" title="Mostrar/ocultar referencia">
+                      <span class="material-symbols-rounded">{{ table.showReference ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <span>Descripción</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showDescription')" title="Mostrar/ocultar descripción">
+                      <span class="material-symbols-rounded">{{ table.showDescription ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <span>Fabricante</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showManufacturer')" title="Mostrar/ocultar fabricante">
+                      <span class="material-symbols-rounded">{{ table.showManufacturer ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th class="text-center">
+                  <div class="th-content">
+                    <span>Cantidad</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showQuantity')" title="Mostrar/ocultar cantidad">
+                      <span class="material-symbols-rounded">{{ table.showQuantity ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th class="text-right">
+                  <div class="th-content">
+                    <span>Precio unit.</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showUnitPrice')" title="Mostrar/ocultar precio unitario">
+                      <span class="material-symbols-rounded">{{ table.showUnitPrice ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th class="text-right">
+                  <div class="th-content">
+                    <span>Precio total</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showTotalPrice')" title="Mostrar/ocultar precio total">
+                      <span class="material-symbols-rounded">{{ table.showTotalPrice ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               @if (table.rows.length === 0) {
                 <tr>
-                  <td colspan="7" class="empty-state">
+                  <td [attr.colspan]="6" class="empty-state">
                     <span class="material-symbols-rounded" aria-hidden="true">table_rows_narrow</span>
                     <p>Este bloque aún no tiene conceptos.</p>
                     <button type="button" class="btn ghost" (click)="addNewMaterial(table.id)">
@@ -114,6 +148,12 @@
                   <app-material-row
                     [material]="material"
                     [products]="products()"
+                    [showReference]="table.showReference ?? true"
+                    [showDescription]="table.showDescription ?? true"
+                    [showManufacturer]="table.showManufacturer ?? true"
+                    [showQuantity]="table.showQuantity ?? true"
+                    [showUnitPrice]="table.showUnitPrice ?? true"
+                    [showTotalPrice]="table.showTotalPrice ?? true"
                     (deleteRequested)="deleteMaterial(table.id, $event)"
                     (localValuesChanged)="onMaterialLocalChange()">
                   </app-material-row>
@@ -122,8 +162,8 @@
             </tbody>
             <tfoot>
               <tr>
-                <td colspan="5" class="footer-label">Subtotal</td>
-                <td colspan="2" class="footer-amount">
+                <td [attr.colspan]="6" class="footer-label">Subtotal</td>
+                <td class="footer-amount">
                   {{ tableTotal(table) | currency:'EUR':'symbol':'1.2-2':'es' }}
                 </td>
               </tr>

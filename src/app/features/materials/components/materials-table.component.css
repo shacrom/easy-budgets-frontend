@@ -168,6 +168,14 @@
   @apply border-b border-gray-200 px-4 py-3 text-left align-middle;
 }
 
+.th-content {
+  @apply flex items-center gap-2 justify-between;
+}
+
+.th-content .btn.icon {
+  @apply p-1 border rounded text-sm;
+}
+
 .materials-table th:nth-child(4),
 .materials-table td:nth-child(4) {
   @apply text-center;

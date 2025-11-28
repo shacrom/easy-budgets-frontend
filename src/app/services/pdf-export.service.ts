@@ -738,11 +738,27 @@ export class PdfExportService {
 
     for (const table of groupedTables) {
       const rows = table.rows ?? [];
-      content.push(this.buildMaterialGroupCard(table.title, rows));
+      const visibility = {
+        reference: table.showReference ?? true,
+        description: table.showDescription ?? true,
+        manufacturer: table.showManufacturer ?? true,
+        quantity: table.showQuantity ?? true,
+        unitPrice: table.showUnitPrice ?? true,
+        totalPrice: table.showTotalPrice ?? true
+      } as const;
+      content.push(this.buildMaterialGroupCard(table.title, rows, visibility));
     }
 
     if (filteredStandalone.length) {
-      content.push(this.buildMaterialGroupCard('Materiales adicionales', filteredStandalone));
+      const defaultVisibility = {
+        reference: true,
+        description: true,
+        manufacturer: true,
+        quantity: true,
+        unitPrice: true,
+        totalPrice: true
+      } as const;
+      content.push(this.buildMaterialGroupCard('Materiales adicionales', filteredStandalone, defaultVisibility));
     }
 
     content.push(this.buildCard([
@@ -757,37 +773,59 @@ export class PdfExportService {
     return content;
   }
 
-  private buildMaterialsTable(materials: Material[]): Content {
-    const headers: TableCell[] = [
-      { text: 'Referencia', style: 'tableHeader' },
-      { text: 'Descripción', style: 'tableHeader' },
-      { text: 'Fabricante', style: 'tableHeader' },
-      { text: 'Cantidad', style: 'tableHeader', alignment: 'center' },
-      { text: 'Precio unitario', style: 'tableHeader', alignment: 'right' },
-      { text: 'Total', style: 'tableHeader', alignment: 'right' }
-    ];
+  private buildMaterialsTable(materials: Material[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
+    const v = visibility ?? { reference: true, description: true, manufacturer: true, quantity: true, unitPrice: true, totalPrice: true };
+    const headers: TableCell[] = [];
+    const widths: (string | number)[] = [];
 
-    const rows = materials.map(material => ([
-      { text: material.reference || '—', color: '#4b5563', fontSize: 9 } as TableCell,
-      { text: material.description || '—', fontSize: 10 } as TableCell,
-      { text: material.manufacturer || '—', color: '#6b7280', fontSize: 9 } as TableCell,
-      { text: this.formatQuantity(material.quantity), alignment: 'center' } as TableCell,
-      { text: this.formatCurrency(material.unitPrice), alignment: 'right' } as TableCell,
-      { text: this.formatCurrency(material.totalPrice), alignment: 'right', bold: true } as TableCell
-    ]));
+    if (v.reference) {
+      headers.push({ text: 'Referencia', style: 'tableHeader' });
+      widths.push('auto');
+    }
+    if (v.description) {
+      headers.push({ text: 'Descripción', style: 'tableHeader' });
+      widths.push('*');
+    }
+    if (v.manufacturer) {
+      headers.push({ text: 'Fabricante', style: 'tableHeader' });
+      widths.push('auto');
+    }
+    if (v.quantity) {
+      headers.push({ text: 'Cantidad', style: 'tableHeader', alignment: 'center' });
+      widths.push('auto');
+    }
+    if (v.unitPrice) {
+      headers.push({ text: 'Precio unitario', style: 'tableHeader', alignment: 'right' });
+      widths.push('auto');
+    }
+    if (v.totalPrice) {
+      headers.push({ text: 'Total', style: 'tableHeader', alignment: 'right' });
+      widths.push('auto');
+    }
+
+    const rows = materials.map(material => {
+      const r: TableCell[] = [];
+      if (v.reference) r.push({ text: material.reference || '—', color: '#4b5563', fontSize: 9 } as TableCell);
+      if (v.description) r.push({ text: material.description || '—', fontSize: 10 } as TableCell);
+      if (v.manufacturer) r.push({ text: material.manufacturer || '—', color: '#6b7280', fontSize: 9 } as TableCell);
+      if (v.quantity) r.push({ text: this.formatQuantity(material.quantity), alignment: 'center' } as TableCell);
+      if (v.unitPrice) r.push({ text: this.formatCurrency(material.unitPrice), alignment: 'right' } as TableCell);
+      if (v.totalPrice) r.push({ text: this.formatCurrency(material.totalPrice), alignment: 'right', bold: true } as TableCell);
+      return r;
+    });
 
     const body: TableCell[][] = [headers, ...rows];
 
     return {
       table: {
-        widths: ['auto', '*', 'auto', 'auto', 'auto', 'auto'],
+        widths,
         body
       },
       layout: this.materialsTableLayout()
     };
   }
 
-  private buildMaterialGroupCard(title: string, rows: Material[]): Content {
+  private buildMaterialGroupCard(title: string, rows: Material[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
     const countLabel = rows.length === 1 ? '1 partida' : `${rows.length} partidas`;
     const subtotal = rows.reduce((sum, row) => sum + (row.totalPrice ?? 0), 0);
 
@@ -805,7 +843,7 @@ export class PdfExportService {
     };
 
     const tableContent = rows.length
-      ? this.buildMaterialsTable(rows)
+      ? this.buildMaterialsTable(rows, visibility)
       : {
           text: 'No hay materiales en este bloque.',
           style: 'muted',

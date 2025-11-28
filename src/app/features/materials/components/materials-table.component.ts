@@ -227,6 +227,18 @@ export class MaterialsTableComponent {
     return this.calculateTableTotal(table);
   }
 
+  protected getVisibleColumnCount(table: MaterialTable): number {
+    let count = 0;
+    if (table.showReference) count++;
+    if (table.showDescription) count++;
+    if (table.showManufacturer) count++;
+    if (table.showQuantity) count++;
+    if (table.showUnitPrice) count++;
+    if (table.showTotalPrice) count++;
+    // Actions column is always visible
+    return count + 1;
+  }
+
   /**
    * Emits the current state
    */
@@ -255,7 +267,13 @@ export class MaterialsTableComponent {
       id,
       orderIndex,
       title,
-      rows: []
+      rows: [],
+      showReference: true,
+      showDescription: true,
+      showManufacturer: true,
+      showQuantity: true,
+      showUnitPrice: true,
+      showTotalPrice: true
     };
   }
 
@@ -278,6 +296,23 @@ export class MaterialsTableComponent {
     return table.rows.reduce((sum, row) => sum + row.totalPrice, 0);
   }
 
+  /**
+   * Toggles the show flag of a given column in a table
+   */
+  protected toggleShowColumn(tableId: number, field: keyof Omit<MaterialTable, 'id' | 'budgetId' | 'orderIndex' | 'title' | 'rows'>): void {
+    this.mutateTables(tables =>
+      tables.map(table => {
+        if (table.id !== tableId) return table;
+
+        return {
+          ...table,
+          [field]: !(table as any)[field]
+        } as MaterialTable;
+      })
+    );
+    this.hasUnsavedChanges.set(true);
+  }
+
   private flattenMaterials(tables: MaterialTable[]): Material[] {
     return tables.flatMap(table => table.rows);
   }
@@ -297,6 +332,14 @@ export class MaterialsTableComponent {
         tableId: table.id,
         orderIndex: rowIndex
       }))
+      ,
+      // Ensure visibility flags default to true when absent
+      showReference: table.showReference ?? true,
+      showDescription: table.showDescription ?? true,
+      showManufacturer: table.showManufacturer ?? true,
+      showQuantity: table.showQuantity ?? true,
+      showUnitPrice: table.showUnitPrice ?? true,
+      showTotalPrice: table.showTotalPrice ?? true
     }));
   }
 
