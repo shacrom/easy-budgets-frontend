@@ -1,15 +1,11 @@
 <div class="general-conditions-container">
   <div class="header">
-    @if (editMode()) {
-      <input
-        type="text"
-        [value]="title()"
-        (input)="updateTitle($event)"
-        class="header-title-editable"
-        placeholder="CONDICIONES GENERALES">
-    } @else {
-      <h2 class="text-2xl font-bold text-gray-900">{{ title() }}</h2>
-    }
+    <input
+      type="text"
+      [value]="title()"
+      (input)="updateTitle($event)"
+      class="header-title-editable"
+      placeholder="CONDICIONES GENERALES">
     <div class="header-actions">
       @if (hasUnsavedChanges()) {
         <span class="unsaved-indicator">
@@ -17,7 +13,7 @@
           <span>Cambios sin guardar</span>
         </span>
       }
-      @if (editMode()) {
+      @if (hasUnsavedChanges()) {
         <button
           type="button"
           class="btn ghost"
@@ -35,105 +31,128 @@
         <span class="material-symbols-rounded" aria-hidden="true">save</span>
         <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
       </button>
-      @if (!editMode()) {
-        <button
-          (click)="toggleEditMode()"
-          class="btn-toggle-edit"
-          type="button">
-          <span>Modo Edición</span>
-        </button>
-      }
-      @if (editMode()) {
-        <button
-          (click)="addCondition()"
-          class="btn-add-condition"
-          type="button">
-          + Añadir Condición
-        </button>
-      }
+      <button
+        (click)="addCondition()"
+        class="btn-add-condition"
+        type="button">
+        + Añadir Condición
+      </button>
     </div>
   </div>
 
-  @if (editMode()) {
-    <div class="template-selector-container">
-      <label for="template-select" class="template-label">
-        Seleccionar Plantilla:
-      </label>
-      <select
-        id="template-select"
-        [value]="selectedTemplateId()"
-        (change)="changeTemplate($event)"
-        class="template-select">
-        @for (template of templates(); track template.id) {
-          <option [value]="template.id">{{ template.name }}</option>
-        }
-      </select>
-      <p class="template-hint">
-        Cambia la plantilla para cargar condiciones específicas de cada proveedor
-      </p>
-    </div>
-  }
-
-  <div class="conditions-card">
-    @if (!editMode()) {
-      <!-- Read-only view - Legal document format -->
-      <div class="conditions-list-view">
-        @for (condition of conditions(); track condition.id; let idx = $index) {
-          <div class="condition-item">
-            <div class="condition-number">{{ idx + 1 }}.</div>
-            <div class="condition-content">
-              <h3 class="condition-title">{{ condition.title }}</h3>
-              <p class="condition-text">{{ condition.text }}</p>
-            </div>
-          </div>
-        }
+  <div class="template-selector-container">
+    <div class="template-controls">
+      <div class="select-wrapper">
+        <label for="template-select" class="template-label">
+          Seleccionar Plantilla:
+        </label>
+        <select
+          id="template-select"
+          [value]="selectedTemplateId()"
+          (change)="changeTemplate($event)"
+          class="template-select">
+          <option [value]="null">-- Seleccionar --</option>
+          @for (template of templates(); track template.id) {
+            <option [value]="template.id">{{ template.name }}</option>
+          }
+        </select>
       </div>
-    } @else {
-      <!-- Edit view -->
-      <div class="conditions-edit-view">
-        @for (condition of conditions(); track condition.id; let idx = $index) {
-          <div class="condition-edit-item">
-            <div class="condition-edit-header">
-              <span class="condition-edit-number">{{ idx + 1 }}.</span>
-              <button
-                (click)="deleteCondition(condition.id)"
-                class="btn-delete-condition"
-                type="button"
-                title="Eliminar condición">
-                ✕ Eliminar
-              </button>
-            </div>
+      
+      <button 
+        type="button" 
+        class="btn ghost btn-sm"
+        (click)="toggleCreateTemplate()">
+        <span class="material-symbols-rounded">save_as</span>
+        Guardar como plantilla
+      </button>
 
-            <div class="form-group">
-              <label class="form-label">Título de la condición:</label>
-              <input
-                type="text"
-                [value]="condition.title"
-                (input)="updateConditionField(condition.id, 'title', $event)"
-                class="input-field"
-                placeholder="Ej: VALIDEZ DEL PRESUPUESTO">
-            </div>
+      @if (selectedTemplateId()) {
+        <button 
+          type="button" 
+          class="btn ghost btn-sm btn-danger"
+          (click)="deleteTemplate()"
+          title="Eliminar plantilla seleccionada">
+          <span class="material-symbols-rounded">delete</span>
+        </button>
+      }
+    </div>
 
-            <div class="form-group">
-              <label class="form-label">Texto de la condición:</label>
-              <textarea
-                [value]="condition.text"
-                (input)="updateConditionField(condition.id, 'text', $event)"
-                rows="3"
-                class="input-field textarea-field"
-                placeholder="Descripción detallada de la condición..."></textarea>
-            </div>
-          </div>
-        }
-
-        @if (conditions().length === 0) {
-          <div class="empty-state">
-            <p class="text-gray-500 text-center">
-              No hay condiciones añadidas. Haz clic en "Añadir Condición" para comenzar.
-            </p>
-          </div>
-        }
+    @if (isCreatingTemplate()) {
+      <div class="create-template-form">
+        <input 
+          type="text" 
+          [value]="newTemplateName()" 
+          (input)="updateNewTemplateName($event)" 
+          placeholder="Nombre de la nueva plantilla"
+          class="input-field template-name-input">
+        <div class="template-form-actions">
+          <button 
+            type="button" 
+            class="btn solid btn-sm"
+            (click)="saveTemplate()"
+            [disabled]="!newTemplateName() || isSaving()">
+            Guardar
+          </button>
+          <button 
+            type="button" 
+            class="btn ghost btn-sm"
+            (click)="toggleCreateTemplate()">
+            Cancelar
+          </button>
+        </div>
       </div>
     }
+
+    <p class="template-hint">
+      Cambia la plantilla para cargar condiciones específicas de cada proveedor
+    </p>
+  </div>
+
+  <div class="conditions-card">
+    <!-- Edit view -->
+    <div class="conditions-edit-view">
+      @for (condition of conditions(); track condition.id; let idx = $index) {
+        <div class="condition-edit-item">
+          <div class="condition-edit-header">
+            <span class="condition-edit-number">{{ idx + 1 }}.</span>
+            <button
+              (click)="deleteCondition(condition.id)"
+              class="btn-delete-condition"
+              type="button"
+              title="Eliminar condición">
+              ✕ Eliminar
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Título de la condición:</label>
+            <input
+              type="text"
+              [value]="condition.title"
+              (input)="updateConditionField(condition.id, 'title', $event)"
+              class="input-field"
+              placeholder="Ej: VALIDEZ DEL PRESUPUESTO">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Texto de la condición:</label>
+            <textarea
+              [value]="condition.text"
+              (input)="updateConditionField(condition.id, 'text', $event)"
+              rows="3"
+              class="input-field textarea-field"
+              placeholder="Descripción detallada de la condición..."></textarea>
+          </div>
+        </div>
+      }
+
+      @if (conditions().length === 0) {
+        <div class="empty-state">
+          <p class="text-gray-500 text-center">
+            No hay condiciones añadidas. Haz clic en "Añadir Condición" para comenzar.
+          </p>
+        </div>
+      }
+    </div>
   </div>
 </div>

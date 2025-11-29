@@ -28,8 +28,8 @@ export class GeneralConditionsComponent implements OnInit {
   // List of conditions
   protected readonly conditions = signal<Condition[]>([]);
 
-  // Edit mode
-  protected readonly editMode = signal<boolean>(false);
+  // Edit mode - Always true now
+  protected readonly editMode = signal<boolean>(true);
 
   // Currently selected template
   protected readonly selectedTemplateId = signal<number | null>(null);
@@ -48,6 +48,10 @@ export class GeneralConditionsComponent implements OnInit {
   // Outputs to notify parent components (only on manual save)
   readonly titleChanged = output<string>();
   readonly conditionsChanged = output<Condition[]>();
+
+  // Template creation state
+  protected readonly isCreatingTemplate = signal<boolean>(false);
+  protected readonly newTemplateName = signal<string>('');
 
   constructor() {
     effect(() => {
@@ -76,7 +80,7 @@ export class GeneralConditionsComponent implements OnInit {
    * Toggles edit mode
    */
   protected toggleEditMode(): void {
-    this.editMode.update(mode => !mode);
+    // this.editMode.update(mode => !mode); // Removed toggle functionality
   }
 
   /**
@@ -105,6 +109,48 @@ export class GeneralConditionsComponent implements OnInit {
       this.hasUnsavedChanges.set(true);
     } catch (error) {
       console.error('Error loading template sections:', error);
+    }
+  }
+
+  /**
+   * Toggles create template mode
+   */
+  protected toggleCreateTemplate(): void {
+    this.isCreatingTemplate.update(v => !v);
+    this.newTemplateName.set('');
+  }
+
+  /**
+   * Updates new template name
+   */
+  protected updateNewTemplateName(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.newTemplateName.set(input.value);
+  }
+
+  /**
+   * Saves current conditions as a new template
+   */
+  protected async saveTemplate(): Promise<void> {
+    const name = this.newTemplateName().trim();
+    if (!name) return;
+
+    this.isSaving.set(true);
+    try {
+      const newTemplate = await this.supabase.createConditionTemplate(name, this.conditions());
+      await this.loadTemplates();
+      
+      // Select the new template
+      if (newTemplate) {
+        this.selectedTemplateId.set(newTemplate.id);
+      }
+
+      this.isCreatingTemplate.set(false);
+      this.newTemplateName.set('');
+    } catch (error) {
+      console.error('Error creating template:', error);
+    } finally {
+      this.isSaving.set(false);
     }
   }
 
@@ -155,11 +201,11 @@ export class GeneralConditionsComponent implements OnInit {
       if (id) {
         await this.supabase.saveBudgetConditions(id, this.conditions());
       }
-
+      
       this.originalTitle.set(this.title());
       this.originalConditions.set([...this.conditions()]);
       this.hasUnsavedChanges.set(false);
-      this.editMode.set(false);
+      // this.editMode.set(false); // Removed to keep edit mode always active
 
       this.titleChanged.emit(this.title());
       this.conditionsChanged.emit(this.conditions());
@@ -177,10 +223,8 @@ export class GeneralConditionsComponent implements OnInit {
     this.title.set(this.originalTitle());
     this.conditions.set([...this.originalConditions()]);
     this.hasUnsavedChanges.set(false);
-    this.editMode.set(false);
-  }
-
-  /**
+    // this.editMode.set(false); // Removed to keep edit mode always active
+  }  /**
    * Resets to the currently selected template (re-fetch)
    */
   protected async resetToTemplate(): Promise<void> {
@@ -193,6 +237,27 @@ export class GeneralConditionsComponent implements OnInit {
       } catch (error) {
         console.error('Error loading template sections:', error);
       }
+    }
+  }
+
+  /**
+   * Deletes the currently selected template
+   */
+  protected async deleteTemplate(): Promise<void> {
+    const templateId = this.selectedTemplateId();
+    if (!templateId) return;
+
+    if (!confirm('¿Estás seguro de que quieres eliminar esta plantilla?')) return;
+
+    this.isSaving.set(true);
+    try {
+      await this.supabase.deleteConditionTemplate(templateId);
+      await this.loadTemplates();
+      this.selectedTemplateId.set(null);
+    } catch (error) {
+      console.error('Error deleting template:', error);
+    } finally {
+      this.isSaving.set(false);
     }
   }
 

@@ -88,13 +88,49 @@
   @apply mb-8 p-6 bg-gray-50 border border-gray-200;
 }
 
+.template-controls {
+  @apply flex flex-wrap items-end gap-4 mb-2;
+}
+
+.select-wrapper {
+  @apply flex-grow md:flex-grow-0;
+}
+
 .template-label {
-  @apply text-sm font-medium text-gray-600 mb-3 block uppercase tracking-wide;
+  @apply text-sm font-medium text-gray-600 mb-2 block uppercase tracking-wide;
   letter-spacing: 0.05em;
 }
 
 .template-select {
-  @apply w-full md:w-auto px-4 py-3 border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors font-light text-sm bg-white cursor-pointer;
+  @apply w-full md:w-64 px-4 py-2 border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors font-light text-sm bg-white cursor-pointer;
+}
+
+.create-template-form {
+  @apply mt-4 flex flex-wrap items-center gap-3 p-4 bg-white border border-gray-200 shadow-sm;
+  animation: slide-down 0.2s ease-out;
+}
+
+.template-name-input {
+  @apply flex-grow md:w-64;
+}
+
+.template-form-actions {
+  @apply flex gap-2;
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-xs;
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .template-hint {
@@ -156,6 +192,10 @@
 
 .btn-delete-condition {
   @apply px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 transition-colors text-xs font-light uppercase;
+}
+
+.btn.btn-danger {
+  @apply text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300;
 }
 
 .form-group {

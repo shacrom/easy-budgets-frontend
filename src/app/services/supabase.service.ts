@@ -989,6 +989,45 @@ export class SupabaseService {
     }));
   }
 
+  async createConditionTemplate(name: string, conditions: any[]) {
+    // 1. Create template
+    const { data: template, error: templateError } = await this.supabase
+      .from('ConditionTemplates')
+      .insert([{ name }])
+      .select()
+      .single();
+
+    if (templateError) throw templateError;
+
+    if (!conditions.length) return template;
+
+    // 2. Create sections
+    const sectionsPayload = conditions.map((cond, index) => ({
+      template_id: template.id,
+      title: cond.title,
+      content: cond.text,
+      order_index: index
+    }));
+
+    const { error: sectionsError } = await this.supabase
+      .from('ConditionTemplateSections')
+      .insert(sectionsPayload);
+
+    if (sectionsError) throw sectionsError;
+
+    return template;
+  }
+
+  async deleteConditionTemplate(id: number) {
+    if (!Number.isFinite(id)) return;
+    const { error } = await this.supabase
+      .from('ConditionTemplates')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
   // ============================================
   // BUDGET CONDITIONS
   // ============================================
