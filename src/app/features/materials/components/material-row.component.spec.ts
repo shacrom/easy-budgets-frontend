@@ -1,6 +1,7 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { MaterialRowComponent } from './material-row.component';
 import { Material } from '../../../models/material.model';
+import { Product } from '../../../models/product.model';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 
@@ -13,11 +14,16 @@ describe('MaterialRowComponent', () => {
     reference: 'REF1',
     description: 'Desc',
     manufacturer: 'Manuf',
-    quantity: 1,
+    quantity: 2,
     unitPrice: 10,
-    totalPrice: 10,
+    totalPrice: 20,
     orderIndex: 0
   };
+
+  const mockProducts: Product[] = [
+    { id: 1, reference: 'PROD1', description: 'Product 1', manufacturer: 'M1', basePrice: 50, category: 'C1', vatRate: 21, active: true },
+    { id: 2, reference: 'PROD2', description: 'Product 2', manufacturer: 'M2', basePrice: 100, category: 'C2', vatRate: 21, active: true }
+  ];
 
   beforeAll(() => {
     registerLocaleData(localeEs);
@@ -31,10 +37,134 @@ describe('MaterialRowComponent', () => {
     fixture = TestBed.createComponent(MaterialRowComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('material', mockMaterial);
+    fixture.componentRef.setInput('products', mockProducts);
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should initialize local signals from input', () => {
+    expect(component['localReference']()).toBe('REF1');
+    expect(component['localDescription']()).toBe('Desc');
+    expect(component['localManufacturer']()).toBe('Manuf');
+    expect(component['localQuantity']()).toBe(2);
+    expect(component['localUnitPrice']()).toBe(10);
+    expect(component['totalPrice']()).toBe(20);
+  });
+
+  it('should update local reference and emit change', () => {
+    let emitted = false;
+    component.localValuesChanged.subscribe(() => emitted = true);
+
+    component['onReferenceChange']('NEWREF');
+
+    expect(component['localReference']()).toBe('NEWREF');
+    expect(component['referenceSearchTerm']()).toBe('NEWREF');
+    expect(component['referenceDropdownOpen']()).toBeTrue();
+    expect(emitted).toBeTrue();
+  });
+
+  it('should update local manufacturer and emit change', () => {
+    let emitted = false;
+    component.localValuesChanged.subscribe(() => emitted = true);
+
+    component['onManufacturerChange']('New Manuf');
+
+    expect(component['localManufacturer']()).toBe('New Manuf');
+    expect(emitted).toBeTrue();
+  });
+
+  it('should update local quantity and emit change', () => {
+    let emitted = false;
+    component.localValuesChanged.subscribe(() => emitted = true);
+
+    component['onQuantityChange'](5);
+
+    expect(component['localQuantity']()).toBe(5);
+    expect(component['totalPrice']()).toBe(50); // 5 * 10
+    expect(emitted).toBeTrue();
+  });
+
+  it('should update local unit price and emit change', () => {
+    let emitted = false;
+    component.localValuesChanged.subscribe(() => emitted = true);
+
+    component['onUnitPriceChange'](20);
+
+    expect(component['localUnitPrice']()).toBe(20);
+    expect(component['totalPrice']()).toBe(40); // 2 * 20
+    expect(emitted).toBeTrue();
+  });
+
+  it('should update local description and emit change', () => {
+    let emitted = false;
+    component.localValuesChanged.subscribe(() => emitted = true);
+
+    component['onDescriptionChange']('New Desc');
+
+    expect(component['localDescription']()).toBe('New Desc');
+    expect(emitted).toBeTrue();
+  });
+
+  it('should filter reference matches', () => {
+    component['referenceSearchTerm'].set('PROD1');
+    fixture.detectChanges();
+    expect(component['referenceMatches']().length).toBe(1);
+    expect(component['referenceMatches']()[0].reference).toBe('PROD1');
+
+    component['referenceSearchTerm'].set('Product');
+    fixture.detectChanges();
+    expect(component['referenceMatches']().length).toBe(2);
+  });
+
+  it('should apply product from suggestion', () => {
+    const event = new MouseEvent('click');
+    spyOn(event, 'preventDefault');
+
+    let emitted = false;
+    component.localValuesChanged.subscribe(() => emitted = true);
+
+    component['applyProductFromSuggestion'](event, mockProducts[0]);
+
+    expect(component['localReference']()).toBe('PROD1');
+    expect(component['localDescription']()).toBe('Product 1');
+    expect(component['localManufacturer']()).toBe('M1');
+    expect(component['localUnitPrice']()).toBe(50);
+    expect(component['referenceDropdownOpen']()).toBeFalse();
+    expect(emitted).toBeTrue();
+  });
+
+  it('should close dropdown with delay', fakeAsync(() => {
+    component['openReferenceDropdown']();
+    expect(component['referenceDropdownOpen']()).toBeTrue();
+
+    component['closeReferenceDropdown']();
+    expect(component['referenceDropdownOpen']()).toBeTrue(); // Still open immediately
+
+    tick(120);
+    expect(component['referenceDropdownOpen']()).toBeFalse();
+  }));
+
+  it('should emit deleteRequested', () => {
+    let emittedId: number | undefined;
+    component.deleteRequested.subscribe(id => emittedId = id);
+
+    component['requestDelete']();
+
+    expect(emittedId).toBe(1);
+  });
+
+  it('should return current material with local values', () => {
+    component['onQuantityChange'](10);
+    component['onUnitPriceChange'](5);
+
+    const current = component.getCurrentMaterial();
+
+    expect(current.quantity).toBe(10);
+    expect(current.unitPrice).toBe(5);
+    expect(current.totalPrice).toBe(50);
+    expect(current.id).toBe(1);
   });
 });
