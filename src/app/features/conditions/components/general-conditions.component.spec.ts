@@ -1,34 +1,61 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GeneralConditionsComponent } from './general-conditions.component';
-import { CONDITION_TEMPLATES } from '../../../models/conditions.model';
+import { SupabaseService } from '../../../services/supabase.service';
 
 describe('GeneralConditionsComponent', () => {
   let component: GeneralConditionsComponent;
   let fixture: ComponentFixture<GeneralConditionsComponent>;
+  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
+
+  const mockTemplates = [
+    { id: 1, name: 'Template 1' },
+    { id: 2, name: 'Template 2' }
+  ];
+
+  const mockSections = [
+    { id: 1, title: 'Section 1', text: 'Text 1', orderIndex: 0 },
+    { id: 2, title: 'Section 2', text: 'Text 2', orderIndex: 1 }
+  ];
 
   beforeEach(async () => {
+    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', [
+      'getConditionTemplates',
+      'getConditionTemplateSections',
+      'createConditionTemplate',
+      'deleteConditionTemplate',
+      'saveBudgetConditions'
+    ]);
+    supabaseServiceSpy.getConditionTemplates.and.returnValue(Promise.resolve(mockTemplates));
+    supabaseServiceSpy.getConditionTemplateSections.and.returnValue(Promise.resolve(mockSections));
+    supabaseServiceSpy.createConditionTemplate.and.returnValue(Promise.resolve({ id: 3, name: 'New Template' }));
+    supabaseServiceSpy.deleteConditionTemplate.and.returnValue(Promise.resolve());
+    supabaseServiceSpy.saveBudgetConditions.and.returnValue(Promise.resolve());
+
     await TestBed.configureTestingModule({
-      imports: [GeneralConditionsComponent]
+      imports: [GeneralConditionsComponent],
+      providers: [
+        { provide: SupabaseService, useValue: supabaseServiceSpy }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(GeneralConditionsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have default conditions', () => {
-    expect(component['conditions']().length).toBeGreaterThan(0);
+  it('should have empty conditions by default', () => {
+    expect(component['conditions']().length).toBe(0);
   });
 
-  it('should toggle edit mode', () => {
-    component['toggleEditMode']();
+  it('should always be in edit mode', () => {
     expect(component['editMode']()).toBeTrue();
     component['toggleEditMode']();
-    expect(component['editMode']()).toBeFalse();
+    expect(component['editMode']()).toBeTrue(); // Should stay true
   });
 
   it('should update title', () => {
@@ -42,13 +69,14 @@ describe('GeneralConditionsComponent', () => {
     expect(component['hasUnsavedChanges']()).toBeTrue();
   });
 
-  it('should change template', () => {
-    const event = { target: { value: 'dica' } } as any;
+  it('should change template and load sections', async () => {
+    const event = { target: { value: '1' } } as any;
 
-    component['changeTemplate'](event);
+    await component['changeTemplate'](event);
 
-    expect(component['selectedTemplate']()).toBe('dica');
-    expect(component['conditions']().length).toBeGreaterThan(0);
+    expect(component['selectedTemplateId']()).toBe(1);
+    expect(supabaseServiceSpy.getConditionTemplateSections).toHaveBeenCalledWith(1);
+    expect(component['conditions']().length).toBe(2);
     expect(component['hasUnsavedChanges']()).toBeTrue();
   });
 
@@ -61,6 +89,8 @@ describe('GeneralConditionsComponent', () => {
   });
 
   it('should update condition field', () => {
+    // Add a condition first since we start with empty
+    component['addCondition']();
     const condition = component['conditions']()[0];
     const input = document.createElement('input');
     input.value = 'Updated Text';
@@ -74,6 +104,8 @@ describe('GeneralConditionsComponent', () => {
   });
 
   it('should delete condition', () => {
+    // Add a condition first
+    component['addCondition']();
     const initialLength = component['conditions']().length;
     const conditionToDelete = component['conditions']()[0];
 
@@ -83,23 +115,22 @@ describe('GeneralConditionsComponent', () => {
     expect(component['hasUnsavedChanges']()).toBeTrue();
   });
 
-  it('should reset to template', () => {
-    // Modify conditions first
-    component['addCondition']();
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+  it('should reset to template when template is selected', async () => {
+    // First select a template
+    component['selectedTemplateId'].set(1);
 
-    component['resetToTemplate']();
+    await component['resetToTemplate']();
 
-    const template = CONDITION_TEMPLATES.find(t => t.id === component['selectedTemplate']());
-    expect(component['conditions']().length).toBe(template?.conditions.length || 0);
+    expect(supabaseServiceSpy.getConditionTemplateSections).toHaveBeenCalledWith(1);
+    expect(component['conditions']().length).toBe(2);
   });
 
-  it('should save changes', () => {
+  it('should save changes', async () => {
     spyOn(component.titleChanged, 'emit');
     spyOn(component.conditionsChanged, 'emit');
 
     component['title'].set('Saved Title');
-    component.saveChanges();
+    await component['saveChanges']();
 
     expect(component.titleChanged.emit).toHaveBeenCalledWith('Saved Title');
     expect(component.conditionsChanged.emit).toHaveBeenCalled();
@@ -112,7 +143,7 @@ describe('GeneralConditionsComponent', () => {
     component['title'].set('Changed Title');
     component['hasUnsavedChanges'].set(true);
 
-    component.discardChanges();
+    component['discardChanges']();
 
     expect(component['title']()).toBe(originalTitle);
     expect(component['hasUnsavedChanges']()).toBeFalse();

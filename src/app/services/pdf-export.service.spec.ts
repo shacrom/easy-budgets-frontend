@@ -230,4 +230,92 @@ describe('PdfExportService', () => {
         expect(result).toBe('data:image/png;base64,converted-png');
     });
   });
+
+  // --- TESTS PARA LÍNEAS OPCIONALES EN EL RESUMEN ---
+  describe('Opcional lines in summary', () => {
+    function makeSummary(overrides: Partial<any> = {}, additionalLines: any[] = []) {
+      return {
+        totalBlocks: 1000,
+        totalMaterials: 500,
+        totalCountertop: 200,
+        vatPercentage: 21,
+        vat: 0,
+        taxableBase: 0,
+        grandTotal: 0,
+        additionalLines,
+        ...overrides
+      };
+    }
+
+    // Helper para buscar recursivamente en el contenido PDF
+    function findInContent(content: any, predicate: (item: any) => boolean): any {
+      if (!content) return null;
+      if (predicate(content)) return content;
+
+      if (Array.isArray(content)) {
+        for (const item of content) {
+          const found = findInContent(item, predicate);
+          if (found) return found;
+        }
+      }
+
+      if (typeof content === 'object') {
+        for (const key of Object.keys(content)) {
+          const found = findInContent(content[key], predicate);
+          if (found) return found;
+        }
+      }
+
+      return null;
+    }
+
+    it('should exclude optional lines from totals', () => {
+      // baseSubtotal = 1000 + 500 + 200 = 1700
+      // discount 10% = -170
+      // adjustment = 50
+      // optional = 999 (NO se suma)
+      // taxableBase = 1700 - 170 + 50 = 1580
+      // vat = 1580 * 0.21 = 331.80
+      // grandTotal = 1580 + 331.80 = 1911.80
+      const summary = makeSummary({}, [
+        { concept: 'Descuento', amount: 10, conceptType: 'discount' }, // 10% de 1700 = 170
+        { concept: 'Opcional', amount: 999, conceptType: 'optional' },
+        { concept: 'Ajuste', amount: 50, conceptType: 'adjustment' }
+      ]);
+      // @ts-ignore (private method)
+      const section = service.buildSummarySection(summary, [], [], undefined, undefined, undefined);
+
+      // Buscar el total general en cualquier parte de la estructura
+      const grandTotalValue = findInContent(section, (item: any) =>
+        item?.style === 'sectionGrandTotal'
+      );
+      expect(grandTotalValue).toBeTruthy();
+      // El formato esperado es '1911,80 €' (sin separador de miles para < 10000)
+      expect(grandTotalValue?.text).toContain('1911,80');
+    });
+
+    it('should show optional lines in breakdown but not in total', () => {
+      const summary = makeSummary({}, [
+        { concept: 'Opcional', amount: 123, conceptType: 'optional' }
+      ]);
+      // @ts-ignore (private method)
+      const section = service.buildSummarySection(summary, [], [], undefined, undefined, undefined);
+
+      // Buscar la línea opcional en el breakdown (debe tener lineThrough)
+      const optionalCell = findInContent(section, (item: any) =>
+        typeof item?.text === 'string' && item.text.includes('Opcional')
+      );
+      expect(optionalCell).toBeTruthy();
+      expect(optionalCell?.decoration).toBe('lineThrough');
+
+      // Verificar que el total no incluye la línea opcional
+      // Total esperado: (1000 + 500 + 200) * 1.21 = 2057.00
+      const grandTotalValue = findInContent(section, (item: any) =>
+        item?.style === 'sectionGrandTotal'
+      );
+      expect(grandTotalValue).toBeTruthy();
+      // El formato es '2057,00 €' (sin separador de miles para < 10000)
+      expect(grandTotalValue?.text).toContain('2057,00');
+    });
+  });
 });
