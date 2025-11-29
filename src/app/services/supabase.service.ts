@@ -14,6 +14,13 @@ export class SupabaseService {
   private readonly storageBucket = environment.supabaseStorageBucket;
 
   constructor() {
+    // 🔍 LOG DE DEBUG
+    console.log('🔧 Inicializando Supabase con:', {
+      url: environment.supabaseUrl,
+      bucket: environment.supabaseStorageBucket,
+      isProduction: environment.production
+    });
+
     this.supabase = createClient(
       environment.supabaseUrl,
       environment.supabaseAnonKey
