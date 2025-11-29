@@ -178,20 +178,40 @@
   letter-spacing: 0.05em;
 }
 
+/* Estilos para los items de condición (estilo bloque) */
 .condition-edit-item {
-  @apply bg-gray-50 p-6 border border-gray-200;
+  @apply bg-white shadow-sm p-6 mb-4 border border-gray-200;
 }
 
-.condition-edit-header {
-  @apply flex justify-between items-center mb-4 pb-3 border-b border-gray-300;
+.condition-header-row {
+  @apply flex justify-between items-start pb-3 border-b border-gray-200 mb-4;
 }
 
-.condition-edit-number {
-  @apply text-base font-light text-gray-800;
+.condition-title-group {
+  @apply flex flex-col flex-1 mr-4;
 }
 
-.btn-delete-condition {
-  @apply px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 transition-colors text-xs font-light uppercase;
+.form-label {
+  @apply text-xs font-medium text-gray-600 mb-2 uppercase;
+  letter-spacing: 0.05em;
+}
+
+.title-input-block {
+  @apply px-3 py-2 border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors font-light w-full;
+}
+
+.textarea-field-block {
+  @apply px-3 py-2 border border-gray-300 focus:outline-none focus:border-gray-800 transition-colors font-light w-full resize-y;
+  min-height: 100px;
+}
+
+.btn-icon-delete {
+  @apply px-4 py-2 text-red-700 hover:bg-red-50 transition-colors text-sm font-light uppercase flex items-center gap-2;
+  letter-spacing: 0.05em;
+}
+
+.condition-number-badge {
+  @apply inline-flex items-center justify-center bg-gray-100 text-gray-600 text-xs font-medium px-2 py-1 rounded mb-2 w-fit;
 }
 
 .btn.btn-danger {

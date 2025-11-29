@@ -113,34 +113,35 @@
     <div class="conditions-edit-view">
       @for (condition of conditions(); track condition.id; let idx = $index) {
         <div class="condition-edit-item">
-          <div class="condition-edit-header">
-            <span class="condition-edit-number">{{ idx + 1 }}.</span>
+          <div class="condition-number-badge">CONDICIÓN {{ idx + 1 }}</div>
+
+          <div class="condition-header-row">
+            <div class="condition-title-group">
+              <label class="form-label">TÍTULO:</label>
+              <input
+                type="text"
+                [value]="condition.title"
+                (input)="updateConditionField(condition.id, 'title', $event)"
+                class="title-input-block"
+                placeholder="TÍTULO DE LA CONDICIÓN">
+            </div>
+            
             <button
               (click)="deleteCondition(condition.id)"
-              class="btn-delete-condition"
+              class="btn-icon-delete"
               type="button"
               title="Eliminar condición">
-              ✕ Eliminar
+              <span class="material-symbols-rounded">delete</span>
             </button>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Título de la condición:</label>
-            <input
-              type="text"
-              [value]="condition.title"
-              (input)="updateConditionField(condition.id, 'title', $event)"
-              class="input-field"
-              placeholder="Ej: VALIDEZ DEL PRESUPUESTO">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Texto de la condición:</label>
+          <div class="condition-content">
+            <label class="form-label">TEXTO:</label>
             <textarea
               [value]="condition.text"
               (input)="updateConditionField(condition.id, 'text', $event)"
               rows="3"
-              class="input-field textarea-field"
+              class="textarea-field-block"
               placeholder="Descripción detallada de la condición..."></textarea>
           </div>
         </div>
