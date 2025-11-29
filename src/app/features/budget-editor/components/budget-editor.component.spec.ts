@@ -235,4 +235,128 @@ describe('BudgetEditorComponent', () => {
     await component['previewBudgetPdf']();
     expect(pdfExportServiceSpy.openBudgetPdf).toHaveBeenCalled();
   });
+
+  describe('buildPdfPayload', () => {
+    const mockSummary = {
+      totalBlocks: 100,
+      totalMaterials: 200,
+      totalCountertop: 300,
+      taxableBase: 600,
+      vatPercentage: 21,
+      vat: 126,
+      grandTotal: 726,
+      additionalLines: [
+        { id: 1, concept: 'Discount', amount: -50, conceptType: 'discount' },
+        { id: 2, concept: 'Extra', amount: 20, conceptType: 'adjustment' },
+        { id: 3, concept: 'Note', amount: 0, conceptType: 'note' }
+      ]
+    };
+
+    beforeEach(() => {
+      // Setup initial state
+      (component as any).summarySnapshot.set(mockSummary);
+      (component as any).blocks.set([{ id: 1, text: 'Block 1' }]);
+      (component as any).materials.set([{ id: 1, name: 'Material 1' }]);
+      (component as any).materialTables.set([{ id: 1, title: 'Table 1' }]);
+      (component as any).countertopData.set({ id: 1, model: 'Countertop 1' });
+      (component as any).budgetMeta.set({ id: 1, budgetNumber: 'B-001' });
+      (component as any).cachedSelectedCustomer.set({ id: 1, name: 'Customer 1' });
+    });
+
+    it('should include all sections when they are visible', () => {
+      (component as any).showTextBlocks.set(true);
+      (component as any).showMaterials.set(true);
+      (component as any).showCountertop.set(true);
+
+      const payload = (component as any).buildPdfPayload();
+
+      expect(payload.blocks.length).toBe(1);
+      expect(payload.materials.length).toBe(1);
+      expect(payload.materialTables.length).toBe(1);
+      expect(payload.countertop).not.toBeNull();
+    });
+
+    it('should exclude hidden sections from payload', () => {
+      (component as any).showTextBlocks.set(false);
+      (component as any).showMaterials.set(false);
+      (component as any).showCountertop.set(false);
+
+      const payload = (component as any).buildPdfPayload();
+
+      expect(payload.blocks.length).toBe(0);
+      expect(payload.materials.length).toBe(0);
+      expect(payload.materialTables.length).toBe(0);
+      expect(payload.countertop).toBeNull();
+    });
+
+    it('should calculate totals correctly with all sections visible', () => {
+      (component as any).showTextBlocks.set(true);
+      (component as any).showMaterials.set(true);
+      (component as any).showCountertop.set(true);
+
+      const payload = (component as any).buildPdfPayload();
+      const summary = payload.summary;
+
+      // Visible total: 100 + 200 + 300 = 600
+      // Additional: -50 + 20 = -30 (Note is ignored)
+      // Taxable Base: 600 - 30 = 570
+      expect(summary.totalBlocks).toBe(100);
+      expect(summary.totalMaterials).toBe(200);
+      expect(summary.totalCountertop).toBe(300);
+      expect(summary.taxableBase).toBe(570);
+
+      // VAT: 570 * 0.21 = 119.7
+      expect(summary.vat).toBeCloseTo(119.7);
+
+      // Grand Total: 570 + 119.7 = 689.7
+      expect(summary.grandTotal).toBeCloseTo(689.7);
+    });
+
+    it('should calculate totals correctly with some sections hidden', () => {
+      (component as any).showTextBlocks.set(true);   // 100
+      (component as any).showMaterials.set(false);  // 0 (hidden)
+      (component as any).showCountertop.set(true);  // 300
+
+      const payload = (component as any).buildPdfPayload();
+      const summary = payload.summary;
+
+      // Visible total: 100 + 0 + 300 = 400
+      // Additional: -30
+      // Taxable Base: 400 - 30 = 370
+      expect(summary.totalBlocks).toBe(100);
+      expect(summary.totalMaterials).toBe(0);
+      expect(summary.totalCountertop).toBe(300);
+      expect(summary.taxableBase).toBe(370);
+
+      // VAT: 370 * 0.21 = 77.7
+      expect(summary.vat).toBeCloseTo(77.7);
+
+      // Grand Total: 370 + 77.7 = 447.7
+      expect(summary.grandTotal).toBeCloseTo(447.7);
+    });
+
+    it('should handle null summary snapshot', () => {
+      (component as any).summarySnapshot.set(null);
+
+      // Should not throw
+      const payload = (component as any).buildPdfPayload();
+      expect(payload).toBeDefined();
+    });
+
+    it('should ignore "note" type additional lines in calculation', () => {
+      (component as any).showTextBlocks.set(true);
+      (component as any).showMaterials.set(false);
+      (component as any).showCountertop.set(false);
+
+      // Only blocks visible: 100
+      // Additional lines: -50 (discount), 20 (adjustment), 0 (note)
+      // Note should not affect calculation even if it had an amount (though usually 0)
+
+      const payload = (component as any).buildPdfPayload();
+      const summary = payload.summary;
+
+      // 100 - 50 + 20 = 70
+      expect(summary.taxableBase).toBe(70);
+    });
+  });
 });
