@@ -108,7 +108,7 @@
 }
 
 .template-controls {
-  @apply flex gap-3 flex-wrap;
+  @apply flex gap-3 flex-wrap items-center;
 }
 
 .template-select {
@@ -118,6 +118,43 @@
 
 .btn-apply-template {
   @apply px-4 py-2 bg-gray-900 text-white text-sm font-light uppercase tracking-[0.05em] disabled:opacity-60 disabled:cursor-not-allowed;
+}
+
+.btn-delete-template {
+  @apply p-2 text-red-600 hover:bg-red-50 transition-colors rounded;
+}
+
+.btn-delete-template .material-icons {
+  font-size: 1.25rem;
+}
+
+.template-save-section {
+  @apply mt-3 pt-3 border-t border-dashed border-gray-200;
+}
+
+.btn-save-as-template {
+  @apply inline-flex items-center gap-2 px-3 py-1.5 text-xs font-light uppercase tracking-[0.05em] text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors;
+}
+
+.btn-save-as-template .material-icons {
+  font-size: 1rem;
+}
+
+.create-template-form {
+  @apply flex flex-wrap items-center gap-2;
+}
+
+.template-name-input {
+  @apply flex-1 border border-gray-300 px-3 py-1.5 text-sm font-light focus:outline-none focus:border-gray-800;
+  min-width: 200px;
+}
+
+.btn-confirm-template {
+  @apply px-3 py-1.5 bg-gray-900 text-white text-xs font-light uppercase tracking-[0.05em] disabled:opacity-60 disabled:cursor-not-allowed;
+}
+
+.btn-cancel-template {
+  @apply px-3 py-1.5 text-gray-600 text-xs font-light uppercase tracking-[0.05em] hover:text-gray-900;
 }
 
 .description-edit-item {

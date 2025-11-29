@@ -58,6 +58,50 @@
                 <span>Aplicar plantilla</span>
               }
             </button>
+            @if (selectedTemplateId()) {
+              <button
+                type="button"
+                class="btn-delete-template"
+                (click)="deleteSelectedTemplate()"
+                [disabled]="isSavingTemplate()"
+                title="Eliminar plantilla seleccionada">
+                <span class="material-icons">delete</span>
+              </button>
+            }
+          </div>
+
+          <div class="template-save-section">
+            @if (!isCreatingTemplate()) {
+              <button
+                type="button"
+                class="btn-save-as-template"
+                (click)="toggleCreateTemplate()">
+                <span class="material-icons">save</span>
+                Guardar como plantilla
+              </button>
+            } @else {
+              <div class="create-template-form">
+                <input
+                  type="text"
+                  [value]="newTemplateName()"
+                  (input)="updateNewTemplateName($event)"
+                  placeholder="Nombre de la plantilla"
+                  class="template-name-input">
+                <button
+                  type="button"
+                  class="btn-confirm-template"
+                  (click)="saveAsTemplate()"
+                  [disabled]="!newTemplateName() || isSavingTemplate()">
+                  {{ isSavingTemplate() ? 'Guardando...' : 'Guardar' }}
+                </button>
+                <button
+                  type="button"
+                  class="btn-cancel-template"
+                  (click)="toggleCreateTemplate()">
+                  Cancelar
+                </button>
+              </div>
+            }
           </div>
         </div>
 

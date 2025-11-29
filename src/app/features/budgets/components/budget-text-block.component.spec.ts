@@ -22,6 +22,16 @@ describe('BudgetTextBlockComponent', () => {
     orderIndex: 0
   };
 
+  const mockTemplates = [
+    { id: 1, name: 'Template 1', provider: 'Provider 1', heading: 'Heading 1' },
+    { id: 2, name: 'Template 2', provider: 'Provider 2', heading: 'Heading 2' }
+  ];
+
+  const mockTemplateSections = [
+    { id: 1, title: 'Section 1', text: 'Text 1', orderIndex: 0 },
+    { id: 2, title: 'Section 2', text: 'Text 2', orderIndex: 1 }
+  ];
+
   beforeEach(async () => {
     // Mock completo de SupabaseService para evitar llamadas reales
     supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', [
@@ -30,8 +40,23 @@ describe('BudgetTextBlockComponent', () => {
       'updateTextBlockSection',
       'deleteTextBlockSection',
       'updateBudgetTextBlock',
-      'uploadPublicAsset'
+      'uploadPublicAsset',
+      'getTextBlockTemplates',
+      'getTextBlockTemplateWithSections',
+      'createTextBlockTemplate',
+      'deleteTextBlockTemplate'
     ]);
+
+    supabaseServiceSpy.getTextBlockTemplates.and.returnValue(Promise.resolve(mockTemplates));
+    supabaseServiceSpy.getTextBlockTemplateWithSections.and.returnValue(Promise.resolve({
+      id: 1,
+      name: 'Template 1',
+      provider: 'Provider 1',
+      heading: 'Heading 1',
+      sections: mockTemplateSections
+    }));
+    supabaseServiceSpy.createTextBlockTemplate.and.returnValue(Promise.resolve({ id: 3, name: 'New Template' }));
+    supabaseServiceSpy.deleteTextBlockTemplate.and.returnValue(Promise.resolve());
 
     await TestBed.configureTestingModule({
       imports: [BudgetTextBlockComponent],
@@ -44,10 +69,16 @@ describe('BudgetTextBlockComponent', () => {
     component = fixture.componentInstance;
     fixture.componentRef.setInput('block', mockBlock);
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should load templates on init', async () => {
+    expect(supabaseServiceSpy.getTextBlockTemplates).toHaveBeenCalled();
+    expect(component['templateOptions']().length).toBe(2);
   });
 
   it('should initialize sections from block input', () => {
@@ -145,5 +176,53 @@ describe('BudgetTextBlockComponent', () => {
     component['updateBlockField']('subtotal', event);
 
     expect(updatedBlock?.subtotal).toBe(500);
+  });
+
+  it('should apply selected template', async () => {
+    supabaseServiceSpy.deleteTextBlockSection.and.returnValue(Promise.resolve());
+    supabaseServiceSpy.addSectionToTextBlock.and.callFake((params: any) => Promise.resolve({
+      id: 100 + params.orderIndex,
+      textBlockId: params.textBlockId,
+      orderIndex: params.orderIndex,
+      title: params.title,
+      text: params.text
+    }));
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    component['selectedTemplateId'].set(1);
+
+    let updatedBlock: BudgetTextBlock | undefined;
+    component.blockUpdated.subscribe(b => updatedBlock = b);
+
+    await component['applySelectedTemplate']();
+
+    expect(supabaseServiceSpy.getTextBlockTemplateWithSections).toHaveBeenCalledWith(1);
+    expect(supabaseServiceSpy.deleteTextBlockSection).toHaveBeenCalled();
+    expect(supabaseServiceSpy.addSectionToTextBlock).toHaveBeenCalled();
+    expect(updatedBlock?.descriptions?.length).toBe(2);
+  });
+
+  it('should save current block as template', async () => {
+    component['newTemplateName'].set('My New Template');
+
+    await component['saveAsTemplate']();
+
+    expect(supabaseServiceSpy.createTextBlockTemplate).toHaveBeenCalledWith(
+      'My New Template',
+      'Test Header',
+      null,
+      jasmine.any(Array)
+    );
+    expect(component['isCreatingTemplate']()).toBeFalse();
+  });
+
+  it('should delete selected template', async () => {
+    spyOn(window, 'confirm').and.returnValue(true);
+    component['selectedTemplateId'].set(1);
+
+    await component['deleteSelectedTemplate']();
+
+    expect(supabaseServiceSpy.deleteTextBlockTemplate).toHaveBeenCalledWith(1);
+    expect(component['selectedTemplateId']()).toBeNull();
   });
 });

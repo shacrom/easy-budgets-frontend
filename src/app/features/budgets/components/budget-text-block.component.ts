@@ -1,9 +1,16 @@
-import { ChangeDetectionStrategy, Component, input, output, signal, inject, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal, inject, effect, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BudgetTextBlock, DescriptionSection } from '../../../models/budget-text-block.model';
 import { SupabaseService } from '../../../services/supabase.service';
-import { TEXT_BLOCK_TEMPLATES, TextBlockTemplate } from '../templates/text-block-templates';
+
+export interface TextBlockTemplate {
+  id: number;
+  name: string;
+  provider?: string | null;
+  heading?: string | null;
+  sections: Array<{ title: string; text: string }>;
+}
 
 /**
  * Component to display and edit a budget text block
@@ -16,7 +23,7 @@ import { TEXT_BLOCK_TEMPLATES, TextBlockTemplate } from '../templates/text-block
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BudgetTextBlockComponent {
+export class BudgetTextBlockComponent implements OnInit {
   private readonly supabase = inject(SupabaseService);
 
   // Input: text block data
@@ -31,11 +38,16 @@ export class BudgetTextBlockComponent {
   // Local state for sections (writable version)
   protected readonly sections = signal<DescriptionSection[]>([]);
 
-  protected readonly templateOptions = signal<TextBlockTemplate[]>(TEXT_BLOCK_TEMPLATES);
+  protected readonly templateOptions = signal<TextBlockTemplate[]>([]);
   protected readonly selectedTemplateId = signal<number | null>(null);
   protected readonly isApplyingTemplate = signal<boolean>(false);
   protected readonly isUploadingImage = signal<boolean>(false);
   protected readonly imageUploadError = signal<string | null>(null);
+
+  // Template creation state
+  protected readonly isCreatingTemplate = signal<boolean>(false);
+  protected readonly newTemplateName = signal<string>('');
+  protected readonly isSavingTemplate = signal<boolean>(false);
 
   // Sync sections when block changes
   constructor() {
@@ -45,6 +57,26 @@ export class BudgetTextBlockComponent {
         this.sections.set([...currentBlock.descriptions]);
       }
     });
+  }
+
+  async ngOnInit() {
+    await this.loadTemplates();
+  }
+
+  private async loadTemplates() {
+    try {
+      const templates = await this.supabase.getTextBlockTemplates();
+      // Map to include empty sections array initially (sections loaded on demand)
+      this.templateOptions.set((templates || []).map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        provider: t.provider,
+        heading: t.heading,
+        sections: []
+      })));
+    } catch (error) {
+      console.error('Error loading templates:', error);
+    }
   }
 
   /**
@@ -185,12 +217,6 @@ export class BudgetTextBlockComponent {
       return;
     }
 
-    const tid = templateId as number;
-    const template = this.templateOptions().find(t => t.id === tid);
-    if (!template) {
-      return;
-    }
-
     const confirmed = confirm('Aplicar una plantilla reemplazará las secciones actuales. ¿Deseas continuar?');
     if (!confirmed) {
       return;
@@ -199,6 +225,9 @@ export class BudgetTextBlockComponent {
     this.isApplyingTemplate.set(true);
 
     try {
+      // Load template with sections from database
+      const template = await this.supabase.getTextBlockTemplateWithSections(templateId);
+
       // Delete existing sections
       const existingSections = this.sections();
       await Promise.all(
@@ -237,6 +266,81 @@ export class BudgetTextBlockComponent {
       this.isApplyingTemplate.set(false);
     }
   }
+
+  /**
+   * Toggles create template mode
+   */
+  protected toggleCreateTemplate(): void {
+    this.isCreatingTemplate.update(v => !v);
+    this.newTemplateName.set('');
+  }
+
+  /**
+   * Updates new template name
+   */
+  protected updateNewTemplateName(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.newTemplateName.set(input.value);
+  }
+
+  /**
+   * Saves current block as a new template
+   */
+  protected async saveAsTemplate(): Promise<void> {
+    const name = this.newTemplateName().trim();
+    if (!name) return;
+
+    this.isSavingTemplate.set(true);
+    try {
+      const currentSections = this.sections().map(s => ({
+        title: s.title || '',
+        text: s.text || ''
+      }));
+
+      const newTemplate = await this.supabase.createTextBlockTemplate(
+        name,
+        this.block().heading || null,
+        null, // provider
+        currentSections
+      );
+
+      await this.loadTemplates();
+
+      // Select the new template
+      if (newTemplate) {
+        this.selectedTemplateId.set(newTemplate.id);
+      }
+
+      this.isCreatingTemplate.set(false);
+      this.newTemplateName.set('');
+    } catch (error) {
+      console.error('Error creating template:', error);
+    } finally {
+      this.isSavingTemplate.set(false);
+    }
+  }
+
+  /**
+   * Deletes the currently selected template
+   */
+  protected async deleteSelectedTemplate(): Promise<void> {
+    const templateId = this.selectedTemplateId();
+    if (!templateId) return;
+
+    if (!confirm('¿Estás seguro de que quieres eliminar esta plantilla?')) return;
+
+    this.isSavingTemplate.set(true);
+    try {
+      await this.supabase.deleteTextBlockTemplate(templateId);
+      await this.loadTemplates();
+      this.selectedTemplateId.set(null);
+    } catch (error) {
+      console.error('Error deleting template:', error);
+    } finally {
+      this.isSavingTemplate.set(false);
+    }
+  }
+
 
   protected async onBlockImageSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;

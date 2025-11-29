@@ -1113,4 +1113,97 @@ export class SupabaseService {
 
     if (error) throw error;
   }
+
+  // ============================================
+  // TEXT BLOCK TEMPLATES
+  // ============================================
+
+  async getTextBlockTemplates() {
+    const { data, error } = await this.supabase
+      .from('TextBlockTemplates')
+      .select('*')
+      .order('name');
+
+    if (error) throw error;
+    return data;
+  }
+
+  async getTextBlockTemplateSections(templateId: number) {
+    const { data, error } = await this.supabase
+      .from('TextBlockTemplateSections')
+      .select('*')
+      .eq('template_id', templateId)
+      .order('order_index');
+
+    if (error) throw error;
+
+    return data.map((section: any) => ({
+      id: section.id,
+      title: section.title,
+      text: section.content,
+      orderIndex: section.order_index
+    }));
+  }
+
+  async getTextBlockTemplateWithSections(templateId: number) {
+    // Get template info
+    const { data: template, error: templateError } = await this.supabase
+      .from('TextBlockTemplates')
+      .select('*')
+      .eq('id', templateId)
+      .single();
+
+    if (templateError) throw templateError;
+
+    // Get sections
+    const sections = await this.getTextBlockTemplateSections(templateId);
+
+    return {
+      id: template.id,
+      name: template.name,
+      provider: template.provider,
+      heading: template.heading,
+      sections
+    };
+  }
+
+  async createTextBlockTemplate(name: string, heading: string | null, provider: string | null, sections: Array<{ title: string; text: string }>) {
+    // 1. Create template
+    const { data: template, error: templateError } = await this.supabase
+      .from('TextBlockTemplates')
+      .insert([{ name, heading, provider }])
+      .select()
+      .single();
+
+    if (templateError) throw templateError;
+
+    if (!sections.length) return template;
+
+    // 2. Create sections
+    const sectionsPayload = sections.map((section, index) => ({
+      template_id: template.id,
+      title: section.title,
+      content: section.text,
+      order_index: index
+    }));
+
+    const { error: sectionsError } = await this.supabase
+      .from('TextBlockTemplateSections')
+      .insert(sectionsPayload);
+
+    if (sectionsError) throw sectionsError;
+
+    return template;
+  }
+
+  async deleteTextBlockTemplate(id: number) {
+    if (!Number.isFinite(id)) return;
+    const { error } = await this.supabase
+      .from('TextBlockTemplates')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
 }
+
