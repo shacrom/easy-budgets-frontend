@@ -1140,6 +1140,10 @@ export class PdfExportService {
     // Calcular el subtotal base para los descuentos porcentuales
     const baseSubtotal = (summary.totalBlocks ?? 0) + (summary.totalMaterials ?? 0) + (summary.totalCountertop ?? 0);
 
+    // Filtrar líneas opcionales para el cálculo de totales
+    const nonOptionalLines = (summary.additionalLines ?? []).filter(line => this.resolveSummaryLineType(line) !== 'optional');
+    const optionalLines = (summary.additionalLines ?? []).filter(line => this.resolveSummaryLineType(line) === 'optional');
+
     const breakdownRows: TableCell[][] = [];
     const pushCategory = (
       label: string,
@@ -1151,7 +1155,6 @@ export class PdfExportService {
         breakdownRows.push(this.summaryCategoryRow(line.label, line.value, true));
       });
     };
-
 
     if (summary.totalBlocks > 0) {
       pushCategory(`Total ${blocksSectionTitle || 'mobiliario'}`, summary.totalBlocks, blockBreakdown);
@@ -1169,8 +1172,7 @@ export class PdfExportService {
       // Add an explicit header for additional lines so they don't appear visually
       // under other categories (e.g., 'Total encimera') in the table.
       breakdownRows.push([
-        { text: 'Conceptos adicionales', style: 'additionalHeader', colSpan:
-         2 },
+        { text: 'Conceptos adicionales', style: 'additionalHeader', colSpan: 2 },
         {}
       ] as TableCell[]);
 
@@ -1218,9 +1220,18 @@ export class PdfExportService {
       });
     }
 
+    // Calcular los totales excluyendo líneas opcionales
+    const taxableBase =
+      (summary.totalBlocks ?? 0) +
+      (summary.totalMaterials ?? 0) +
+      (summary.totalCountertop ?? 0) +
+      nonOptionalLines.reduce((sum, line) => sum + this.formatSummaryLineAmount(line, baseSubtotal), 0);
+    const vat = taxableBase * ((summary.vatPercentage ?? 21) / 100);
+    const grandTotal = taxableBase + vat;
+
     const totalsRows: TableCell[][] = [
-      this.summaryTotalsRow('BASE IMPONIBLE', summary.taxableBase),
-      this.summaryTotalsRow(`IVA (${summary.vatPercentage}%)`, summary.vat)
+      this.summaryTotalsRow('BASE IMPONIBLE', taxableBase),
+      this.summaryTotalsRow(`IVA (${summary.vatPercentage}%)`, vat)
     ];
 
     const summaryTotalsLayoutWithGrayIva: TableLayout = {
@@ -1262,11 +1273,12 @@ export class PdfExportService {
       }
     ]);
 
+
     const grandTotalCard = this.buildCard([
       {
         columns: [
           { text: 'TOTAL GENERAL', style: 'sectionCardTitle', width: '*' },
-          { text: this.formatCurrency(summary.grandTotal), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
+          { text: this.formatCurrency(grandTotal), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
         ]
       }
     ], '#f4ede5');
