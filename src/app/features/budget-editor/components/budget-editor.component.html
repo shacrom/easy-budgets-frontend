@@ -307,6 +307,8 @@
       @if (showConditions()) {
         <section class="section-divider">
           <app-general-conditions
+            [budgetId]="currentBudgetId() ?? 0"
+            [initialConditions]="conditionsList()"
             (titleChanged)="onConditionsTitleChanged($event)"
             (conditionsChanged)="onConditionsChanged($event)"></app-general-conditions>
         </section>

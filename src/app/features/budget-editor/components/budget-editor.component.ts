@@ -352,6 +352,9 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       // Additional lines (discounts, extras, etc.) — pass them to the summary component
       this.additionalLines.set(budget.additionalLines ?? []);
 
+      // Load conditions
+      this.conditionsList.set(budget.conditions ?? []);
+
       this.isInitialized.set(true);
     } catch (error) {
       console.error('No se pudo cargar el presupuesto seleccionado:', error);

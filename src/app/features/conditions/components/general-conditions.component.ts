@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, signal, effect, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, effect, output, inject, input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Condition, DEFAULT_CONDITIONS, CONDITION_TEMPLATES, TemplateType } from '../../../models/conditions.model';
+import { Condition } from '../../../models/conditions.model';
+import { SupabaseService } from '../../../services/supabase.service';
 
 /**
  * Component to manage budget general conditions
@@ -14,21 +15,27 @@ import { Condition, DEFAULT_CONDITIONS, CONDITION_TEMPLATES, TemplateType } from
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GeneralConditionsComponent {
+export class GeneralConditionsComponent implements OnInit {
+  private readonly supabase = inject(SupabaseService);
+
+  // Inputs
+  readonly budgetId = input<number>(0);
+  readonly initialConditions = input<Condition[]>([]);
+
   // Section title (now editable)
   protected readonly title = signal<string>('CONDICIONES GENERALES');
 
   // List of conditions
-  protected readonly conditions = signal<Condition[]>([...DEFAULT_CONDITIONS]);
+  protected readonly conditions = signal<Condition[]>([]);
 
   // Edit mode
   protected readonly editMode = signal<boolean>(false);
 
   // Currently selected template
-  protected readonly selectedTemplate = signal<TemplateType>('general');
+  protected readonly selectedTemplateId = signal<number | null>(null);
 
   // Available templates
-  protected readonly templates = CONDITION_TEMPLATES;
+  protected readonly templates = signal<any[]>([]);
 
   // Manual save pattern
   protected readonly hasUnsavedChanges = signal<boolean>(false);
@@ -36,14 +43,33 @@ export class GeneralConditionsComponent {
 
   // Store original state for discard
   private readonly originalTitle = signal<string>('CONDICIONES GENERALES');
-  private readonly originalConditions = signal<Condition[]>([...DEFAULT_CONDITIONS]);
+  private readonly originalConditions = signal<Condition[]>([]);
 
   // Outputs to notify parent components (only on manual save)
   readonly titleChanged = output<string>();
   readonly conditionsChanged = output<Condition[]>();
 
   constructor() {
-    // No automatic effects - removed all auto-emit logic
+    effect(() => {
+      const initConds = this.initialConditions();
+      if (initConds) {
+        this.conditions.set([...initConds]);
+        this.originalConditions.set([...initConds]);
+      }
+    }, { allowSignalWrites: true });
+  }
+
+  async ngOnInit() {
+    await this.loadTemplates();
+  }
+
+  private async loadTemplates() {
+    try {
+      const templates = await this.supabase.getConditionTemplates();
+      this.templates.set(templates || []);
+    } catch (error) {
+      console.error('Error loading templates:', error);
+    }
   }
 
   /**
@@ -65,23 +91,26 @@ export class GeneralConditionsComponent {
   /**
    * Changes the conditions template
    */
-  protected changeTemplate(event: Event): void {
+  protected async changeTemplate(event: Event): Promise<void> {
     const select = event.target as HTMLSelectElement;
-    const templateId = select.value as TemplateType;
+    const templateId = Number(select.value);
 
-    const template = CONDITION_TEMPLATES.find(t => t.id === templateId);
-    if (template) {
-      this.selectedTemplate.set(templateId);
-      this.conditions.set([...template.conditions]);
+    if (!templateId) return;
+
+    this.selectedTemplateId.set(templateId);
+
+    try {
+      const sections = await this.supabase.getConditionTemplateSections(templateId);
+      this.conditions.set(sections);
       this.hasUnsavedChanges.set(true);
+    } catch (error) {
+      console.error('Error loading template sections:', error);
     }
   }
 
   /**
    * Adds a new empty condition
    */
-  private nextClientId = -1;
-
   protected addCondition(): void {
     const newCondition: Condition = {
       id: this.generateId(),
@@ -94,26 +123,14 @@ export class GeneralConditionsComponent {
   }
 
   /**
-   * Updates an existing condition
+   * Updates an existing condition field
    */
-  protected updateCondition(updatedCondition: Condition): void {
-    this.conditions.update(conds =>
-      conds.map(cond => cond.id === updatedCondition.id ? updatedCondition : cond)
-    );
-    this.hasUnsavedChanges.set(true);
-  }
-
-  /**
-   * Updates a specific field of a condition
-   */
-  protected updateConditionField(conditionId: number, field: 'title' | 'text', event: Event): void {
+  protected updateConditionField(id: number, field: 'title' | 'text', event: Event): void {
     const input = event.target as HTMLInputElement | HTMLTextAreaElement;
+    const value = input.value;
+
     this.conditions.update(conds =>
-      conds.map(cond =>
-        cond.id === conditionId
-          ? { ...cond, [field]: input.value }
-          : cond
-      )
+      conds.map(c => c.id === id ? { ...c, [field]: value } : c)
     );
     this.hasUnsavedChanges.set(true);
   }
@@ -121,53 +138,65 @@ export class GeneralConditionsComponent {
   /**
    * Deletes a condition
    */
-  protected deleteCondition(conditionId: number): void {
-    this.conditions.update(conds => conds.filter(cond => cond.id !== conditionId));
+  protected deleteCondition(id: number): void {
+    this.conditions.update(conds => conds.filter(c => c.id !== id));
     this.hasUnsavedChanges.set(true);
   }
 
   /**
-   * Restores the currently selected template
+   * Saves changes
    */
-  protected resetToTemplate(): void {
-    const template = CONDITION_TEMPLATES.find(t => t.id === this.selectedTemplate());
-    if (template) {
-      this.conditions.set([...template.conditions]);
-      this.hasUnsavedChanges.set(true);
+  protected async saveChanges(): Promise<void> {
+    if (this.isSaving()) return;
+
+    this.isSaving.set(true);
+    try {
+      const id = this.budgetId();
+      if (id) {
+        await this.supabase.saveBudgetConditions(id, this.conditions());
+      }
+
+      this.originalTitle.set(this.title());
+      this.originalConditions.set([...this.conditions()]);
+      this.hasUnsavedChanges.set(false);
+      this.editMode.set(false);
+
+      this.titleChanged.emit(this.title());
+      this.conditionsChanged.emit(this.conditions());
+    } catch (error) {
+      console.error('Error saving conditions:', error);
+    } finally {
+      this.isSaving.set(false);
     }
   }
 
   /**
-   * Saves all changes and emits to parent
+   * Discards changes
    */
-  saveChanges(): void {
-    this.isSaving.set(true);
-
-    // Update original state
-    this.originalTitle.set(this.title());
-    this.originalConditions.set(this.conditions());
-
-    // Emit to parent
-    this.titleChanged.emit(this.title());
-    this.conditionsChanged.emit(this.conditions());
-
-    this.hasUnsavedChanges.set(false);
-    this.isSaving.set(false);
-  }
-
-  /**
-   * Discards all changes and restores original state
-   */
-  discardChanges(): void {
+  protected discardChanges(): void {
     this.title.set(this.originalTitle());
-    this.conditions.set(this.originalConditions());
+    this.conditions.set([...this.originalConditions()]);
     this.hasUnsavedChanges.set(false);
+    this.editMode.set(false);
   }
 
   /**
-   * Generates a unique ID
+   * Resets to the currently selected template (re-fetch)
    */
+  protected async resetToTemplate(): Promise<void> {
+    const templateId = this.selectedTemplateId();
+    if (templateId) {
+       try {
+        const sections = await this.supabase.getConditionTemplateSections(templateId);
+        this.conditions.set(sections);
+        this.hasUnsavedChanges.set(true);
+      } catch (error) {
+        console.error('Error loading template sections:', error);
+      }
+    }
+  }
+
   private generateId(): number {
-    return this.nextClientId--;
+    return -Math.floor(Math.random() * 1000000);
   }
 }

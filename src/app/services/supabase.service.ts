@@ -362,6 +362,7 @@ export class SupabaseService {
           rows:BudgetMaterialTableRows(*)
         ),
         additionalLines:BudgetAdditionalLines(*),
+        conditions:BudgetConditions(*),
         countertop:BudgetCountertops(*)
       `)
         .eq('id', id)
@@ -377,6 +378,19 @@ export class SupabaseService {
           ...block,
           descriptions: block.descriptions?.sort((a: any, b: any) => a.orderIndex - b.orderIndex) || []
         }));
+    }
+
+    if (data.conditions) {
+      data.conditions = data.conditions
+        .sort((a: any, b: any) => a.order_index - b.order_index)
+        .map((condition: any) => ({
+          id: condition.id,
+          title: condition.title,
+          text: condition.content,
+          orderIndex: condition.order_index
+        }));
+    } else {
+      data.conditions = [];
     }
 
     if (data.materialTables) {
@@ -942,6 +956,86 @@ export class SupabaseService {
 
     if (error) throw error;
     return data;
+  }
+
+  // ============================================
+  // CONDITION TEMPLATES
+  // ============================================
+
+  async getConditionTemplates() {
+    const { data, error } = await this.supabase
+      .from('ConditionTemplates')
+      .select('*')
+      .order('name');
+
+    if (error) throw error;
+    return data;
+  }
+
+  async getConditionTemplateSections(templateId: number) {
+    const { data, error } = await this.supabase
+      .from('ConditionTemplateSections')
+      .select('*')
+      .eq('template_id', templateId)
+      .order('order_index');
+
+    if (error) throw error;
+
+    return data.map((section: any) => ({
+      id: section.id,
+      title: section.title,
+      text: section.content,
+      orderIndex: section.order_index
+    }));
+  }
+
+  // ============================================
+  // BUDGET CONDITIONS
+  // ============================================
+
+  async getBudgetConditions(budgetId: number) {
+    const { data, error } = await this.supabase
+      .from('BudgetConditions')
+      .select('*')
+      .eq('budget_id', budgetId)
+      .order('order_index');
+
+    if (error) throw error;
+
+    return data.map((condition: any) => ({
+      id: condition.id,
+      title: condition.title,
+      text: condition.content,
+      orderIndex: condition.order_index
+    }));
+  }
+
+  async saveBudgetConditions(budgetId: number, conditions: any[]) {
+    if (!Number.isFinite(budgetId)) throw new Error('Invalid budget id');
+
+    // 1. Delete existing conditions
+    const { error: deleteError } = await this.supabase
+      .from('BudgetConditions')
+      .delete()
+      .eq('budget_id', budgetId);
+
+    if (deleteError) throw deleteError;
+
+    if (!conditions.length) return;
+
+    // 2. Insert new conditions
+    const payload = conditions.map((cond, index) => ({
+      budget_id: budgetId,
+      title: cond.title,
+      content: cond.text,
+      order_index: index
+    }));
+
+    const { error: insertError } = await this.supabase
+      .from('BudgetConditions')
+      .insert(payload);
+
+    if (insertError) throw insertError;
   }
 
   // ============================================

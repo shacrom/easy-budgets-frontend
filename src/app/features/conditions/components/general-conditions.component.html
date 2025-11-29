@@ -17,14 +17,14 @@
           <span>Cambios sin guardar</span>
         </span>
       }
-      @if (hasUnsavedChanges()) {
+      @if (editMode()) {
         <button
           type="button"
           class="btn ghost"
           (click)="discardChanges()"
           [disabled]="isSaving()">
-          <span class="material-symbols-rounded" aria-hidden="true">undo</span>
-          <span>Descartar</span>
+          <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          <span>Cancelar</span>
         </button>
       }
       <button
@@ -35,29 +35,20 @@
         <span class="material-symbols-rounded" aria-hidden="true">save</span>
         <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
       </button>
-      <button
-        (click)="toggleEditMode()"
-        class="btn-toggle-edit"
-        type="button">
-        @if (editMode()) {
-          <span>Vista Previa</span>
-        } @else {
+      @if (!editMode()) {
+        <button
+          (click)="toggleEditMode()"
+          class="btn-toggle-edit"
+          type="button">
           <span>Modo Edición</span>
-        }
-      </button>
+        </button>
+      }
       @if (editMode()) {
         <button
           (click)="addCondition()"
           class="btn-add-condition"
           type="button">
           + Añadir Condición
-        </button>
-        <button
-          (click)="resetToTemplate()"
-          class="btn-reset"
-          type="button"
-          title="Restaurar plantilla seleccionada">
-          ↻ Restaurar
         </button>
       }
     </div>
@@ -70,10 +61,10 @@
       </label>
       <select
         id="template-select"
-        [value]="selectedTemplate()"
+        [value]="selectedTemplateId()"
         (change)="changeTemplate($event)"
         class="template-select">
-        @for (template of templates; track template.id) {
+        @for (template of templates(); track template.id) {
           <option [value]="template.id">{{ template.name }}</option>
         }
       </select>
@@ -138,7 +129,7 @@
         @if (conditions().length === 0) {
           <div class="empty-state">
             <p class="text-gray-500 text-center">
-              No hay condiciones añadidas. Haz clic en "Añadir Condición" o "Restaurar" para cargar las condiciones de la plantilla seleccionada.
+              No hay condiciones añadidas. Haz clic en "Añadir Condición" para comenzar.
             </p>
           </div>
         }
