@@ -100,6 +100,13 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   private pdfUpdateDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly PDF_UPDATE_DEBOUNCE_MS = 800;
 
+  // Print options signals
+  protected readonly printTextBlocks = signal<boolean>(true);
+  protected readonly printMaterials = signal<boolean>(true);
+  protected readonly printCountertop = signal<boolean>(true);
+  protected readonly printConditions = signal<boolean>(true);
+  protected readonly printSummary = signal<boolean>(true);
+
   protected readonly selectedCustomer = computed(() => this.cachedSelectedCustomer());
   protected readonly isBudgetCompleted = computed(() => (this.budgetMeta()?.status ?? '').toLowerCase() === 'completed');
   protected readonly completionStateLabel = computed(() => this.isBudgetCompleted() ? 'Completado' : 'No completado');
@@ -150,6 +157,11 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
         this.showConditions();
         this.showSummary();
         this.showSignature();
+        this.printTextBlocks();
+        this.printMaterials();
+        this.printCountertop();
+        this.printConditions();
+        this.printSummary();
         this.budgetMeta();
         this.conditionsTitle();
 
@@ -225,6 +237,11 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       companyLogoUrl: this.companyLogoUrl() || undefined,
       supplierLogoUrl: this.supplierLogoUrl() || undefined,
       showSignature: this.showSignature(),
+      printTextBlocks: this.printTextBlocks(),
+      printMaterials: this.printMaterials(),
+      printCountertop: this.printCountertop(),
+      printConditions: this.printConditions(),
+      printSummary: this.printSummary(),
       generatedAt: new Date().toISOString()
     };
   }
@@ -876,6 +893,26 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       await this.supabase.updateBudget(id, updates);
     } catch (error) {
       console.error('Error updating section visibility:', error);
+    }
+  }
+
+  togglePrintOption(option: 'textBlocks' | 'materials' | 'countertop' | 'conditions' | 'summary') {
+    switch (option) {
+      case 'textBlocks':
+        this.printTextBlocks.update(v => !v);
+        break;
+      case 'materials':
+        this.printMaterials.update(v => !v);
+        break;
+      case 'countertop':
+        this.printCountertop.update(v => !v);
+        break;
+      case 'conditions':
+        this.printConditions.update(v => !v);
+        break;
+      case 'summary':
+        this.printSummary.update(v => !v);
+        break;
     }
   }
 

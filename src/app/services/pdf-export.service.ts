@@ -32,6 +32,11 @@ export interface BudgetPdfPayload {
   companyLogoUrl?: string;
   supplierLogoUrl?: string;
   showSignature?: boolean;
+  printTextBlocks?: boolean;
+  printMaterials?: boolean;
+  printCountertop?: boolean;
+  printConditions?: boolean;
+  printSummary?: boolean;
   generatedAt: string;
 }
 
@@ -197,23 +202,23 @@ export class PdfExportService {
 
 
     // Construir secciones individuales
-    const textBlocksContent = this.buildTextBlocksSection(blocks);
-    const materialsContent = this.buildMaterialsSection(payload.materialTables, payload.materials, payload.materialsSectionTitle);
-    const countertopContent = this.buildCountertopSection(countertop);
+    const textBlocksContent = (payload.printTextBlocks !== false) ? this.buildTextBlocksSection(blocks) : [];
+    const materialsContent = (payload.printMaterials !== false) ? this.buildMaterialsSection(payload.materialTables, payload.materials, payload.materialsSectionTitle) : [];
+    const countertopContent = (payload.printCountertop !== false) ? this.buildCountertopSection(countertop) : null;
 
     // Obtener títulos personalizados
     const blocksSectionTitle = blocks[0]?.sectionTitle || 'Mobiliario';
     const countertopSectionTitle = countertop?.sectionTitle || 'Encimera';
 
-    const summaryContent = this.buildSummarySection(
+    const summaryContent = (payload.printSummary !== false) ? this.buildSummarySection(
       payload.summary,
       blocks,
       payload.materialTables,
       payload.materialsSectionTitle,
       blocksSectionTitle,
       countertopSectionTitle
-    );
-    const conditionsContent = this.buildConditionsSection(payload.conditionsTitle, payload.conditions);
+    ) : null;
+    const conditionsContent = (payload.printConditions !== false) ? this.buildConditionsSection(payload.conditionsTitle, payload.conditions) : null;
     const signatureContent = payload.showSignature !== false ? this.buildSignatureSection(payload.customer) : null;
 
     // Agrupar secciones con su contenido (solo las que tienen contenido)
@@ -1146,6 +1151,7 @@ export class PdfExportService {
         breakdownRows.push(this.summaryCategoryRow(line.label, line.value, true));
       });
     };
+
 
     if (summary.totalBlocks > 0) {
       pushCategory(`Total ${blocksSectionTitle || 'mobiliario'}`, summary.totalBlocks, blockBreakdown);

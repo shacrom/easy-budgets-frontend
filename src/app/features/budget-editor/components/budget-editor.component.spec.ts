@@ -359,4 +359,39 @@ describe('BudgetEditorComponent', () => {
       expect(summary.taxableBase).toBe(70);
     });
   });
+
+  describe('PDF Print Options', () => {
+    it('should initialize print options to true by default', () => {
+      expect((component as any).printTextBlocks()).toBeTrue();
+      expect((component as any).printMaterials()).toBeTrue();
+      expect((component as any).printCountertop()).toBeTrue();
+      expect((component as any).printConditions()).toBeTrue();
+      expect((component as any).printSummary()).toBeTrue();
+    });
+
+    it('should toggle print options', () => {
+      component.togglePrintOption('textBlocks');
+      expect((component as any).printTextBlocks()).toBeFalse();
+
+      component.togglePrintOption('materials');
+      expect((component as any).printMaterials()).toBeFalse();
+
+      component.togglePrintOption('textBlocks');
+      expect((component as any).printTextBlocks()).toBeTrue();
+    });
+
+    it('should include print flags in PDF payload', () => {
+      // Set some options to false
+      component.togglePrintOption('materials');
+      component.togglePrintOption('conditions');
+
+      const payload = (component as any).buildPdfPayload();
+
+      expect(payload.printTextBlocks).toBeTrue();
+      expect(payload.printMaterials).toBeFalse();
+      expect(payload.printCountertop).toBeTrue();
+      expect(payload.printConditions).toBeFalse();
+      expect(payload.printSummary).toBeTrue();
+    });
+  });
 });

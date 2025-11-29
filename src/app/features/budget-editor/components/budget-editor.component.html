@@ -319,6 +319,43 @@
         <div class="preview-sticky">
           <div class="preview-header">
             <h3>Vista previa del documento</h3>
+            
+            <div class="print-options">
+              <h4>Páginas a incluir:</h4>
+              <div class="print-toggles">
+                @if (showTextBlocks() && blocks().length > 0) {
+                  <label class="print-toggle" title="Incluir página de mobiliario">
+                    <input type="checkbox" [checked]="printTextBlocks()" (change)="togglePrintOption('textBlocks')">
+                    <span>Mobiliario</span>
+                  </label>
+                }
+                @if (showMaterials() && (materialTables().length > 0 || materials().length > 0)) {
+                  <label class="print-toggle" title="Incluir página de materiales">
+                    <input type="checkbox" [checked]="printMaterials()" (change)="togglePrintOption('materials')">
+                    <span>Materiales</span>
+                  </label>
+                }
+                @if (showCountertop() && countertopData()) {
+                  <label class="print-toggle" title="Incluir página de encimera">
+                    <input type="checkbox" [checked]="printCountertop()" (change)="togglePrintOption('countertop')">
+                    <span>Encimera</span>
+                  </label>
+                }
+                @if (showSummary()) {
+                  <label class="print-toggle" title="Incluir página de resumen">
+                    <input type="checkbox" [checked]="printSummary()" (change)="togglePrintOption('summary')">
+                    <span>Resumen</span>
+                  </label>
+                }
+                @if (showConditions() && conditionsList().length > 0) {
+                  <label class="print-toggle" title="Incluir página de condiciones">
+                    <input type="checkbox" [checked]="printConditions()" (change)="togglePrintOption('conditions')">
+                    <span>Condiciones</span>
+                  </label>
+                }
+              </div>
+            </div>
+
             <div class="preview-controls">
               <div class="page-controls">
                 <button
