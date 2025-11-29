@@ -346,6 +346,51 @@ describe('SupabaseService', () => {
     });
   });
 
+  describe('Materials', () => {
+    it('should save material tables', async () => {
+      const tables = [{
+        title: 'Table 1',
+        rows: [{ reference: 'Ref 1', quantity: 1, unitPrice: 10 }]
+      }];
+
+      const tablesBuilder = jasmine.createSpyObj('TablesBuilder', ['delete', 'eq', 'insert', 'select', 'then']);
+      tablesBuilder.delete.and.returnValue(tablesBuilder);
+      tablesBuilder.eq.and.returnValue(tablesBuilder);
+      tablesBuilder.insert.and.returnValue(tablesBuilder);
+      tablesBuilder.select.and.returnValue(tablesBuilder);
+
+      let tablesCallCount = 0;
+      tablesBuilder.then = (resolve: any) => {
+        tablesCallCount++;
+        if (tablesCallCount === 1) {
+           return Promise.resolve({ error: null }).then(resolve);
+        } else {
+           return Promise.resolve({ data: [{ id: 10 }], error: null }).then(resolve);
+        }
+      };
+
+      const rowsBuilder = jasmine.createSpyObj('RowsBuilder', ['insert', 'select', 'then']);
+      rowsBuilder.insert.and.returnValue(rowsBuilder);
+      rowsBuilder.select.and.returnValue(rowsBuilder);
+      rowsBuilder.then = (resolve: any) => Promise.resolve({ data: [{ id: 100 }], error: null }).then(resolve);
+
+      supabaseSpy.from.and.callFake((table: string) => {
+        if (table === 'BudgetMaterialTables') return tablesBuilder;
+        if (table === 'BudgetMaterialTableRows') return rowsBuilder;
+        return queryBuilderSpy;
+      });
+
+      const result = await service.saveMaterialTables(1, tables as any);
+
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetMaterialTables');
+      expect(tablesBuilder.delete).toHaveBeenCalled();
+      expect(tablesBuilder.insert).toHaveBeenCalled();
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetMaterialTableRows');
+      expect(rowsBuilder.insert).toHaveBeenCalled();
+      expect(result).toEqual({ tables: [{ id: 10 }], rows: [{ id: 100 }] });
+    });
+  });
+
   describe('Text Blocks', () => {
     it('should get text blocks for budget', async () => {
       const mockBlocks = [{ id: 1, heading: 'Block 1', descriptions: [] }];
@@ -505,6 +550,17 @@ describe('SupabaseService', () => {
       expect(conditions.length).toBe(1);
     });
 
+    it('should get default general conditions', async () => {
+      const mockConditions = { id: 1, title: 'Default' };
+      queryBuilderSpy.single.and.returnValue(Promise.resolve({ data: mockConditions, error: null }));
+
+      const conditions = await service.getDefaultGeneralConditions();
+
+      expect(supabaseSpy.from).toHaveBeenCalledWith('GeneralConditions');
+      expect(queryBuilderSpy.single).toHaveBeenCalled();
+      expect(conditions).toEqual(mockConditions);
+    });
+
     it('should create general conditions', async () => {
       const newConditions = { title: 'New Cond' };
       const createdConditions = { id: 2, ...newConditions };
@@ -563,6 +619,84 @@ describe('SupabaseService', () => {
       expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetCountertops');
       expect(queryBuilderSpy.delete).toHaveBeenCalled();
       expect(queryBuilderSpy.eq).toHaveBeenCalledWith('budgetId', 1);
+    });
+  });
+
+  describe('Storage', () => {
+    it('should throw if bucket is not configured', async () => {
+      (service as any).storageBucket = '';
+      await expectAsync(service.uploadPublicAsset(new Blob(['']), {})).toBeRejectedWithError('The Supabase storage bucket is not configured.');
+    });
+
+    it('should upload file and return public url', async () => {
+      (service as any).storageBucket = 'test-bucket';
+      const file = new File(['content'], 'test.png', { type: 'image/png' });
+      const mockUrl = 'https://example.com/test.png';
+
+      storageFileApiSpy.upload.and.returnValue(Promise.resolve({ data: { path: 'path/to/file' }, error: null }));
+      storageFileApiSpy.getPublicUrl.and.returnValue({ data: { publicUrl: mockUrl } });
+
+      const result = await service.uploadPublicAsset(file, { folder: 'uploads' });
+
+      expect(supabaseSpy.storage.from).toHaveBeenCalledWith('test-bucket');
+      expect(storageFileApiSpy.upload).toHaveBeenCalled();
+      expect(storageFileApiSpy.getPublicUrl).toHaveBeenCalled();
+      expect(result.publicUrl).toBe(mockUrl);
+    });
+
+    it('should handle upload error', async () => {
+      (service as any).storageBucket = 'test-bucket';
+      const error = { message: 'Upload failed' };
+      storageFileApiSpy.upload.and.returnValue(Promise.resolve({ data: null, error }));
+
+      await expectAsync(service.uploadPublicAsset(new Blob(['']))).toBeRejectedWith(error);
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should throw error when updating customer with invalid id', async () => {
+      await expectAsync(service.updateCustomer(NaN, {})).toBeRejectedWithError('Invalid customer id');
+    });
+
+    it('should throw error when updating budget totals without id', async () => {
+      await expectAsync(service.updateBudgetTotals(NaN, {} as any)).toBeRejectedWithError('Budget ID is required to update totals.');
+    });
+
+    it('should throw error when updating budget totals without summary', async () => {
+      await expectAsync(service.updateBudgetTotals(1, null as any)).toBeRejectedWithError('Budget summary is required to update totals.');
+    });
+
+    it('should throw error when getting budget with invalid id', async () => {
+      await expectAsync(service.getBudget(NaN)).toBeRejectedWithError('Budget ID is required');
+    });
+
+    it('should throw error when updating budget with invalid id', async () => {
+      await expectAsync(service.updateBudget(NaN, {})).toBeRejectedWithError('Invalid budget id');
+    });
+
+    it('should throw error when duplicating non-existent budget', async () => {
+      spyOn(service, 'getBudget').and.returnValue(Promise.resolve(null));
+      await expectAsync(service.duplicateBudget(1)).toBeRejectedWithError('Presupuesto no encontrado');
+    });
+
+    it('should throw error when updating text block with invalid id', async () => {
+      await expectAsync(service.updateBudgetTextBlock(NaN, {})).toBeRejectedWithError('Invalid text block id');
+    });
+
+    it('should throw error when updating text block section with invalid id', async () => {
+      await expectAsync(service.updateTextBlockSection(NaN, {})).toBeRejectedWithError('Invalid section id');
+    });
+
+    it('should throw error when saving material tables without budget id', async () => {
+      await expectAsync(service.saveMaterialTables(NaN, [])).toBeRejectedWithError('Budget ID is required');
+    });
+
+    it('should throw error when saving additional lines without budget id', async () => {
+      await expectAsync(service.saveAdditionalLines(NaN, [])).toBeRejectedWithError('Budget ID is required to save additional lines.');
+    });
+
+    it('should throw error when updating general conditions with invalid id', async () => {
+      await expectAsync(service.updateGeneralConditions(NaN, {})).toBeRejectedWithError('Invalid conditions id');
     });
   });
 });
