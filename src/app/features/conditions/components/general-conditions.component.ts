@@ -139,7 +139,7 @@ export class GeneralConditionsComponent implements OnInit {
     try {
       const newTemplate = await this.supabase.createConditionTemplate(name, this.conditions());
       await this.loadTemplates();
-      
+
       // Select the new template
       if (newTemplate) {
         this.selectedTemplateId.set(newTemplate.id);
@@ -201,7 +201,7 @@ export class GeneralConditionsComponent implements OnInit {
       if (id) {
         await this.supabase.saveBudgetConditions(id, this.conditions());
       }
-      
+
       this.originalTitle.set(this.title());
       this.originalConditions.set([...this.conditions()]);
       this.hasUnsavedChanges.set(false);

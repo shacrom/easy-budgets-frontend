@@ -57,9 +57,9 @@
           }
         </select>
       </div>
-      
-      <button 
-        type="button" 
+
+      <button
+        type="button"
         class="btn ghost btn-sm"
         (click)="toggleCreateTemplate()">
         <span class="material-symbols-rounded">save_as</span>
@@ -67,8 +67,8 @@
       </button>
 
       @if (selectedTemplateId()) {
-        <button 
-          type="button" 
+        <button
+          type="button"
           class="btn ghost btn-sm btn-danger"
           (click)="deleteTemplate()"
           title="Eliminar plantilla seleccionada">
@@ -79,22 +79,22 @@
 
     @if (isCreatingTemplate()) {
       <div class="create-template-form">
-        <input 
-          type="text" 
-          [value]="newTemplateName()" 
-          (input)="updateNewTemplateName($event)" 
+        <input
+          type="text"
+          [value]="newTemplateName()"
+          (input)="updateNewTemplateName($event)"
           placeholder="Nombre de la nueva plantilla"
           class="input-field template-name-input">
         <div class="template-form-actions">
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="btn solid btn-sm"
             (click)="saveTemplate()"
             [disabled]="!newTemplateName() || isSaving()">
             Guardar
           </button>
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="btn ghost btn-sm"
             (click)="toggleCreateTemplate()">
             Cancelar
