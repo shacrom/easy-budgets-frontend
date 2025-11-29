@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
 import { BudgetEditorComponent } from './budget-editor.component';
 import { SupabaseService } from '../../../services/supabase.service';
 import { PdfExportService } from '../../../services/pdf-export.service';
@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 describe('BudgetEditorComponent', () => {
   let component: BudgetEditorComponent;
@@ -48,9 +49,16 @@ describe('BudgetEditorComponent', () => {
       'updateBudget',
       'uploadPublicAsset',
       'searchCustomers',
-      'getCustomer'
+      'getCustomer',
+      'saveMaterialTables',
+      'saveAdditionalLines',
+      'updateBudgetTotals',
+      'getProducts',
+      'getTextBlocksForBudget',
+      'getCountertopForBudget',
+      'getGeneralConditions'
     ]);
-    pdfExportServiceSpy = jasmine.createSpyObj('PdfExportService', ['getBudgetPdfBlobUrlWithPageCount']);
+    pdfExportServiceSpy = jasmine.createSpyObj('PdfExportService', ['getBudgetPdfBlobUrlWithPageCount', 'generateBudgetPdf', 'openBudgetPdf']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     // Mock returns
@@ -58,12 +66,23 @@ describe('BudgetEditorComponent', () => {
     supabaseServiceSpy.updateBudget.and.returnValue(Promise.resolve({ ...mockBudget } as any));
     supabaseServiceSpy.uploadPublicAsset.and.returnValue(Promise.resolve({ publicUrl: 'new-logo.png', path: 'path/to/logo.png' }));
     supabaseServiceSpy.getCustomer.and.returnValue(Promise.resolve({ id: 20, name: 'Jane Doe', address: '456 Ave' } as any));
+    supabaseServiceSpy.searchCustomers.and.returnValue(Promise.resolve([{ id: 20, name: 'Jane Doe', address: '456 Ave' } as any]));
+    supabaseServiceSpy.saveMaterialTables.and.returnValue(Promise.resolve({ tables: [], rows: [] } as any));
+    supabaseServiceSpy.saveAdditionalLines.and.returnValue(Promise.resolve());
+    supabaseServiceSpy.updateBudgetTotals.and.returnValue(Promise.resolve());
+    supabaseServiceSpy.getProducts.and.returnValue(Promise.resolve([]));
+    supabaseServiceSpy.getTextBlocksForBudget.and.returnValue(Promise.resolve([]));
+    supabaseServiceSpy.getCountertopForBudget.and.returnValue(Promise.resolve(null));
+    supabaseServiceSpy.getGeneralConditions.and.returnValue(Promise.resolve([]));
 
     pdfExportServiceSpy.getBudgetPdfBlobUrlWithPageCount.and.returnValue(Promise.resolve({ url: 'blob:url', pageCount: 1 }));
+    pdfExportServiceSpy.generateBudgetPdf.and.returnValue(Promise.resolve());
+    pdfExportServiceSpy.openBudgetPdf.and.returnValue(Promise.resolve());
 
     await TestBed.configureTestingModule({
       imports: [BudgetEditorComponent],
       providers: [
+        provideAnimations(),
         { provide: SupabaseService, useValue: supabaseServiceSpy },
         { provide: PdfExportService, useValue: pdfExportServiceSpy },
         { provide: Router, useValue: routerSpy },
@@ -99,30 +118,48 @@ describe('BudgetEditorComponent', () => {
     component['onBudgetTitleInput']('New Title');
     await component['onBudgetTitleBlur']();
 
-    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, jasmine.objectContaining({ title: 'New Title' }));
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { title: 'New Title' });
   });
 
-  it('should toggle budget status', async () => {
+  it('should search customers', fakeAsync(() => {
+    component['onCustomerSearchChanged']('Jane');
+    tick(400); // Wait for debounce
+
+    expect(supabaseServiceSpy.searchCustomers).toHaveBeenCalledWith('Jane', 10);
+    expect(component['customers']().length).toBe(1);
+    expect(component['customers']()[0].name).toBe('Jane Doe');
+  }));
+
+  it('should update customer selection', async () => {
     await fixture.whenStable();
 
-    await component['toggleCompletionState']();
+    await component['onCustomerSelected'](20);
 
-    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, jasmine.objectContaining({ status: 'completed' }));
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { customerId: 20 });
+    expect(component['selectedCustomerId']()).toBe(20);
+    expect(component['selectedCustomer']()?.name).toBe('Jane Doe');
   });
 
-  it('should update PDF preview with debounce', fakeAsync(() => {
-    component['showPdfPreview'].set(true);
-    component['isInitialized'].set(true);
+  it('should toggle budget completion status', async () => {
+    await fixture.whenStable();
 
-    // Trigger update
-    component.updatePdfPreview();
+    // Initial state is draft (not completed)
+    expect(component['isBudgetCompleted']()).toBeFalse();
 
-    expect(pdfExportServiceSpy.getBudgetPdfBlobUrlWithPageCount).not.toHaveBeenCalled();
+    // Toggle to completed
+    supabaseServiceSpy.updateBudget.and.returnValue(Promise.resolve({ ...mockBudget, status: 'completed' } as any));
+    await component['toggleCompletionState']();
 
-    tick(800); // Wait for debounce
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { status: 'completed' });
+    expect(component['isBudgetCompleted']()).toBeTrue();
 
-    expect(pdfExportServiceSpy.getBudgetPdfBlobUrlWithPageCount).toHaveBeenCalled();
-  }));
+    // Toggle back to not completed
+    supabaseServiceSpy.updateBudget.and.returnValue(Promise.resolve({ ...mockBudget, status: 'not_completed' } as any));
+    await component['toggleCompletionState']();
+
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { status: 'not_completed' });
+    expect(component['isBudgetCompleted']()).toBeFalse();
+  });
 
   it('should upload company logo', async () => {
     await fixture.whenStable();
@@ -133,16 +170,69 @@ describe('BudgetEditorComponent', () => {
     await component['onCompanyLogoFileSelected'](event);
 
     expect(supabaseServiceSpy.uploadPublicAsset).toHaveBeenCalled();
-    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, jasmine.objectContaining({ companyLogoUrl: 'new-logo.png' }));
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { companyLogoUrl: 'new-logo.png' });
+    expect(component['companyLogoUrl']()).toBe('new-logo.png');
   });
 
-  it('should handle customer selection', async () => {
+  it('should upload supplier logo', async () => {
     await fixture.whenStable();
 
-    const newCustomer = { id: 20, name: 'Jane Doe', address: '456 Ave' };
-    await component['onCustomerSelected'](20);
+    const file = new File([''], 'supplier.png', { type: 'image/png' });
+    const event = { target: { files: [file] } } as any;
 
-    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, jasmine.objectContaining({ customerId: 20 }));
-    expect(component['selectedCustomer']()?.id).toBe(20);
+    await component['onSupplierLogoFileSelected'](event);
+
+    expect(supabaseServiceSpy.uploadPublicAsset).toHaveBeenCalled();
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { supplierLogoUrl: 'new-logo.png' });
+    expect(component['supplierLogoUrl']()).toBe('new-logo.png');
+  });
+
+  it('should toggle sections visibility', async () => {
+    await fixture.whenStable();
+
+    // Toggle text blocks
+    await component.toggleSection('textBlocks');
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { showTextBlocks: false });
+    expect(component['showTextBlocks']()).toBeFalse();
+
+    // Toggle materials
+    await component.toggleSection('materials');
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { showMaterials: false });
+    expect(component['showMaterials']()).toBeFalse();
+  });
+
+  it('should update materials section title', async () => {
+    await fixture.whenStable();
+
+    await component['onMaterialsSectionTitleChanged']('New Materials Title');
+
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { materialsSectionTitle: 'New Materials Title' });
+    expect(component['materialsSectionTitle']()).toBe('New Materials Title');
+  });
+
+  it('should handle PDF preview', fakeAsync(() => {
+    component.togglePdfPreview();
+    expect(component['showPdfPreview']()).toBeTrue();
+
+    // Trigger effect
+    fixture.detectChanges();
+    tick(1000); // Wait for debounce
+
+    expect(pdfExportServiceSpy.getBudgetPdfBlobUrlWithPageCount).toHaveBeenCalled();
+    flush();
+  }));
+
+  it('should export PDF', async () => {
+    await fixture.whenStable();
+
+    await component['exportBudgetPdf']();
+    expect(pdfExportServiceSpy.generateBudgetPdf).toHaveBeenCalled();
+  });
+
+  it('should preview PDF in new tab', async () => {
+    await fixture.whenStable();
+
+    await component['previewBudgetPdf']();
+    expect(pdfExportServiceSpy.openBudgetPdf).toHaveBeenCalled();
   });
 });
