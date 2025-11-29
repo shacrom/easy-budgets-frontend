@@ -1385,6 +1385,11 @@ export class PdfExportService {
     try {
       const response = await fetch(url);
       const blob = await response.blob();
+
+      if (blob.type === 'image/webp') {
+        return this.convertWebPToPng(blob);
+      }
+
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
@@ -1395,5 +1400,29 @@ export class PdfExportService {
       console.warn('Error loading image:', error);
       return null;
     }
+  }
+
+  private convertWebPToPng(blob: Blob): Promise<string | null> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        } else {
+          resolve(null);
+        }
+        URL.revokeObjectURL(img.src);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(img.src);
+        resolve(null);
+      };
+      img.src = URL.createObjectURL(blob);
+    });
   }
 }

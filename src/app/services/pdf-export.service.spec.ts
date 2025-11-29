@@ -213,5 +213,21 @@ describe('PdfExportService', () => {
         await service.generateBudgetPdf(mockPayload);
         expect(pdfMake.createPdf).toHaveBeenCalled();
     });
+
+    it('should convert WebP images to PNG', async () => {
+        const webpBlob = new Blob(['fake-webp-content'], { type: 'image/webp' });
+        const response = new Response(webpBlob);
+        (window.fetch as jasmine.Spy).and.returnValue(Promise.resolve(response));
+
+        // Spy on convertWebPToPng to ensure it's called
+        // We mock the implementation because we can't load a fake blob into an Image
+        const convertSpy = spyOn<any>(service, 'convertWebPToPng').and.returnValue(Promise.resolve('data:image/png;base64,converted-png'));
+
+        const result = await (service as any).convertImageToBase64('http://fake.url/image.webp');
+
+        expect(window.fetch).toHaveBeenCalledWith('http://fake.url/image.webp');
+        expect(convertSpy).toHaveBeenCalled();
+        expect(result).toBe('data:image/png;base64,converted-png');
+    });
   });
 });
