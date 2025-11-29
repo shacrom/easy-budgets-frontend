@@ -77,9 +77,9 @@ describe('BudgetSummaryComponent', () => {
       component['addAdditionalLine']();
       const line = component['additionalLines']()[0];
       const updatedLine: SummaryLine = { ...line, concept: 'Updated', amount: 10 };
-      
+
       component['updateAdditionalLine'](updatedLine);
-      
+
       const lines = component['additionalLines']();
       expect(lines[0].concept).toBe('Updated');
       expect(lines[0].amount).toBe(10);
@@ -88,9 +88,9 @@ describe('BudgetSummaryComponent', () => {
     it('should delete a line', () => {
       component['addAdditionalLine']();
       const lineId = component['additionalLines']()[0].id;
-      
+
       component['deleteAdditionalLine'](lineId);
-      
+
       expect(component['additionalLines']().length).toBe(0);
     });
 
@@ -99,7 +99,7 @@ describe('BudgetSummaryComponent', () => {
       component['addAdditionalLine']();
       const line = component['additionalLines']()[0];
       component['updateAdditionalLine']({ ...line, conceptType: 'adjustment', amount: 20 });
-      
+
       // 100 + 20 = 120
       expect(component['netAdjustments']()).toBe(20);
       expect(component['taxableBase']()).toBe(120);
@@ -111,7 +111,7 @@ describe('BudgetSummaryComponent', () => {
       const line = component['additionalLines']()[0];
       // 10% discount
       component['updateAdditionalLine']({ ...line, conceptType: 'discount', amount: 10 });
-      
+
       // 100 * 0.10 = 10 discount
       // Net adjustments = -10
       expect(component['netAdjustments']()).toBe(-10);
@@ -159,7 +159,7 @@ describe('BudgetSummaryComponent', () => {
       expect(component['vatPercentage']()).toBe(50);
 
       component['discardChanges']();
-      
+
       expect(component['vatPercentage']()).toBe(initialVat);
       expect(component['hasUnsavedChanges']()).toBeFalse();
     });
