@@ -14,9 +14,10 @@ import { SupabaseService } from '../../../services/supabase.service';
 import { PdfExportService, BudgetPdfPayload, BudgetPdfMetadata } from '../../../services/pdf-export.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CountertopEditorComponent } from '../../countertop/components/countertop-editor.component';
-import { Countertop } from '../../../models/countertop.model';
+import { SimpleBlockEditorComponent } from '../../simple-block/components/simple-block-editor.component';
+import { SimpleBlock } from '../../../models/simple-block.model';
 import { BudgetStatus } from '../../../models/budget.model';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-budget-editor',
@@ -24,7 +25,7 @@ import { BudgetStatus } from '../../../models/budget.model';
     CustomerSelectorComponent,
     BudgetTextBlocksComponent,
     MaterialsTableComponent,
-    CountertopEditorComponent,
+    SimpleBlockEditorComponent,
     BudgetSummaryComponent,
     GeneralConditionsComponent
   ],
@@ -48,7 +49,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   // Totals from each section
   protected readonly totalBlocks = signal<number>(0);
   protected readonly totalMaterials = signal<number>(0);
-  protected readonly totalCountertop = signal<number>(0);
+  protected readonly totalSimpleBlock = signal<number>(0);
 
   // Data arrays
   protected readonly blocks = signal<BudgetTextBlock[]>([]);
@@ -68,12 +69,12 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   protected readonly conditionsTitle = signal<string>('Condiciones generales');
   protected readonly conditionsList = signal<Condition[]>([]);
   protected readonly pdfGenerating = signal<boolean>(false);
-  protected readonly countertopData = signal<Countertop | null>(null);
+  protected readonly simpleBlockData = signal<SimpleBlock | null>(null);
   protected readonly budgetTitleInput = signal<string>('');
   protected readonly savingBudgetTitle = signal<boolean>(false);
 
   // Logo URLs
-  private readonly DEFAULT_COMPANY_LOGO = 'https://dbqwvbwvqsnihrdczpxs.supabase.co/storage/v1/object/public/budget-assets/logos/logo-entrecuinesweb.png';
+  private readonly DEFAULT_COMPANY_LOGO = environment.defaultCompanyLogoUrl;
   protected readonly companyLogoUrl = signal<string>(this.DEFAULT_COMPANY_LOGO);
   protected readonly supplierLogoUrl = signal<string>('');
   protected readonly uploadingCompanyLogo = signal<boolean>(false);
@@ -82,7 +83,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   // Visibility signals
   protected readonly showTextBlocks = signal<boolean>(true);
   protected readonly showMaterials = signal<boolean>(true);
-  protected readonly showCountertop = signal<boolean>(false);
+  protected readonly showSimpleBlock = signal<boolean>(false);
   protected readonly showConditions = signal<boolean>(true);
   protected readonly showSummary = signal<boolean>(true);
   protected readonly showSignature = signal<boolean>(true);
@@ -103,7 +104,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   // Print options signals
   protected readonly printTextBlocks = signal<boolean>(true);
   protected readonly printMaterials = signal<boolean>(true);
-  protected readonly printCountertop = signal<boolean>(true);
+  protected readonly printSimpleBlock = signal<boolean>(true);
   protected readonly printConditions = signal<boolean>(true);
   protected readonly printSummary = signal<boolean>(true);
 
@@ -147,19 +148,19 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
         this.materials();
         this.materialTables();
         this.materialsSectionTitle();
-        this.countertopData();
+        this.simpleBlockData();
         this.summarySnapshot();
         this.conditionsList();
         this.selectedCustomer();
         this.showTextBlocks();
         this.showMaterials();
-        this.showCountertop();
+        this.showSimpleBlock();
         this.showConditions();
         this.showSummary();
         this.showSignature();
         this.printTextBlocks();
         this.printMaterials();
-        this.printCountertop();
+        this.printSimpleBlock();
         this.printConditions();
         this.printSummary();
         this.budgetMeta();
@@ -201,12 +202,12 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       ...originalSummary,
       totalBlocks: this.showTextBlocks() ? originalSummary.totalBlocks : 0,
       totalMaterials: this.showMaterials() ? originalSummary.totalMaterials : 0,
-      totalCountertop: this.showCountertop() ? originalSummary.totalCountertop : 0
+      totalSimpleBlock: this.showSimpleBlock() ? originalSummary.totalSimpleBlock : 0
     } : null;
 
     // Recalcular taxableBase y grandTotal basado en secciones visibles
     if (filteredSummary) {
-      const visibleTotal = filteredSummary.totalBlocks + filteredSummary.totalMaterials + (filteredSummary.totalCountertop ?? 0);
+      const visibleTotal = filteredSummary.totalBlocks + filteredSummary.totalMaterials + (filteredSummary.totalSimpleBlock ?? 0);
 
       // Sumar líneas adicionales (descuentos, ajustes, etc.)
       let additionalTotal = 0;
@@ -229,7 +230,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       blocks: this.showTextBlocks() ? this.blocks() : [],
       materials: this.showMaterials() ? this.materials() : [],
       materialTables: this.showMaterials() ? this.materialTables() : [],
-      countertop: this.showCountertop() ? this.countertopData() : null,
+      simpleBlock: this.showSimpleBlock() ? this.simpleBlockData() : null,
       summary: this.showSummary() ? filteredSummary : null,
       materialsSectionTitle: this.materialsSectionTitle(),
       conditionsTitle: this.conditionsTitle(),
@@ -239,7 +240,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       showSignature: this.showSignature(),
       printTextBlocks: this.printTextBlocks(),
       printMaterials: this.printMaterials(),
-      printCountertop: this.printCountertop(),
+      printSimpleBlock: this.printSimpleBlock(),
       printConditions: this.printConditions(),
       printSummary: this.printSummary(),
       generatedAt: new Date().toISOString()
@@ -328,7 +329,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
 
       this.showTextBlocks.set(budget.showTextBlocks ?? true);
       this.showMaterials.set(budget.showMaterials ?? true);
-      this.showCountertop.set(budget.showCountertop ?? false);
+      this.showSimpleBlock.set(budget.showCountertop ?? false);
       this.showConditions.set(budget.showConditions ?? true);
       this.showSummary.set(budget.showSummary ?? true);
       this.showSignature.set(budget.showSignature ?? true);
@@ -573,30 +574,30 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     await this.onSupplierLogoUrlChanged('');
   }
 
-  protected onTotalCountertopChanged(total: number) {
-    this.totalCountertop.set(total);
+  protected onTotalSimpleBlockChanged(total: number) {
+    this.totalSimpleBlock.set(total);
   }
 
-  protected onCountertopChanged(countertop: Countertop | null) {
-    this.countertopData.set(countertop);
+  protected onSimpleBlockChanged(simpleBlock: SimpleBlock | null) {
+    this.simpleBlockData.set(simpleBlock);
     // If we receive data (even if empty but loaded), we might want to show it.
     // But specifically, if it has content, we definitely show it.
     // If it's null (deleted), we hide it.
-    if (countertop === null) {
-      this.showCountertop.set(false);
-    } else if (countertop.model || countertop.price > 0 || countertop.imageUrl) {
-      this.showCountertop.set(true);
+    if (simpleBlock === null) {
+      this.showSimpleBlock.set(false);
+    } else if (simpleBlock.model || simpleBlock.price > 0 || simpleBlock.imageUrl) {
+      this.showSimpleBlock.set(true);
     }
   }
 
-  protected onCountertopDeleted() {
-    this.showCountertop.set(false);
-    this.countertopData.set(null);
-    this.totalCountertop.set(0);
+  protected onSimpleBlockDeleted() {
+    this.showSimpleBlock.set(false);
+    this.simpleBlockData.set(null);
+    this.totalSimpleBlock.set(0);
   }
 
-  toggleCountertop() {
-    this.showCountertop.update(v => !v);
+  toggleSimpleBlock() {
+    this.showSimpleBlock.update((v: boolean) => !v);
   }
 
   /**
@@ -854,7 +855,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  async toggleSection(section: 'textBlocks' | 'materials' | 'countertop' | 'conditions' | 'summary' | 'signature') {
+  async toggleSection(section: 'textBlocks' | 'materials' | 'simpleBlock' | 'conditions' | 'summary' | 'signature') {
     const id = this.currentBudgetId();
     if (!id) return;
 
@@ -870,10 +871,10 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
         this.showMaterials.set(newMaterials);
         updates = { showMaterials: newMaterials };
         break;
-      case 'countertop':
-        const newCountertop = !this.showCountertop();
-        this.showCountertop.set(newCountertop);
-        updates = { showCountertop: newCountertop };
+      case 'simpleBlock':
+        const newSimpleBlock = !this.showSimpleBlock();
+        this.showSimpleBlock.set(newSimpleBlock);
+        updates = { showCountertop: newSimpleBlock };
         break;
       case 'conditions':
         const newConditions = !this.showConditions();
@@ -899,22 +900,22 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  togglePrintOption(option: 'textBlocks' | 'materials' | 'countertop' | 'conditions' | 'summary') {
+  togglePrintOption(option: 'textBlocks' | 'materials' | 'simpleBlock' | 'conditions' | 'summary') {
     switch (option) {
       case 'textBlocks':
-        this.printTextBlocks.update(v => !v);
+        this.printTextBlocks.update((v: boolean) => !v);
         break;
       case 'materials':
-        this.printMaterials.update(v => !v);
+        this.printMaterials.update((v: boolean) => !v);
         break;
-      case 'countertop':
-        this.printCountertop.update(v => !v);
+      case 'simpleBlock':
+        this.printSimpleBlock.update((v: boolean) => !v);
         break;
       case 'conditions':
-        this.printConditions.update(v => !v);
+        this.printConditions.update((v: boolean) => !v);
         break;
       case 'summary':
-        this.printSummary.update(v => !v);
+        this.printSummary.update((v: boolean) => !v);
         break;
     }
   }

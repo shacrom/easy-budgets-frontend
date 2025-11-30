@@ -1,4 +1,4 @@
-export interface Countertop {
+export interface SimpleBlock {
   id?: number;
   budgetId: number;
   sectionTitle?: string;

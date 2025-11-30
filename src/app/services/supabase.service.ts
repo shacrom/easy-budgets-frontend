@@ -363,7 +363,7 @@ export class SupabaseService {
         ),
         additionalLines:BudgetAdditionalLines(*),
         conditions:BudgetConditions(*),
-        countertop:BudgetCountertops(*)
+        simpleBlock:BudgetCountertops(*)
       `)
         .eq('id', id)
       .single();
@@ -405,9 +405,9 @@ export class SupabaseService {
       data.materialTables = [];
     }
 
-    // Countertop viene como array de 0 o 1 elementos, convertirlo a objeto único o null
-    if (data.countertop && Array.isArray(data.countertop)) {
-      data.countertop = data.countertop.length > 0 ? data.countertop[0] : null;
+    // SimpleBlock viene como array de 0 o 1 elementos, convertirlo a objeto único o null
+    if (data.simpleBlock && Array.isArray(data.simpleBlock)) {
+      data.simpleBlock = data.simpleBlock.length > 0 ? data.simpleBlock[0] : null;
     }
 
     return data;
@@ -458,7 +458,7 @@ export class SupabaseService {
       textBlocks = [],
       materialTables = [],
       additionalLines = [],
-      countertop,
+      simpleBlock,
       customer,
       id: _originalId,
       createdAt: _createdAt,
@@ -546,19 +546,19 @@ export class SupabaseService {
       }
     }
 
-    if (countertop) {
-      const { id: _countertopId, budgetId: _oldBudgetId, createdAt: _ctCreatedAt, updatedAt: _ctUpdatedAt, ...countertopData } = countertop;
-      const countertopPayload = {
-        ...countertopData,
+    if (simpleBlock) {
+      const { id: _simpleBlockId, budgetId: _oldBudgetId, createdAt: _sbCreatedAt, updatedAt: _sbUpdatedAt, ...simpleBlockData } = simpleBlock;
+      const simpleBlockPayload = {
+        ...simpleBlockData,
         budgetId: newBudgetId
       };
 
-      const { error: countertopError } = await this.supabase
+      const { error: simpleBlockError } = await this.supabase
         .from('BudgetCountertops')
-        .insert([countertopPayload]);
+        .insert([simpleBlockPayload]);
 
-      if (countertopError) {
-        throw countertopError;
+      if (simpleBlockError) {
+        throw simpleBlockError;
       }
     }
 
@@ -1078,10 +1078,10 @@ export class SupabaseService {
   }
 
   // ============================================
-  // COUNTERTOPS
+  // SIMPLE BLOCKS (formerly Countertops)
   // ============================================
 
-  async getCountertopForBudget(budgetId: number) {
+  async getSimpleBlockForBudget(budgetId: number) {
     if (!Number.isFinite(budgetId)) return null;
     const { data, error } = await this.supabase
       .from('BudgetCountertops')
@@ -1093,10 +1093,10 @@ export class SupabaseService {
     return data;
   }
 
-  async upsertCountertop(countertop: any) {
+  async upsertSimpleBlock(simpleBlock: any) {
     const { data, error } = await this.supabase
       .from('BudgetCountertops')
-      .upsert(countertop)
+      .upsert(simpleBlock)
       .select()
       .single();
 
@@ -1104,7 +1104,7 @@ export class SupabaseService {
     return data;
   }
 
-  async deleteCountertop(budgetId: number) {
+  async deleteSimpleBlock(budgetId: number) {
     if (!Number.isFinite(budgetId)) return;
     const { error } = await this.supabase
       .from('BudgetCountertops')

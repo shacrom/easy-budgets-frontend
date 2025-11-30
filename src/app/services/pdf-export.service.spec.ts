@@ -62,18 +62,18 @@ describe('PdfExportService', () => {
             orderIndex: 0
         }
     ],
-    countertop: {
+    simpleBlock: {
       id: 1,
       budgetId: 1,
-      model: 'Modelo Encimera',
-      description: 'Desc Encimera',
+      model: 'Modelo Bloque Simple',
+      description: 'Desc Bloque Simple',
       price: 200,
       imageUrl: 'http://fake.url/image.jpg'
     },
     summary: {
       totalBlocks: 100,
       totalMaterials: 120,
-      totalCountertop: 200,
+      totalSimpleBlock: 200,
       taxableBase: 420,
       vatPercentage: 21,
       vat: 88.2,
@@ -237,7 +237,7 @@ describe('PdfExportService', () => {
       return {
         totalBlocks: 1000,
         totalMaterials: 500,
-        totalCountertop: 200,
+        totalSimpleBlock: 200,
         vatPercentage: 21,
         vat: 0,
         taxableBase: 0,

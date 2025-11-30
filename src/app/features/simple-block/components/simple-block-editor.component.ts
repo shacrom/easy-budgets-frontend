@@ -2,25 +2,25 @@ import { ChangeDetectionStrategy, Component, signal, input, output, inject, effe
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../../services/supabase.service';
-import { Countertop } from '../../../models/countertop.model';
+import { SimpleBlock } from '../../../models/simple-block.model';
 
 @Component({
-  selector: 'app-countertop-editor',
-  templateUrl: './countertop-editor.component.html',
-  styleUrls: ['./countertop-editor.component.css'],
+  selector: 'app-simple-block-editor',
+  templateUrl: './simple-block-editor.component.html',
+  styleUrls: ['./simple-block-editor.component.css'],
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CountertopEditorComponent {
+export class SimpleBlockEditorComponent {
   private readonly supabase = inject(SupabaseService);
-  private readonly defaultSectionTitle = 'Encimera';
+  private readonly defaultSectionTitle = 'Bloque Simple';
 
   // budgetId may be null if not initialized; keep optional to avoid errors when no budget selected
   budgetId = input<number | null>(null);
 
   protected readonly sectionTitle = signal<string>(this.defaultSectionTitle);
 
-  protected readonly countertop = signal<Countertop>({
+  protected readonly simpleBlock = signal<SimpleBlock>({
     budgetId: 0,
     model: '',
     description: '',
@@ -34,7 +34,7 @@ export class CountertopEditorComponent {
   protected readonly hasUnsavedChanges = signal<boolean>(false);
 
   // Store original loaded state for discard
-  private originalCountertop = signal<Countertop>({
+  private originalSimpleBlock = signal<SimpleBlock>({
     budgetId: 0,
     model: '',
     description: '',
@@ -42,24 +42,24 @@ export class CountertopEditorComponent {
   });
 
   totalChanged = output<number>();
-  countertopChanged = output<Countertop>();
+  simpleBlockChanged = output<SimpleBlock>();
 
   constructor() {
     effect(() => {
       const id = this.budgetId();
       if (id) {
-        this.loadCountertop(id);
+        this.loadSimpleBlock(id);
       }
     });
   }
 
-  private async loadCountertop(budgetId: number) {
+  private async loadSimpleBlock(budgetId: number) {
     this.isLoading.set(true);
     try {
-      const data = await this.supabase.getCountertopForBudget(budgetId);
+      const data = await this.supabase.getSimpleBlockForBudget(budgetId);
       if (data) {
-        this.countertop.set(data);
-        this.originalCountertop.set(data);
+        this.simpleBlock.set(data);
+        this.originalSimpleBlock.set(data);
 
         // Load section title if exists
         if (data.sectionTitle) {
@@ -69,59 +69,59 @@ export class CountertopEditorComponent {
         }
 
         // Emit to parent immediately after loading to sync initial state
-        this.countertopChanged.emit(data);
+        this.simpleBlockChanged.emit(data);
         this.totalChanged.emit(data.price || 0);
       } else {
-        const emptyCountertop = {
+        const emptySimpleBlock = {
           budgetId,
           model: '',
           description: '',
           price: 0
         };
-        this.countertop.set(emptyCountertop);
-        this.originalCountertop.set(emptyCountertop);
+        this.simpleBlock.set(emptySimpleBlock);
+        this.originalSimpleBlock.set(emptySimpleBlock);
         this.sectionTitle.set(this.defaultSectionTitle);
 
-        // Emit empty countertop to parent
-        this.countertopChanged.emit(emptyCountertop);
+        // Emit empty simpleBlock to parent
+        this.simpleBlockChanged.emit(emptySimpleBlock);
         this.totalChanged.emit(0);
       }
       this.hasUnsavedChanges.set(false);
     } catch (error) {
-      console.error('Error loading countertop:', error);
+      console.error('Error loading simple block:', error);
     } finally {
       this.isLoading.set(false);
     }
   }
 
   async saveChanges() {
-    const current = this.countertop();
+    const current = this.simpleBlock();
     if (!current.budgetId) return;
 
     this.isSaving.set(true);
     try {
-      const countertopWithSectionTitle = {
+      const simpleBlockWithSectionTitle = {
         ...current,
         sectionTitle: this.sectionTitle()
       };
-      const saved = await this.supabase.upsertCountertop(countertopWithSectionTitle);
-      this.countertop.set(saved);
-      this.originalCountertop.set(saved);
+      const saved = await this.supabase.upsertSimpleBlock(simpleBlockWithSectionTitle);
+      this.simpleBlock.set(saved);
+      this.originalSimpleBlock.set(saved);
       this.hasUnsavedChanges.set(false);
 
       // Emit after successful save
       this.totalChanged.emit(saved.price || 0);
-      this.countertopChanged.emit(saved);
+      this.simpleBlockChanged.emit(saved);
     } catch (error) {
-      console.error('Error saving countertop:', error);
+      console.error('Error saving simple block:', error);
     } finally {
       this.isSaving.set(false);
     }
   }
 
   discardChanges() {
-    const original = this.originalCountertop();
-    this.countertop.set(original);
+    const original = this.originalSimpleBlock();
+    this.simpleBlock.set(original);
     this.sectionTitle.set(original.sectionTitle || this.defaultSectionTitle);
     this.hasUnsavedChanges.set(false);
   }
@@ -133,17 +133,17 @@ export class CountertopEditorComponent {
   }
 
   updateModel(value: string) {
-    this.countertop.update(c => ({ ...c, model: value }));
+    this.simpleBlock.update(c => ({ ...c, model: value }));
     this.hasUnsavedChanges.set(true);
   }
 
   updateDescription(value: string) {
-    this.countertop.update(c => ({ ...c, description: value }));
+    this.simpleBlock.update(c => ({ ...c, description: value }));
     this.hasUnsavedChanges.set(true);
   }
 
   updatePrice(value: number) {
-    this.countertop.update(c => ({ ...c, price: value }));
+    this.simpleBlock.update(c => ({ ...c, price: value }));
     this.hasUnsavedChanges.set(true);
   }
 
@@ -154,12 +154,12 @@ export class CountertopEditorComponent {
   }
 
   updateImageUrl(value: string) {
-    this.countertop.update(c => ({ ...c, imageUrl: value }));
+    this.simpleBlock.update(c => ({ ...c, imageUrl: value }));
     this.hasUnsavedChanges.set(true);
   }
 
   clearImageUrl() {
-    this.countertop.update(c => ({ ...c, imageUrl: null }));
+    this.simpleBlock.update(c => ({ ...c, imageUrl: null }));
     this.hasUnsavedChanges.set(true);
   }
 
@@ -183,13 +183,13 @@ export class CountertopEditorComponent {
 
     try {
       const { publicUrl } = await this.supabase.uploadPublicAsset(file, {
-        folder: `countertops/${budgetId}`
+        folder: `simple-blocks/${budgetId}`
       });
 
-      this.countertop.update(c => ({ ...c, imageUrl: publicUrl }));
+      this.simpleBlock.update(c => ({ ...c, imageUrl: publicUrl }));
       this.hasUnsavedChanges.set(true);
     } catch (error) {
-      console.error('Error uploading countertop image:', error);
+      console.error('Error uploading simple block image:', error);
       this.imageUploadError.set('No se pudo subir la imagen. Inténtalo de nuevo.');
     } finally {
       this.isUploadingImage.set(false);

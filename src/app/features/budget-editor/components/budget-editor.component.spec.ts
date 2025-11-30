@@ -25,7 +25,7 @@ describe('BudgetEditorComponent', () => {
     customer: { id: 10, name: 'John Doe', address: '123 St' },
     textBlocks: [],
     materialTables: [],
-    countertop: null,
+    simpleBlock: null,
     additionalLines: [],
     companyLogoUrl: 'logo.png',
     supplierLogoUrl: 'supplier.png',
@@ -55,7 +55,7 @@ describe('BudgetEditorComponent', () => {
       'updateBudgetTotals',
       'getProducts',
       'getTextBlocksForBudget',
-      'getCountertopForBudget',
+      'getSimpleBlockForBudget',
       'getGeneralConditions'
     ]);
     pdfExportServiceSpy = jasmine.createSpyObj('PdfExportService', ['getBudgetPdfBlobUrlWithPageCount', 'generateBudgetPdf', 'openBudgetPdf']);
@@ -72,7 +72,7 @@ describe('BudgetEditorComponent', () => {
     supabaseServiceSpy.updateBudgetTotals.and.returnValue(Promise.resolve());
     supabaseServiceSpy.getProducts.and.returnValue(Promise.resolve([]));
     supabaseServiceSpy.getTextBlocksForBudget.and.returnValue(Promise.resolve([]));
-    supabaseServiceSpy.getCountertopForBudget.and.returnValue(Promise.resolve(null));
+    supabaseServiceSpy.getSimpleBlockForBudget.and.returnValue(Promise.resolve(null));
     supabaseServiceSpy.getGeneralConditions.and.returnValue(Promise.resolve([]));
 
     pdfExportServiceSpy.getBudgetPdfBlobUrlWithPageCount.and.returnValue(Promise.resolve({ url: 'blob:url', pageCount: 1 }));
@@ -240,7 +240,7 @@ describe('BudgetEditorComponent', () => {
     const mockSummary = {
       totalBlocks: 100,
       totalMaterials: 200,
-      totalCountertop: 300,
+      totalSimpleBlock: 300,
       taxableBase: 600,
       vatPercentage: 21,
       vat: 126,
@@ -258,7 +258,7 @@ describe('BudgetEditorComponent', () => {
       (component as any).blocks.set([{ id: 1, text: 'Block 1' }]);
       (component as any).materials.set([{ id: 1, name: 'Material 1' }]);
       (component as any).materialTables.set([{ id: 1, title: 'Table 1' }]);
-      (component as any).countertopData.set({ id: 1, model: 'Countertop 1' });
+      (component as any).simpleBlockData.set({ id: 1, model: 'Simple Block 1' });
       (component as any).budgetMeta.set({ id: 1, budgetNumber: 'B-001' });
       (component as any).cachedSelectedCustomer.set({ id: 1, name: 'Customer 1' });
     });
@@ -266,33 +266,33 @@ describe('BudgetEditorComponent', () => {
     it('should include all sections when they are visible', () => {
       (component as any).showTextBlocks.set(true);
       (component as any).showMaterials.set(true);
-      (component as any).showCountertop.set(true);
+      (component as any).showSimpleBlock.set(true);
 
       const payload = (component as any).buildPdfPayload();
 
       expect(payload.blocks.length).toBe(1);
       expect(payload.materials.length).toBe(1);
       expect(payload.materialTables.length).toBe(1);
-      expect(payload.countertop).not.toBeNull();
+      expect(payload.simpleBlock).not.toBeNull();
     });
 
     it('should exclude hidden sections from payload', () => {
       (component as any).showTextBlocks.set(false);
       (component as any).showMaterials.set(false);
-      (component as any).showCountertop.set(false);
+      (component as any).showSimpleBlock.set(false);
 
       const payload = (component as any).buildPdfPayload();
 
       expect(payload.blocks.length).toBe(0);
       expect(payload.materials.length).toBe(0);
       expect(payload.materialTables.length).toBe(0);
-      expect(payload.countertop).toBeNull();
+      expect(payload.simpleBlock).toBeNull();
     });
 
     it('should calculate totals correctly with all sections visible', () => {
       (component as any).showTextBlocks.set(true);
       (component as any).showMaterials.set(true);
-      (component as any).showCountertop.set(true);
+      (component as any).showSimpleBlock.set(true);
 
       const payload = (component as any).buildPdfPayload();
       const summary = payload.summary;
@@ -302,7 +302,7 @@ describe('BudgetEditorComponent', () => {
       // Taxable Base: 600 - 30 = 570
       expect(summary.totalBlocks).toBe(100);
       expect(summary.totalMaterials).toBe(200);
-      expect(summary.totalCountertop).toBe(300);
+      expect(summary.totalSimpleBlock).toBe(300);
       expect(summary.taxableBase).toBe(570);
 
       // VAT: 570 * 0.21 = 119.7
@@ -315,7 +315,7 @@ describe('BudgetEditorComponent', () => {
     it('should calculate totals correctly with some sections hidden', () => {
       (component as any).showTextBlocks.set(true);   // 100
       (component as any).showMaterials.set(false);  // 0 (hidden)
-      (component as any).showCountertop.set(true);  // 300
+      (component as any).showSimpleBlock.set(true);  // 300
 
       const payload = (component as any).buildPdfPayload();
       const summary = payload.summary;
@@ -325,7 +325,7 @@ describe('BudgetEditorComponent', () => {
       // Taxable Base: 400 - 30 = 370
       expect(summary.totalBlocks).toBe(100);
       expect(summary.totalMaterials).toBe(0);
-      expect(summary.totalCountertop).toBe(300);
+      expect(summary.totalSimpleBlock).toBe(300);
       expect(summary.taxableBase).toBe(370);
 
       // VAT: 370 * 0.21 = 77.7
@@ -346,7 +346,7 @@ describe('BudgetEditorComponent', () => {
     it('should ignore "note" type additional lines in calculation', () => {
       (component as any).showTextBlocks.set(true);
       (component as any).showMaterials.set(false);
-      (component as any).showCountertop.set(false);
+      (component as any).showSimpleBlock.set(false);
 
       // Only blocks visible: 100
       // Additional lines: -50 (discount), 20 (adjustment), 0 (note)
@@ -364,7 +364,7 @@ describe('BudgetEditorComponent', () => {
     it('should initialize print options to true by default', () => {
       expect((component as any).printTextBlocks()).toBeTrue();
       expect((component as any).printMaterials()).toBeTrue();
-      expect((component as any).printCountertop()).toBeTrue();
+      expect((component as any).printSimpleBlock()).toBeTrue();
       expect((component as any).printConditions()).toBeTrue();
       expect((component as any).printSummary()).toBeTrue();
     });
@@ -389,7 +389,7 @@ describe('BudgetEditorComponent', () => {
 
       expect(payload.printTextBlocks).toBeTrue();
       expect(payload.printMaterials).toBeFalse();
-      expect(payload.printCountertop).toBeTrue();
+      expect(payload.printSimpleBlock).toBeTrue();
       expect(payload.printConditions).toBeFalse();
       expect(payload.printSummary).toBeTrue();
     });

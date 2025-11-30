@@ -1,4 +1,4 @@
-<div class="countertop-container">
+<div class="simple-block-container">
   <div class="header">
     <input
       class="section-title-input"
@@ -36,19 +36,19 @@
 
   <div class="content">
     <div class="form-group">
-      <label>Modelo Encimera</label>
+      <label>Título</label>
       <input
         type="text"
-        [ngModel]="countertop().model"
+        [ngModel]="simpleBlock().model"
         (ngModelChange)="updateModel($event)"
-        placeholder="Ej: PETRA CREMA ABUJARDADO"
+        placeholder=""
         class="form-input">
     </div>
 
     <div class="form-group">
-      <label>Descripción y Medidas</label>
+      <label>Descripción</label>
       <textarea
-        [ngModel]="countertop().description"
+        [ngModel]="simpleBlock().description"
         (ngModelChange)="updateDescription($event)"
         rows="3"
         class="form-textarea"></textarea>
@@ -56,14 +56,14 @@
 
     <div class="image-section">
       <input
-        #countertopFileInput
+        #simpleBlockFileInput
         type="file"
         class="sr-only"
         accept="image/*"
         (change)="onImageFileSelected($event)">
 
-      <div class="image-placeholder" *ngIf="!countertop().imageUrl">
-        <span>FOTO ENCIMERA</span>
+      <div class="image-placeholder" *ngIf="!simpleBlock().imageUrl">
+        <span>FOTO BLOQUE SIMPLE</span>
         <div class="url-input-group">
           <input #urlInput
                  type="text"
@@ -80,20 +80,20 @@
         <button
           type="button"
           class="upload-image-btn mt-2"
-          (click)="countertopFileInput.click()"
+          (click)="simpleBlockFileInput.click()"
           [disabled]="isUploadingImage()">
           <span class="material-symbols-rounded" aria-hidden="true">file_upload</span>
           {{ isUploadingImage() ? 'Subiendo...' : 'Subir imagen desde archivo' }}
         </button>
       </div>
 
-      <div *ngIf="countertop().imageUrl" class="image-preview-container">
-        <img [src]="countertop().imageUrl" alt="Encimera" class="preview-image">
+      <div *ngIf="simpleBlock().imageUrl" class="image-preview-container">
+        <img [src]="simpleBlock().imageUrl" alt="Bloque Simple" class="preview-image">
         <div class="image-preview-actions">
           <button
             type="button"
             class="upload-image-btn"
-            (click)="countertopFileInput.click()"
+            (click)="simpleBlockFileInput.click()"
             [disabled]="isUploadingImage()">
             <span class="material-symbols-rounded" aria-hidden="true">file_upload</span>
             {{ isUploadingImage() ? 'Subiendo...' : 'Cambiar imagen' }}
@@ -111,7 +111,7 @@
       <label>Total Precio</label>
       <input
         type="number"
-        [ngModel]="countertop().price"
+        [ngModel]="simpleBlock().price"
         (ngModelChange)="updatePrice($event)"
         class="price-input">
       <span class="currency">€</span>

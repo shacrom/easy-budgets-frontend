@@ -200,7 +200,7 @@ describe('SupabaseService', () => {
         textBlocks: [],
         materialTables: [],
         additionalLines: [],
-        countertop: []
+        simpleBlock: []
       };
       queryBuilderSpy.single.and.returnValue(Promise.resolve({ data: mockBudget, error: null }));
 
@@ -269,7 +269,7 @@ describe('SupabaseService', () => {
         textBlocks: [{ id: 10, heading: 'Block 1', descriptions: [{ id: 100, title: 'Sec 1' }] }],
         materialTables: [{ id: 20, title: 'Table 1', rows: [{ id: 200, reference: 'Ref 1' }] }],
         additionalLines: [{ id: 30, concept: 'Line 1' }],
-        countertop: { id: 40, material: 'Granite' },
+        simpleBlock: { id: 40, material: 'Granite' },
         customer: { id: 50 }
       };
 
@@ -288,7 +288,7 @@ describe('SupabaseService', () => {
       // 4. insert material tables -> returns newTable
       // 5. insert rows -> returns null
       // 6. insert additional lines -> returns null
-      // 7. insert countertop -> returns null
+      // 7. insert simpleBlock -> returns null
 
       // Since we use the same spy for all calls, we need to be careful.
       // We can use `callFake` on `insert` to return different values based on the table name?
@@ -319,8 +319,8 @@ describe('SupabaseService', () => {
       const lineBuilder = jasmine.createSpyObj('LineBuilder', ['insert', 'then']);
       lineBuilder.insert.and.returnValue(Promise.resolve({ error: null }));
 
-      const countertopBuilder = jasmine.createSpyObj('CountertopBuilder', ['insert', 'then']);
-      countertopBuilder.insert.and.returnValue(Promise.resolve({ error: null }));
+      const simpleBlockBuilder = jasmine.createSpyObj('SimpleBlockBuilder', ['insert', 'then']);
+      simpleBlockBuilder.insert.and.returnValue(Promise.resolve({ error: null }));
 
       supabaseSpy.from.and.callFake((table: string) => {
         switch (table) {
@@ -330,7 +330,7 @@ describe('SupabaseService', () => {
           case 'BudgetMaterialTables': return tableBuilder;
           case 'BudgetMaterialTableRows': return rowBuilder;
           case 'BudgetAdditionalLines': return lineBuilder;
-          case 'BudgetCountertops': return countertopBuilder;
+          case 'BudgetSimpleBlocks': return simpleBlockBuilder;
           default: return queryBuilderSpy;
         }
       });
@@ -586,35 +586,35 @@ describe('SupabaseService', () => {
     });
   });
 
-  describe('Countertops', () => {
-    it('should get countertop for budget', async () => {
-      const mockCountertop = { id: 1, material: 'Granite' };
-      queryBuilderSpy.maybeSingle.and.returnValue(Promise.resolve({ data: mockCountertop, error: null }));
+  describe('Simple Blocks', () => {
+    it('should get simple block for budget', async () => {
+      const mockSimpleBlock = { id: 1, material: 'Granite' };
+      queryBuilderSpy.maybeSingle.and.returnValue(Promise.resolve({ data: mockSimpleBlock, error: null }));
 
-      const result = await service.getCountertopForBudget(1);
+      const result = await service.getSimpleBlockForBudget(1);
 
       expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetCountertops');
       expect(queryBuilderSpy.eq).toHaveBeenCalledWith('budgetId', 1);
       expect(queryBuilderSpy.maybeSingle).toHaveBeenCalled();
-      expect(result).toEqual(mockCountertop);
+      expect(result).toEqual(mockSimpleBlock);
     });
 
-    it('should upsert countertop', async () => {
-      const countertop = { budgetId: 1, material: 'Marble' };
-      const upsertedCountertop = { id: 1, ...countertop };
-      queryBuilderSpy.single.and.returnValue(Promise.resolve({ data: upsertedCountertop, error: null }));
+    it('should upsert simple block', async () => {
+      const simpleBlock = { budgetId: 1, material: 'Marble' };
+      const upsertedSimpleBlock = { id: 1, ...simpleBlock };
+      queryBuilderSpy.single.and.returnValue(Promise.resolve({ data: upsertedSimpleBlock, error: null }));
 
-      const result = await service.upsertCountertop(countertop);
+      const result = await service.upsertSimpleBlock(simpleBlock);
 
       expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetCountertops');
-      expect(queryBuilderSpy.upsert).toHaveBeenCalledWith(countertop);
-      expect(result).toEqual(upsertedCountertop);
+      expect(queryBuilderSpy.upsert).toHaveBeenCalledWith(simpleBlock);
+      expect(result).toEqual(upsertedSimpleBlock);
     });
 
-    it('should delete countertop', async () => {
+    it('should delete simple block', async () => {
       queryBuilderSpy._mockResponse = { error: null };
 
-      await service.deleteCountertop(1);
+      await service.deleteSimpleBlock(1);
 
       expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetCountertops');
       expect(queryBuilderSpy.delete).toHaveBeenCalled();

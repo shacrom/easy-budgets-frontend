@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-.countertop-container {
+.simple-block-container {
   @apply bg-white shadow-sm p-6 mb-4 border border-gray-200;
 }
 

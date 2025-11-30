@@ -30,7 +30,7 @@ describe('BudgetSummaryComponent', () => {
     beforeEach(() => {
       fixture.componentRef.setInput('totalBlocks', 100);
       fixture.componentRef.setInput('totalMaterials', 50);
-      fixture.componentRef.setInput('totalCountertop', 50);
+      fixture.componentRef.setInput('totalSimpleBlock', 50);
       fixture.detectChanges();
     });
 

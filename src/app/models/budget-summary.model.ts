@@ -17,6 +17,9 @@ export interface SummaryLine {
 export interface BudgetSummary {
   totalBlocks: number;
   totalMaterials: number;
+  /** Total from the simple block section (formerly countertop) */
+  totalSimpleBlock?: number;
+  /** @deprecated Use totalSimpleBlock instead - kept for backward compatibility with database */
   totalCountertop?: number;
   taxableBase: number;
   vat: number;

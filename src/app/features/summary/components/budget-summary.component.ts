@@ -20,12 +20,12 @@ export class BudgetSummaryComponent {
   // Inputs: totals from each section
   totalBlocks = input<number>(0);
   totalMaterials = input<number>(0);
-  totalCountertop = input<number>(0);
+  totalSimpleBlock = input<number>(0);
 
   // Inputs: visibility flags for each section
   showBlocks = input<boolean>(true);
   showMaterials = input<boolean>(true);
-  showCountertop = input<boolean>(true);
+  showSimpleBlock = input<boolean>(true);
 
   // Inputs: data arrays to show details
   blocks = input<BudgetTextBlock[]>([]);
@@ -83,18 +83,18 @@ export class BudgetSummaryComponent {
       // Register all dependencies - when any changes, recalculate
       const totalBlocks = this.totalBlocks();
       const totalMaterials = this.totalMaterials();
-      const totalCountertop = this.totalCountertop();
+      const totalSimpleBlock = this.totalSimpleBlock();
       this.additionalLines(); // Track changes to additional lines too
       this.vatPercentage(); // Track VAT changes
 
       // Emit whenever totals change (for PDF updates with recalculated discounts)
-      if (totalBlocks > 0 || totalMaterials > 0 || totalCountertop > 0) {
+      if (totalBlocks > 0 || totalMaterials > 0 || totalSimpleBlock > 0) {
         const normalizedLines = this.additionalLines().map(line => this.normalizeLine(line));
 
         this.summaryChanged.emit({
           totalBlocks: this.effectiveTotalBlocks(),
           totalMaterials: this.effectiveTotalMaterials(),
-          totalCountertop: this.effectiveTotalCountertop(),
+          totalSimpleBlock: this.effectiveTotalSimpleBlock(),
           taxableBase: this.taxableBase(),
           vat: this.vat(),
           vatPercentage: this.vatPercentage(),
@@ -111,16 +111,16 @@ export class BudgetSummaryComponent {
   protected readonly hasBlocks = computed(() => this.showBlocks() && this.blocks().length > 0);
   protected readonly hasMaterials = computed(() => this.showMaterials() && (this.materials().length > 0 || this.materialTables().length > 0));
   protected readonly hasMaterialTables = computed(() => this.materialTables().length > 0);
-  protected readonly hasCountertop = computed(() => this.showCountertop());
+  protected readonly hasSimpleBlock = computed(() => this.showSimpleBlock());
 
   // Computed values
   // Computed: effective totals based on visibility
   protected readonly effectiveTotalBlocks = computed(() => this.showBlocks() ? (this.totalBlocks() ?? 0) : 0);
   protected readonly effectiveTotalMaterials = computed(() => this.showMaterials() ? (this.totalMaterials() ?? 0) : 0);
-  protected readonly effectiveTotalCountertop = computed(() => this.showCountertop() ? (this.totalCountertop() ?? 0) : 0);
+  protected readonly effectiveTotalSimpleBlock = computed(() => this.showSimpleBlock() ? (this.totalSimpleBlock() ?? 0) : 0);
 
   protected readonly baseSubtotal = computed(() => {
-    return this.effectiveTotalBlocks() + this.effectiveTotalMaterials() + this.effectiveTotalCountertop();
+    return this.effectiveTotalBlocks() + this.effectiveTotalMaterials() + this.effectiveTotalSimpleBlock();
   });
 
   protected readonly netAdjustments = computed(() => {
@@ -302,7 +302,7 @@ export class BudgetSummaryComponent {
     this.summaryChanged.emit({
       totalBlocks: this.effectiveTotalBlocks(),
       totalMaterials: this.effectiveTotalMaterials(),
-      totalCountertop: this.effectiveTotalCountertop(),
+      totalSimpleBlock: this.effectiveTotalSimpleBlock(),
       taxableBase: this.taxableBase(),
       vat: this.vat(),
       vatPercentage: this.vatPercentage(),

@@ -95,23 +95,23 @@
               [class.active]="showTextBlocks()"
               (click)="toggleSection('textBlocks')">
               <span class="material-symbols-rounded">layers</span>
-              <span>Mobiliario</span>
+              <span>Bloque compuesto</span>
             </button>          <button
             type="button"
             class="toggle-btn"
             [class.active]="showMaterials()"
             (click)="toggleSection('materials')">
             <span class="material-symbols-rounded">table_chart</span>
-            <span>Materiales</span>
+            <span>Tablas</span>
           </button>
 
           <button
             type="button"
             class="toggle-btn"
-            [class.active]="showCountertop()"
-            (click)="toggleSection('countertop')">
-            <span class="material-symbols-rounded">countertops</span>
-            <span>Encimera</span>
+            [class.active]="showSimpleBlock()"
+            (click)="toggleSection('simpleBlock')">
+            <span class="material-symbols-rounded">article</span>
+            <span>Bloque simple</span>
           </button>
 
           <button
@@ -150,7 +150,7 @@
             <div class="logo-input-group">
               <label class="block text-sm text-gray-600 mb-1">
                 <span class="material-symbols-rounded text-sm align-middle">business</span>
-                Logo de la empresa (izquierda)
+                Logo de la empresa (centro, opcional)
               </label>
               <div class="logo-input-row">
                 <input
@@ -272,14 +272,14 @@
         </section>
       }
 
-      <!-- Section 2.5: Countertop -->
-      @if (showCountertop()) {
+      <!-- Section 2.5: Simple Block -->
+      @if (showSimpleBlock()) {
         <section class="section-divider">
-          <app-countertop-editor
+          <app-simple-block-editor
             [budgetId]="currentBudgetId() ?? 0"
-            (totalChanged)="onTotalCountertopChanged($event)"
-            (countertopChanged)="onCountertopChanged($event)">
-          </app-countertop-editor>
+            (totalChanged)="onTotalSimpleBlockChanged($event)"
+            (simpleBlockChanged)="onSimpleBlockChanged($event)">
+          </app-simple-block-editor>
         </section>
       }
 
@@ -289,10 +289,10 @@
             <app-budget-summary
             [totalBlocks]="totalBlocks()"
             [totalMaterials]="totalMaterials()"
-            [totalCountertop]="totalCountertop()"
+            [totalSimpleBlock]="totalSimpleBlock()"
             [showBlocks]="showTextBlocks()"
             [showMaterials]="showMaterials()"
-            [showCountertop]="showCountertop()"
+            [showSimpleBlock]="showSimpleBlock()"
             [blocks]="blocks()"
           [materials]="materials()"
           [materialTables]="materialTables()"
@@ -337,10 +337,10 @@
                     <span>Materiales</span>
                   </label>
                 }
-                @if (showCountertop() && countertopData()) {
-                  <label class="print-toggle" title="Incluir página de encimera">
-                    <input type="checkbox" [checked]="printCountertop()" (change)="togglePrintOption('countertop')">
-                    <span>Encimera</span>
+                @if (showSimpleBlock() && simpleBlockData()) {
+                  <label class="print-toggle" title="Incluir página de bloque simple">
+                    <input type="checkbox" [checked]="printSimpleBlock()" (change)="togglePrintOption('simpleBlock')">
+                    <span>Bloque Simple</span>
                   </label>
                 }
                 @if (showSummary()) {

@@ -129,18 +129,18 @@
         </div>
       }
 
-      <!-- Countertop section -->
-      @if (hasCountertop()) {
+      <!-- Simple Block section -->
+      @if (hasSimpleBlock()) {
         <div class="accordion-item">
           <div class="accordion-trigger" style="cursor: default;">
             <div class="trigger-label">
-              <span class="material-symbols-rounded" aria-hidden="true">countertops</span>
+              <span class="material-symbols-rounded" aria-hidden="true">article</span>
               <div>
-                <span class="trigger-title">Encimera</span>
+                <span class="trigger-title">Bloque Simple</span>
               </div>
             </div>
             <div class="trigger-value">
-              <span>{{ effectiveTotalCountertop() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              <span>{{ effectiveTotalSimpleBlock() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
             </div>
           </div>
         </div>

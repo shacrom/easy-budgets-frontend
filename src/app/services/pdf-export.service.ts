@@ -7,7 +7,7 @@ import { BudgetTextBlock } from '../models/budget-text-block.model';
 import { Material, MaterialTable } from '../models/material.model';
 import { BudgetSummary, SummaryLine, SummaryLineType } from '../models/budget-summary.model';
 import { Condition } from '../models/conditions.model';
-import { Countertop } from '../models/countertop.model';
+import { SimpleBlock } from '../models/simple-block.model';
 
 export interface BudgetPdfMetadata {
   id: number;
@@ -24,7 +24,7 @@ export interface BudgetPdfPayload {
   blocks: BudgetTextBlock[];
   materials: Material[];
   materialTables: MaterialTable[];
-  countertop: Countertop | null;
+  simpleBlock: SimpleBlock | null;
   summary: BudgetSummary | null;
   materialsSectionTitle?: string;
   conditionsTitle?: string;
@@ -34,7 +34,7 @@ export interface BudgetPdfPayload {
   showSignature?: boolean;
   printTextBlocks?: boolean;
   printMaterials?: boolean;
-  printCountertop?: boolean;
+  printSimpleBlock?: boolean;
   printConditions?: boolean;
   printSummary?: boolean;
   generatedAt: string;
@@ -169,12 +169,12 @@ export class PdfExportService {
   }
 
   private async buildDocumentDefinition(payload: BudgetPdfPayload): Promise<TDocumentDefinitions> {
-    // Pre-process countertop image if present
-    let countertop = payload.countertop;
-    if (countertop?.imageUrl) {
-      const base64Image = await this.convertImageToBase64(countertop.imageUrl);
+    // Pre-process simpleBlock image if present
+    let simpleBlock = payload.simpleBlock;
+    if (simpleBlock?.imageUrl) {
+      const base64Image = await this.convertImageToBase64(simpleBlock.imageUrl);
       if (base64Image) {
-        countertop = { ...countertop, imageUrl: base64Image };
+        simpleBlock = { ...simpleBlock, imageUrl: base64Image };
       }
     }
 
@@ -204,11 +204,11 @@ export class PdfExportService {
     // Construir secciones individuales
     const textBlocksContent = (payload.printTextBlocks !== false) ? this.buildTextBlocksSection(blocks) : [];
     const materialsContent = (payload.printMaterials !== false) ? this.buildMaterialsSection(payload.materialTables, payload.materials, payload.materialsSectionTitle) : [];
-    const countertopContent = (payload.printCountertop !== false) ? this.buildCountertopSection(countertop) : null;
+    const simpleBlockContent = (payload.printSimpleBlock !== false) ? this.buildSimpleBlockSection(simpleBlock) : null;
 
     // Obtener títulos personalizados
     const blocksSectionTitle = blocks[0]?.sectionTitle || 'Mobiliario';
-    const countertopSectionTitle = countertop?.sectionTitle || 'Encimera';
+    const simpleBlockSectionTitle = simpleBlock?.sectionTitle || 'Bloque Simple';
 
     const summaryContent = (payload.printSummary !== false) ? this.buildSummarySection(
       payload.summary,
@@ -216,7 +216,7 @@ export class PdfExportService {
       payload.materialTables,
       payload.materialsSectionTitle,
       blocksSectionTitle,
-      countertopSectionTitle
+      simpleBlockSectionTitle
     ) : null;
     const conditionsContent = (payload.printConditions !== false) ? this.buildConditionsSection(payload.conditionsTitle, payload.conditions) : null;
     const signatureContent = payload.showSignature !== false ? this.buildSignatureSection(payload.customer) : null;
@@ -225,7 +225,7 @@ export class PdfExportService {
     const sections: Content[][] = [
       textBlocksContent.length > 0 ? textBlocksContent : [],
       materialsContent.length > 0 ? materialsContent : [],
-      countertopContent ? [countertopContent] : [],
+      simpleBlockContent ? [simpleBlockContent] : [],
       summaryContent ? [summaryContent] : [],
       conditionsContent ? [conditionsContent] : [],
       signatureContent ? [signatureContent] : []
@@ -1021,10 +1021,10 @@ export class PdfExportService {
     }, 0);
   }
 
-  private buildCountertopSection(countertop: Countertop | null): Content | null {
-    if (!countertop) return null;
-    // Obtener el título de la sección, o usar 'Encimera' por defecto
-    const sectionTitle = countertop.sectionTitle || 'Encimera';
+  private buildSimpleBlockSection(simpleBlock: SimpleBlock | null): Content | null {
+    if (!simpleBlock) return null;
+    // Obtener el título de la sección, o usar 'Bloque Simple' por defecto
+    const sectionTitle = simpleBlock.sectionTitle || 'Bloque Simple';
     const header = this.buildSectionHero({
       title: sectionTitle,
       background: '#cbb39a'
@@ -1033,10 +1033,10 @@ export class PdfExportService {
     const stack: Content[] = [];
 
     // Model
-    if (countertop.model) {
+    if (simpleBlock.model) {
       stack.push({
         text: [
-          { text: countertop.model.toUpperCase(), bold: true }
+          { text: simpleBlock.model.toUpperCase(), bold: true }
         ],
         margin: [0, 0, 0, 8] as [number, number, number, number],
         style: 'box'
@@ -1044,18 +1044,18 @@ export class PdfExportService {
     }
 
     // Description
-    if (countertop.description) {
+    if (simpleBlock.description) {
       stack.push({
-        text: countertop.description.toUpperCase(),
+        text: simpleBlock.description.toUpperCase(),
         margin: [0, 0, 0, 8] as [number, number, number, number],
         style: 'box'
       });
     }
 
     // Image
-    if (countertop.imageUrl) {
+    if (simpleBlock.imageUrl) {
       stack.push({
-        image: countertop.imageUrl,
+        image: simpleBlock.imageUrl,
         width: 200,
         alignment: 'center',
         margin: [0, 10, 0, 10] as [number, number, number, number]
@@ -1063,13 +1063,13 @@ export class PdfExportService {
     }
 
     // Price
-    if (countertop.price) {
+    if (simpleBlock.price) {
       stack.push(
         this.buildCard([
           {
             columns: [
-              { text: 'TOTAL ENCIMERA', style: 'sectionCardTitle', width: '*' },
-              { text: this.formatCurrency(countertop.price), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
+              { text: 'TOTAL ' + sectionTitle.toUpperCase(), style: 'sectionCardTitle', width: '*' },
+              { text: this.formatCurrency(simpleBlock.price), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
             ]
           }
         ], '#f4ede5')
@@ -1117,7 +1117,7 @@ export class PdfExportService {
     materialTables: MaterialTable[],
     materialsSectionTitle?: string,
     blocksSectionTitle?: string,
-    countertopSectionTitle?: string
+    simpleBlockSectionTitle?: string
   ): Content | null {
     if (!summary) {
       return null;
@@ -1137,8 +1137,11 @@ export class PdfExportService {
       }))
       .filter(line => Number.isFinite(line.value));
 
+    // Use totalSimpleBlock with fallback to totalCountertop for backward compatibility
+    const simpleBlockTotal = summary.totalSimpleBlock ?? summary.totalCountertop ?? 0;
+
     // Calcular el subtotal base para los descuentos porcentuales
-    const baseSubtotal = (summary.totalBlocks ?? 0) + (summary.totalMaterials ?? 0) + (summary.totalCountertop ?? 0);
+    const baseSubtotal = (summary.totalBlocks ?? 0) + (summary.totalMaterials ?? 0) + simpleBlockTotal;
 
     // Filtrar líneas opcionales para el cálculo de totales
     const nonOptionalLines = (summary.additionalLines ?? []).filter(line => this.resolveSummaryLineType(line) !== 'optional');
@@ -1164,8 +1167,8 @@ export class PdfExportService {
       pushCategory(materialsSectionTitle || 'Materiales y equipamiento', summary.totalMaterials, materialBreakdown);
     }
 
-    if (summary.totalCountertop && summary.totalCountertop > 0) {
-      pushCategory(`Total ${countertopSectionTitle || 'encimera'}`, summary.totalCountertop);
+    if (simpleBlockTotal > 0) {
+      pushCategory(`Total ${simpleBlockSectionTitle || 'bloque simple'}`, simpleBlockTotal);
     }
 
     if (summary.additionalLines?.length) {
@@ -1224,7 +1227,7 @@ export class PdfExportService {
     const taxableBase =
       (summary.totalBlocks ?? 0) +
       (summary.totalMaterials ?? 0) +
-      (summary.totalCountertop ?? 0) +
+      simpleBlockTotal +
       nonOptionalLines.reduce((sum, line) => sum + this.formatSummaryLineAmount(line, baseSubtotal), 0);
     const vat = taxableBase * ((summary.vatPercentage ?? 21) / 100);
     const grandTotal = taxableBase + vat;
