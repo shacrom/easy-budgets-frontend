@@ -229,6 +229,156 @@ describe('PdfExportService', () => {
         expect(convertSpy).toHaveBeenCalled();
         expect(result).toBe('data:image/png;base64,converted-png');
     });
+
+    it('should return null for empty URL', async () => {
+        const result = await (service as any).convertImageToBase64('');
+        expect(result).toBeNull();
+        expect(window.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should return null for whitespace-only URL', async () => {
+        const result = await (service as any).convertImageToBase64('   ');
+        expect(result).toBeNull();
+        expect(window.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should return null for null URL', async () => {
+        const result = await (service as any).convertImageToBase64(null);
+        expect(result).toBeNull();
+        expect(window.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should return null for undefined URL', async () => {
+        const result = await (service as any).convertImageToBase64(undefined);
+        expect(result).toBeNull();
+        expect(window.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should return null when fetch returns 400 Bad Request', async () => {
+        const errorResponse = new Response(null, { status: 400, statusText: 'Bad Request' });
+        (window.fetch as jasmine.Spy).and.returnValue(Promise.resolve(errorResponse));
+
+        const warnSpy = spyOn(console, 'warn');
+        const result = await (service as any).convertImageToBase64('http://fake.url/missing.png');
+
+        expect(result).toBeNull();
+        expect(warnSpy).toHaveBeenCalledWith(
+            jasmine.stringContaining('Image not found or inaccessible')
+        );
+    });
+
+    it('should return null when fetch returns 404 Not Found', async () => {
+        const errorResponse = new Response(null, { status: 404, statusText: 'Not Found' });
+        (window.fetch as jasmine.Spy).and.returnValue(Promise.resolve(errorResponse));
+
+        const warnSpy = spyOn(console, 'warn');
+        const result = await (service as any).convertImageToBase64('http://fake.url/notfound.png');
+
+        expect(result).toBeNull();
+        expect(warnSpy).toHaveBeenCalledWith(
+            jasmine.stringContaining('Image not found or inaccessible')
+        );
+    });
+
+    it('should return null when fetch returns 500 Server Error', async () => {
+        const errorResponse = new Response(null, { status: 500, statusText: 'Internal Server Error' });
+        (window.fetch as jasmine.Spy).and.returnValue(Promise.resolve(errorResponse));
+
+        const result = await (service as any).convertImageToBase64('http://fake.url/error.png');
+        expect(result).toBeNull();
+    });
+
+    it('should return null when response is not an image type', async () => {
+        const textBlob = new Blob(['not an image'], { type: 'text/html' });
+        const response = new Response(textBlob);
+        (window.fetch as jasmine.Spy).and.returnValue(Promise.resolve(response));
+
+        const warnSpy = spyOn(console, 'warn');
+        const result = await (service as any).convertImageToBase64('http://fake.url/notimage.html');
+
+        expect(result).toBeNull();
+        expect(warnSpy).toHaveBeenCalledWith(
+            jasmine.stringContaining('Invalid image type')
+        );
+    });
+
+    it('should return null when response is application/json', async () => {
+        const jsonBlob = new Blob(['{"error": "not found"}'], { type: 'application/json' });
+        const response = new Response(jsonBlob);
+        (window.fetch as jasmine.Spy).and.returnValue(Promise.resolve(response));
+
+        const result = await (service as any).convertImageToBase64('http://fake.url/api/error');
+        expect(result).toBeNull();
+    });
+
+    it('should successfully convert valid PNG image', async () => {
+        const pngBlob = new Blob(['fake-png-content'], { type: 'image/png' });
+        const response = new Response(pngBlob);
+        (window.fetch as jasmine.Spy).and.returnValue(Promise.resolve(response));
+
+        const mockFileReader = {
+            readAsDataURL: function() {
+                this.onloadend();
+            },
+            result: 'data:image/png;base64,valid-base64-data',
+            onloadend: () => {}
+        };
+        spyOn(window, 'FileReader').and.returnValue(mockFileReader as any);
+
+        const result = await (service as any).convertImageToBase64('http://fake.url/valid.png');
+        expect(result).toBe('data:image/png;base64,valid-base64-data');
+    });
+
+    it('should successfully convert valid JPEG image', async () => {
+        const jpegBlob = new Blob(['fake-jpeg-content'], { type: 'image/jpeg' });
+        const response = new Response(jpegBlob);
+        (window.fetch as jasmine.Spy).and.returnValue(Promise.resolve(response));
+
+        const mockFileReader = {
+            readAsDataURL: function() {
+                this.onloadend();
+            },
+            result: 'data:image/jpeg;base64,valid-jpeg-data',
+            onloadend: () => {}
+        };
+        spyOn(window, 'FileReader').and.returnValue(mockFileReader as any);
+
+        const result = await (service as any).convertImageToBase64('http://fake.url/valid.jpg');
+        expect(result).toBe('data:image/jpeg;base64,valid-jpeg-data');
+    });
+
+    it('should return null when FileReader encounters an error', async () => {
+        const pngBlob = new Blob(['fake-png-content'], { type: 'image/png' });
+        const response = new Response(pngBlob);
+        (window.fetch as jasmine.Spy).and.returnValue(Promise.resolve(response));
+
+        const mockFileReader = {
+            readAsDataURL: function() {
+                this.onerror();
+            },
+            result: null,
+            onloadend: () => {},
+            onerror: () => {}
+        };
+        spyOn(window, 'FileReader').and.returnValue(mockFileReader as any);
+
+        const result = await (service as any).convertImageToBase64('http://fake.url/error.png');
+        expect(result).toBeNull();
+    });
+
+    it('should handle network errors gracefully', async () => {
+        (window.fetch as jasmine.Spy).and.returnValue(Promise.reject(new Error('Network error')));
+
+        const warnSpy = spyOn(console, 'warn');
+        const result = await (service as any).convertImageToBase64('http://fake.url/network-error.png');
+
+        expect(result).toBeNull();
+        expect(warnSpy).toHaveBeenCalledWith(
+            'Error loading image:',
+            'http://fake.url/network-error.png',
+            jasmine.any(Error)
+        );
+    });
   });
 
   // --- TESTS PARA LÍNEAS OPCIONALES EN EL RESUMEN ---
