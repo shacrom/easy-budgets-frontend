@@ -15,7 +15,7 @@ describe('BudgetTextBlocksComponent', () => {
       id: 1,
       budgetId: 100,
       orderIndex: 0,
-      sectionTitle: 'Mobiliario',
+      sectionTitle: 'Bloque Compuesto',
       heading: 'Bloque 1',
       subtotal: 100,
       descriptions: [
@@ -26,7 +26,7 @@ describe('BudgetTextBlocksComponent', () => {
       id: 2,
       budgetId: 100,
       orderIndex: 1,
-      sectionTitle: 'Mobiliario',
+      sectionTitle: 'Bloque Compuesto',
       heading: 'Bloque 2',
       subtotal: 200,
       descriptions: []
@@ -69,7 +69,7 @@ describe('BudgetTextBlocksComponent', () => {
     await fixture.whenStable();
     expect(supabaseServiceSpy.getTextBlocksForBudget).toHaveBeenCalledWith(100);
     expect(component['blocks']().length).toBe(2);
-    expect(component['sectionTitle']()).toBe('Mobiliario');
+    expect(component['sectionTitle']()).toBe('Bloque Compuesto');
   });
 
   it('should calculate grand total correctly', async () => {

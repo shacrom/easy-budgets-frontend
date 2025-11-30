@@ -332,13 +332,13 @@
                 @if (showTextBlocks() && blocks().length > 0) {
                   <label class="print-toggle" title="Incluir página de mobiliario">
                     <input type="checkbox" [checked]="printTextBlocks()" (change)="togglePrintOption('textBlocks')">
-                    <span>Mobiliario</span>
+                    <span>Bloque Compuesto</span>
                   </label>
                 }
                 @if (showMaterials() && (materialTables().length > 0 || materials().length > 0)) {
                   <label class="print-toggle" title="Incluir página de materiales">
                     <input type="checkbox" [checked]="printMaterials()" (change)="togglePrintOption('materials')">
-                    <span>Materiales</span>
+                    <span>Tabla</span>
                   </label>
                 }
                 @if (showSimpleBlock() && simpleBlockData()) {
