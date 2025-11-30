@@ -1273,6 +1273,9 @@ export class PdfExportService {
       totalsRows.push(this.summaryDiscountRow('Descuento aplicado', -totalDiscount));
     }
 
+    // Recopilar mensajes de validez para descuentos
+    const discountValidityMessages = this.buildDiscountValidityMessages(summary.additionalLines);
+
     const summaryTotalsLayoutWithGrayIva: TableLayout = {
       fillColor: (rowIndex: number) => {
         if (rowIndex === 1) return '#F9F6F2';
@@ -1340,6 +1343,19 @@ export class PdfExportService {
       });
     }
 
+    // Añadir mensajes de validez de descuentos
+    if (discountValidityMessages.length > 0) {
+      discountValidityMessages.forEach((message: string) => {
+        stack.push({
+          text: message,
+          fontSize: 9,
+          color: '#b91c1c',
+          italics: true,
+          margin: [0, 4, 0, 0] as [number, number, number, number]
+        });
+      });
+    }
+
     return { stack };
   }
 
@@ -1374,6 +1390,20 @@ export class PdfExportService {
 
   private hasOptionalSummaryLines(lines?: SummaryLine[] | null): boolean {
     return (lines ?? []).some(line => this.resolveSummaryLineType(line) === 'optional');
+  }
+
+  private buildDiscountValidityMessages(lines?: SummaryLine[] | null): string[] {
+    if (!lines?.length) {
+      return [];
+    }
+
+    return lines
+      .filter(line => this.resolveSummaryLineType(line) === 'discount' && line.validUntil)
+      .map(line => {
+        const discountName = line.concept?.trim() || 'Descuento';
+        const formattedDate = this.formatDateLong(line.validUntil);
+        return `* El descuento "${discountName}" será válido si se abona la señal antes del ${formattedDate}.`;
+      });
   }
 
   private buildConditionsSection(title = 'Condiciones generales', conditions?: Condition[] | null): Content | null {

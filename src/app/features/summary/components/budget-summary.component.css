@@ -178,6 +178,10 @@
   @apply flex-none w-28 text-right;
 }
 
+.input-field.valid-until {
+  @apply flex-none w-36 text-sm cursor-pointer;
+}
+
 .amount-display {
   @apply flex items-center gap-2;
 }

@@ -384,12 +384,15 @@ export class BudgetSummaryComponent {
     const type = this.resolveLineType(line);
     const sanitizedAmount = type === 'note' ? 0 : this.resolveLineAmount(line);
     const normalizedConcept = line.concept?.trim() ?? '';
+    // Solo mantener validUntil si es un descuento
+    const validUntil = type === 'discount' ? line.validUntil : undefined;
 
     return {
       ...line,
       concept: normalizedConcept,
       amount: sanitizedAmount,
-      conceptType: type
+      conceptType: type,
+      validUntil
     };
   }
 }

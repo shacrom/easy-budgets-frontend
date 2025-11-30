@@ -900,7 +900,8 @@ export class SupabaseService {
       concept: line.concept ?? '',
       amount: line.amount ?? 0,
       orderIndex: line.orderIndex ?? index,
-      conceptType: line.conceptType ?? 'adjustment'
+      conceptType: line.conceptType ?? 'adjustment',
+      validUntil: line.validUntil ?? null
     }));
 
     const { error: insertError } = await this.supabase

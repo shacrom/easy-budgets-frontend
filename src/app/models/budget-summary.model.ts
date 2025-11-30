@@ -9,6 +9,8 @@ export interface SummaryLine {
   amount: number;
   conceptType: SummaryLineType;
   orderIndex?: number;
+  /** Fecha de validez del descuento (solo aplica para descuentos) */
+  validUntil?: string;
 }
 
 /**
