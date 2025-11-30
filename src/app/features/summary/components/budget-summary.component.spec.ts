@@ -105,17 +105,23 @@ describe('BudgetSummaryComponent', () => {
       expect(component['taxableBase']()).toBe(120);
     });
 
-    it('should calculate discounts correctly (percentage)', () => {
-      // Base 100
+    it('should calculate discounts correctly (percentage applied after VAT)', () => {
+      // Base 100, VAT 21% by default
       component['addAdditionalLine']();
       const line = component['additionalLines']()[0];
       // 10% discount
       component['updateAdditionalLine']({ ...line, conceptType: 'discount', amount: 10 });
 
-      // 100 * 0.10 = 10 discount
-      // Net adjustments = -10
-      expect(component['netAdjustments']()).toBe(-10);
-      expect(component['taxableBase']()).toBe(90);
+      // Discounts are NOT included in netAdjustments (only applied after VAT)
+      expect(component['netAdjustments']()).toBe(0);
+      // taxableBase = 100 (discounts don't affect it)
+      expect(component['taxableBase']()).toBe(100);
+      // totalBeforeDiscount = 100 + 21 (21% VAT) = 121
+      expect(component['totalBeforeDiscount']()).toBe(121);
+      // totalDiscount = 121 * 0.10 = 12.1
+      expect(component['totalDiscount']()).toBeCloseTo(12.1, 2);
+      // grandTotal = 121 - 12.1 = 108.9
+      expect(component['grandTotal']()).toBeCloseTo(108.9, 2);
     });
   });
 

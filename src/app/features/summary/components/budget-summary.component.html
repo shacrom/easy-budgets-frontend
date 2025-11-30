@@ -231,6 +231,17 @@
       </div>
     </div>
 
+    @if (totalDiscount() > 0) {
+      <div class="summary-row total-before-discount">
+        <span>Total antes de descuento</span>
+        <strong>{{ totalBeforeDiscount() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+      </div>
+      <div class="summary-row discount-applied">
+        <span>Descuento aplicado</span>
+        <strong class="discount-value">-{{ totalDiscount() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+      </div>
+    }
+
     <div class="grand-total">
       <div>
         <span class="material-symbols-rounded" aria-hidden="true">receipt_long</span>

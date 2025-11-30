@@ -1014,6 +1014,26 @@ export class PdfExportService {
     ];
   }
 
+  private summaryDiscountRow(label: string, value: number): TableCell[] {
+    return [
+      {
+        text: label,
+        bold: true,
+        fontSize: 11,
+        color: '#b91c1c',
+        margin: [0, 1, 0, 1] as [number, number, number, number]
+      },
+      {
+        text: this.formatCurrency(value),
+        alignment: 'right',
+        bold: true,
+        fontSize: 11,
+        color: '#b91c1c',
+        margin: [0, 1, 0, 1] as [number, number, number, number]
+      }
+    ];
+  }
+
   private calculateMaterialTableTotal(table: MaterialTable): number {
     return table.rows.reduce((sum, material) => {
       const total = material.totalPrice ?? (material.quantity ?? 0) * (material.unitPrice ?? 0);
@@ -1140,12 +1160,31 @@ export class PdfExportService {
     // Use totalSimpleBlock with fallback to totalCountertop for backward compatibility
     const simpleBlockTotal = summary.totalSimpleBlock ?? summary.totalCountertop ?? 0;
 
-    // Calcular el subtotal base para los descuentos porcentuales
+    // Calcular el subtotal base
     const baseSubtotal = (summary.totalBlocks ?? 0) + (summary.totalMaterials ?? 0) + simpleBlockTotal;
 
     // Filtrar líneas opcionales para el cálculo de totales
     const nonOptionalLines = (summary.additionalLines ?? []).filter(line => this.resolveSummaryLineType(line) !== 'optional');
     const optionalLines = (summary.additionalLines ?? []).filter(line => this.resolveSummaryLineType(line) === 'optional');
+
+    // Calcular solo los recargos (sin descuentos) para la base imponible
+    const adjustmentsTotal = nonOptionalLines
+      .filter(line => this.resolveSummaryLineType(line) === 'adjustment')
+      .reduce((sum, line) => sum + (Math.abs(Number(line?.amount ?? 0)) || 0), 0);
+
+    // Base imponible = subtotal base + recargos (sin descuentos)
+    const taxableBase = baseSubtotal + adjustmentsTotal;
+    const vat = taxableBase * ((summary.vatPercentage ?? 21) / 100);
+    const totalBeforeDiscount = taxableBase + vat;
+
+    // Calcular descuentos sobre el total con IVA
+    const discountLines = nonOptionalLines.filter(line => this.resolveSummaryLineType(line) === 'discount');
+    const totalDiscount = discountLines.reduce((sum, line) => {
+      const percentage = Math.abs(Number(line?.amount ?? 0)) || 0;
+      return sum + (totalBeforeDiscount * (percentage / 100));
+    }, 0);
+
+    const grandTotal = totalBeforeDiscount - totalDiscount;
 
     const breakdownRows: TableCell[][] = [];
     const pushCategory = (
@@ -1181,7 +1220,7 @@ export class PdfExportService {
 
       summary.additionalLines.forEach(line => {
         const type = this.resolveSummaryLineType(line);
-        const label = this.formatSummaryLineLabel(line, baseSubtotal);
+        const label = this.formatSummaryLineLabel(line, totalBeforeDiscount);
 
         if (type === 'note') {
           breakdownRows.push([
@@ -1203,7 +1242,7 @@ export class PdfExportService {
           return;
         }
 
-        const row = this.summaryCategoryRow(label, this.formatSummaryLineAmount(line, baseSubtotal), true) as [TableCell, TableCell];
+        const row = this.summaryCategoryRow(label, this.formatSummaryLineAmount(line, totalBeforeDiscount), true) as [TableCell, TableCell];
 
         if (type === 'optional') {
           const labelCell = row[0] as TableCell & Record<string, unknown>;
@@ -1223,19 +1262,16 @@ export class PdfExportService {
       });
     }
 
-    // Calcular los totales excluyendo líneas opcionales
-    const taxableBase =
-      (summary.totalBlocks ?? 0) +
-      (summary.totalMaterials ?? 0) +
-      simpleBlockTotal +
-      nonOptionalLines.reduce((sum, line) => sum + this.formatSummaryLineAmount(line, baseSubtotal), 0);
-    const vat = taxableBase * ((summary.vatPercentage ?? 21) / 100);
-    const grandTotal = taxableBase + vat;
-
     const totalsRows: TableCell[][] = [
       this.summaryTotalsRow('BASE IMPONIBLE', taxableBase),
       this.summaryTotalsRow(`IVA (${summary.vatPercentage}%)`, vat)
     ];
+
+    // Añadir filas de descuento si hay descuentos aplicados
+    if (totalDiscount > 0) {
+      totalsRows.push(this.summaryTotalsRow('Total antes de descuento', totalBeforeDiscount));
+      totalsRows.push(this.summaryDiscountRow('Descuento aplicado', -totalDiscount));
+    }
 
     const summaryTotalsLayoutWithGrayIva: TableLayout = {
       fillColor: (rowIndex: number) => {
@@ -1311,13 +1347,13 @@ export class PdfExportService {
     return line?.conceptType ?? 'adjustment';
   }
 
-  private formatSummaryLineAmount(line: SummaryLine, baseSubtotal: number): number {
+  private formatSummaryLineAmount(line: SummaryLine, totalWithVat: number): number {
     const type = this.resolveSummaryLineType(line);
     const amount = Math.abs(Number(line?.amount ?? 0)) || 0;
 
     if (type === 'discount') {
-      // Calcular el descuento como porcentaje del subtotal base
-      const discountAmount = baseSubtotal * (amount / 100);
+      // Calcular el descuento como porcentaje del total con IVA
+      const discountAmount = totalWithVat * (amount / 100);
       return -discountAmount;
     }
 

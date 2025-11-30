@@ -123,18 +123,13 @@ export class BudgetSummaryComponent {
     return this.effectiveTotalBlocks() + this.effectiveTotalMaterials() + this.effectiveTotalSimpleBlock();
   });
 
+  // Solo recargos (adjustments) - los descuentos se aplican después del IVA
   protected readonly netAdjustments = computed(() => {
-    const base = this.baseSubtotal();
     return this.additionalLines().reduce((sum, line) => {
       const amount = this.resolveLineAmount(line);
       const type = this.resolveLineType(line);
 
-      if (type === 'discount') {
-        // Descuento como porcentaje del subtotal base
-        const discountAmount = base * (amount / 100);
-        return sum - discountAmount;
-      }
-
+      // Solo sumar recargos, los descuentos se aplican después del IVA
       if (type === 'adjustment') {
         return sum + amount;
       }
@@ -145,6 +140,7 @@ export class BudgetSummaryComponent {
 
   protected readonly totalAdditionalLines = computed(() => this.netAdjustments());
 
+  // Base imponible = subtotal + recargos (sin descuentos)
   protected readonly taxableBase = computed(() => {
     const total = this.baseSubtotal() + this.netAdjustments();
     return Number(Math.max(total, 0).toFixed(2));
@@ -156,8 +152,31 @@ export class BudgetSummaryComponent {
     return this.taxableBase() * (this.vatPercentage() / 100);
   });
 
-  protected readonly grandTotal = computed(() => {
+  // Total antes de aplicar descuentos (base imponible + IVA)
+  protected readonly totalBeforeDiscount = computed(() => {
     return this.taxableBase() + this.vat();
+  });
+
+  // Total de descuentos calculados sobre el total con IVA
+  protected readonly totalDiscount = computed(() => {
+    const totalWithVat = this.totalBeforeDiscount();
+    return this.additionalLines().reduce((sum, line) => {
+      const amount = this.resolveLineAmount(line);
+      const type = this.resolveLineType(line);
+
+      if (type === 'discount') {
+        // Descuento como porcentaje del total con IVA
+        const discountAmount = totalWithVat * (amount / 100);
+        return sum + discountAmount;
+      }
+
+      return sum;
+    }, 0);
+  });
+
+  // Total general = total con IVA - descuentos
+  protected readonly grandTotal = computed(() => {
+    return Math.max(this.totalBeforeDiscount() - this.totalDiscount(), 0);
   });
 
   protected readonly optionalLinesTotal = computed(() => {
@@ -249,8 +268,8 @@ export class BudgetSummaryComponent {
     const type = this.resolveLineType(line);
 
     if (type === 'discount') {
-      // Calcular el valor real del descuento en euros
-      const discountAmount = this.baseSubtotal() * (amount / 100);
+      // Calcular el valor real del descuento en euros sobre el total con IVA
+      const discountAmount = this.totalBeforeDiscount() * (amount / 100);
       return -discountAmount;
     }
 

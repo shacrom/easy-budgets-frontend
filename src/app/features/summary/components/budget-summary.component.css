@@ -222,6 +222,18 @@
   @apply text-3xl font-semibold;
 }
 
+.summary-row.total-before-discount {
+  @apply flex items-center justify-between px-5 py-3 text-gray-700 bg-gray-50 border border-gray-200;
+}
+
+.summary-row.discount-applied {
+  @apply flex items-center justify-between px-5 py-3 text-gray-700 bg-red-50 border border-red-200;
+}
+
+.summary-row.discount-applied .discount-value {
+  @apply text-red-600 font-semibold;
+}
+
 .optional-footnote {
   @apply mt-2 text-xs font-medium text-gray-600;
 }

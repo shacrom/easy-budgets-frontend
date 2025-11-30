@@ -421,14 +421,15 @@ describe('PdfExportService', () => {
 
     it('should exclude optional lines from totals', () => {
       // baseSubtotal = 1000 + 500 + 200 = 1700
-      // discount 10% = -170
       // adjustment = 50
+      // taxableBase = 1700 + 50 = 1750 (descuentos se aplican después del IVA)
+      // vat = 1750 * 0.21 = 367.50
+      // totalBeforeDiscount = 1750 + 367.50 = 2117.50
+      // discount 10% del total con IVA = 2117.50 * 0.10 = 211.75
       // optional = 999 (NO se suma)
-      // taxableBase = 1700 - 170 + 50 = 1580
-      // vat = 1580 * 0.21 = 331.80
-      // grandTotal = 1580 + 331.80 = 1911.80
+      // grandTotal = 2117.50 - 211.75 = 1905.75
       const summary = makeSummary({}, [
-        { concept: 'Descuento', amount: 10, conceptType: 'discount' }, // 10% de 1700 = 170
+        { concept: 'Descuento', amount: 10, conceptType: 'discount' }, // 10% de totalBeforeDiscount
         { concept: 'Opcional', amount: 999, conceptType: 'optional' },
         { concept: 'Ajuste', amount: 50, conceptType: 'adjustment' }
       ]);
@@ -440,8 +441,8 @@ describe('PdfExportService', () => {
         item?.style === 'sectionGrandTotal'
       );
       expect(grandTotalValue).toBeTruthy();
-      // El formato esperado es '1911,80 €' (sin separador de miles para < 10000)
-      expect(grandTotalValue?.text).toContain('1911,80');
+      // El formato esperado es '1905,75 €' (sin separador de miles para < 10000)
+      expect(grandTotalValue?.text).toContain('1905,75');
     });
 
     it('should show optional lines in breakdown but not in total', () => {
