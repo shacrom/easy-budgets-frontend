@@ -207,7 +207,7 @@ export class PdfExportService {
     const simpleBlockContent = (payload.printSimpleBlock !== false) ? this.buildSimpleBlockSection(simpleBlock) : null;
 
     // Obtener títulos personalizados
-    const blocksSectionTitle = blocks[0]?.sectionTitle || 'Mobiliario';
+    const blocksSectionTitle = blocks[0]?.sectionTitle || 'Bloque Compuesto';
     const simpleBlockSectionTitle = simpleBlock?.sectionTitle || 'Bloque Simple';
 
     const summaryContent = (payload.printSummary !== false) ? this.buildSummarySection(
@@ -553,8 +553,8 @@ export class PdfExportService {
       return [];
     }
 
-    const totalMobiliario = blocks.reduce((sum, block) => sum + (block.subtotal || 0), 0);
-    const sectionTitle = blocks[0]?.sectionTitle || 'Mobiliario';
+    const totalCompositeBlock = blocks.reduce((sum, block) => sum + (block.subtotal || 0), 0);
+    const sectionTitle = blocks[0]?.sectionTitle || 'Bloque Compuesto';
     const header = this.buildSectionHero({
       title: sectionTitle,
       background: '#cbb39a'
@@ -615,8 +615,8 @@ export class PdfExportService {
       this.buildCard([
         {
           columns: [
-            { text: 'TOTAL MOBILIARIO', style: 'sectionCardTitle', width: '*' },
-            { text: this.formatCurrency(totalMobiliario), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
+            { text: 'TOTAL', style: 'sectionCardTitle', width: '*' },
+            { text: this.formatCurrency(totalCompositeBlock), style: 'sectionGrandTotal', alignment: 'right', width: 'auto' }
           ]
         }
       ], '#f4ede5')
@@ -649,7 +649,7 @@ export class PdfExportService {
       table: {
         widths: ['*', 'auto'],
         body: [[
-          { text: 'SUBTOTAL MOBILIARIO', style: 'blockSubtotalLabel' },
+          { text: 'SUBTOTAL', style: 'blockSubtotalLabel' },
           { text: this.formatCurrency(value), style: 'blockSubtotalValue', alignment: 'right' }
         ]]
       },
@@ -1199,7 +1199,7 @@ export class PdfExportService {
     };
 
     if (summary.totalBlocks > 0) {
-      pushCategory(`Total ${blocksSectionTitle || 'mobiliario'}`, summary.totalBlocks, blockBreakdown);
+      pushCategory(`Total ${blocksSectionTitle || 'bloque compuesto'}`, summary.totalBlocks, blockBreakdown);
     }
 
     if (summary.totalMaterials > 0) {
