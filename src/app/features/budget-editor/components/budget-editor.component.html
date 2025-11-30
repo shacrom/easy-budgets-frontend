@@ -88,58 +88,77 @@
       <!-- Configuration Toolbar -->
       <section class="config-toolbar mb-6 p-4 bg-white border border-gray-200">
         <h3 class="text-sm font-medium text-gray-700 mb-3 uppercase tracking-wide">Secciones visibles</h3>
-        <div class="flex flex-wrap gap-3">
-            <button
-              type="button"
-              class="toggle-btn"
-              [class.active]="showTextBlocks()"
-              (click)="toggleSection('textBlocks')">
-              <span class="material-symbols-rounded">layers</span>
-              <span>Bloque compuesto</span>
-            </button>          <button
-            type="button"
-            class="toggle-btn"
-            [class.active]="showMaterials()"
-            (click)="toggleSection('materials')">
-            <span class="material-symbols-rounded">table_chart</span>
-            <span>Tablas</span>
-          </button>
-
-          <button
-            type="button"
-            class="toggle-btn"
-            [class.active]="showSimpleBlock()"
-            (click)="toggleSection('simpleBlock')">
-            <span class="material-symbols-rounded">article</span>
-            <span>Bloque simple</span>
-          </button>
-
-          <button
-            type="button"
-            class="toggle-btn"
-            [class.active]="showConditions()"
-            (click)="toggleSection('conditions')">
-            <span class="material-symbols-rounded">gavel</span>
-            <span>Condiciones</span>
-          </button>
-
-          <button
-            type="button"
-            class="toggle-btn"
-            [class.active]="showSummary()"
-            (click)="toggleSection('summary')">
-            <span class="material-symbols-rounded">summarize</span>
-            <span>Resumen</span>
-          </button>
-
-          <button
-            type="button"
-            class="toggle-btn"
-            [class.active]="showSignature()"
-            (click)="toggleSection('signature')">
-            <span class="material-symbols-rounded">draw</span>
-            <span>Firma</span>
-          </button>
+        <div class="flex flex-wrap gap-3" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">
+          @for (section of sectionOrder(); track section) {
+            @switch (section) {
+              @case ('textBlocks') {
+                <button
+                  cdkDrag
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="showTextBlocks()"
+                  (click)="toggleSection('textBlocks')">
+                  <span class="material-symbols-rounded">layers</span>
+                  <span>Bloque compuesto</span>
+                </button>
+              }
+              @case ('materials') {
+                <button
+                  cdkDrag
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="showMaterials()"
+                  (click)="toggleSection('materials')">
+                  <span class="material-symbols-rounded">table_chart</span>
+                  <span>Tablas</span>
+                </button>
+              }
+              @case ('simpleBlock') {
+                <button
+                  cdkDrag
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="showSimpleBlock()"
+                  (click)="toggleSection('simpleBlock')">
+                  <span class="material-symbols-rounded">article</span>
+                  <span>Bloque simple</span>
+                </button>
+              }
+              @case ('conditions') {
+                <button
+                  cdkDrag
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="showConditions()"
+                  (click)="toggleSection('conditions')">
+                  <span class="material-symbols-rounded">gavel</span>
+                  <span>Condiciones</span>
+                </button>
+              }
+              @case ('summary') {
+                <button
+                  cdkDrag
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="showSummary()"
+                  (click)="toggleSection('summary')">
+                  <span class="material-symbols-rounded">summarize</span>
+                  <span>Resumen</span>
+                </button>
+              }
+              @case ('signature') {
+                <button
+                  cdkDrag
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="showSignature()"
+                  (click)="toggleSection('signature')">
+                  <span class="material-symbols-rounded">draw</span>
+                  <span>Firma</span>
+                </button>
+              }
+            }
+          }
         </div>
 
         <!-- Logo Configuration -->
@@ -247,75 +266,81 @@
         </div>
       </section>
 
-      <!-- Section 1: Text Blocks -->
-      @if (showTextBlocks()) {
-        <section class="section-divider">
-          <app-budget-text-blocks
-            [budgetId]="currentBudgetId() ?? 0"
-            (totalChanged)="onTotalBlocksChanged($event)"
-            (blocksChanged)="onBlocksChanged($event)"
-            (sectionTitleChanged)="blocksSectionTitle.set($event)">
-          </app-budget-text-blocks>
-        </section>
-      }
-
-      <!-- Section 2: Materials Table -->
-      @if (showMaterials()) {
-        <section class="section-divider">
-          <app-materials-table
-            [tables]="materialTables()"
-            [sectionTitle]="materialsSectionTitle()"
-            (totalChanged)="onTotalMaterialsChanged($event)"
-            (materialsChanged)="onMaterialsChanged($event)"
-            (tablesChanged)="onTablesChanged($event)"
-            (sectionTitleChanged)="onMaterialsSectionTitleChanged($event)">
-          </app-materials-table>
-        </section>
-      }
-
-      <!-- Section 2.5: Simple Block -->
-      @if (showSimpleBlock()) {
-        <section class="section-divider">
-          <app-simple-block-editor
-            [budgetId]="currentBudgetId() ?? 0"
-            (totalChanged)="onTotalSimpleBlockChanged($event)"
-            (simpleBlockChanged)="onSimpleBlockChanged($event)">
-          </app-simple-block-editor>
-        </section>
-      }
-
-      <!-- Section 3: Budget Summary -->
-      @if (showSummary()) {
-        <section class="section-divider">
-            <app-budget-summary
-            [totalBlocks]="totalBlocks()"
-            [totalMaterials]="totalMaterials()"
-            [totalSimpleBlock]="totalSimpleBlock()"
-            [showBlocks]="showTextBlocks()"
-            [showMaterials]="showMaterials()"
-            [showSimpleBlock]="showSimpleBlock()"
-            [simpleBlockSectionTitle]="simpleBlockData()?.sectionTitle || 'Bloque Simple'"
-            [blocksSectionTitle]="blocksSectionTitle()"
-            [materialsSectionTitle]="materialsSectionTitle()"
-            [blocks]="blocks()"
-          [materials]="materials()"
-          [materialTables]="materialTables()"
-          [initialAdditionalLines]="additionalLines()"
-          [budgetId]="currentBudgetId() ?? 0"
-          (summaryChanged)="onSummaryChanged($event)">
-        </app-budget-summary>
-        </section>
-      }
-
-      <!-- Section 4: General Conditions -->
-      @if (showConditions()) {
-        <section class="section-divider">
-          <app-general-conditions
-            [budgetId]="currentBudgetId() ?? 0"
-            [initialConditions]="conditionsList()"
-            (titleChanged)="onConditionsTitleChanged($event)"
-            (conditionsChanged)="onConditionsChanged($event)"></app-general-conditions>
-        </section>
+      @for (section of sectionOrder(); track section) {
+        @switch (section) {
+          @case ('textBlocks') {
+            @if (showTextBlocks()) {
+              <section class="section-divider">
+                <app-budget-text-blocks
+                  [budgetId]="currentBudgetId() ?? 0"
+                  (totalChanged)="onTotalBlocksChanged($event)"
+                  (blocksChanged)="onBlocksChanged($event)"
+                  (sectionTitleChanged)="blocksSectionTitle.set($event)">
+                </app-budget-text-blocks>
+              </section>
+            }
+          }
+          @case ('materials') {
+            @if (showMaterials()) {
+              <section class="section-divider">
+                <app-materials-table
+                  [tables]="materialTables()"
+                  [sectionTitle]="materialsSectionTitle()"
+                  (totalChanged)="onTotalMaterialsChanged($event)"
+                  (materialsChanged)="onMaterialsChanged($event)"
+                  (tablesChanged)="onTablesChanged($event)"
+                  (sectionTitleChanged)="onMaterialsSectionTitleChanged($event)">
+                </app-materials-table>
+              </section>
+            }
+          }
+          @case ('simpleBlock') {
+            @if (showSimpleBlock()) {
+              <section class="section-divider">
+                <app-simple-block-editor
+                  [budgetId]="currentBudgetId() ?? 0"
+                  (totalChanged)="onTotalSimpleBlockChanged($event)"
+                  (simpleBlockChanged)="onSimpleBlockChanged($event)">
+                </app-simple-block-editor>
+              </section>
+            }
+          }
+          @case ('summary') {
+            @if (showSummary()) {
+              <section class="section-divider">
+                <app-budget-summary
+                  [totalBlocks]="totalBlocks()"
+                  [totalMaterials]="totalMaterials()"
+                  [totalSimpleBlock]="totalSimpleBlock()"
+                  [showBlocks]="showTextBlocks()"
+                  [showMaterials]="showMaterials()"
+                  [showSimpleBlock]="showSimpleBlock()"
+                  [simpleBlockSectionTitle]="simpleBlockData()?.sectionTitle || 'Bloque Simple'"
+                  [blocksSectionTitle]="blocksSectionTitle()"
+                  [materialsSectionTitle]="materialsSectionTitle()"
+                  [blocks]="blocks()"
+                  [materials]="materials()"
+                  [materialTables]="materialTables()"
+                  [initialAdditionalLines]="additionalLines()"
+                  [budgetId]="currentBudgetId() ?? 0"
+                  (summaryChanged)="onSummaryChanged($event)">
+                </app-budget-summary>
+              </section>
+            }
+          }
+          @case ('conditions') {
+            @if (showConditions()) {
+              <section class="section-divider">
+                <app-general-conditions
+                  [budgetId]="currentBudgetId() ?? 0"
+                  [initialConditions]="conditionsList()"
+                  (titleChanged)="onConditionsTitleChanged($event)"
+                  (conditionsChanged)="onConditionsChanged($event)">
+                </app-general-conditions>
+              </section>
+            }
+          }
+        }
       }
     }
     </main>

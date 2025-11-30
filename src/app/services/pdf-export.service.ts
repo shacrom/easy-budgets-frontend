@@ -28,6 +28,7 @@ export interface BudgetPdfPayload {
   summary: BudgetSummary | null;
   materialsSectionTitle?: string;
   conditionsTitle?: string;
+  sectionOrder?: string[];
   conditions?: Condition[];
   companyLogoUrl?: string;
   supplierLogoUrl?: string;
@@ -221,15 +222,21 @@ export class PdfExportService {
     const conditionsContent = (payload.printConditions !== false) ? this.buildConditionsSection(payload.conditionsTitle, payload.conditions) : null;
     const signatureContent = payload.showSignature !== false ? this.buildSignatureSection(payload.customer) : null;
 
+    const sectionMap: { [key: string]: Content[] } = {
+      'textBlocks': textBlocksContent.length > 0 ? textBlocksContent : [],
+      'materials': materialsContent.length > 0 ? materialsContent : [],
+      'simpleBlock': simpleBlockContent ? [simpleBlockContent] : [],
+      'summary': summaryContent ? [summaryContent] : [],
+      'conditions': conditionsContent ? [conditionsContent] : [],
+      'signature': signatureContent ? [signatureContent] : []
+    };
+
+    const order = payload.sectionOrder || ['textBlocks', 'materials', 'simpleBlock', 'summary', 'conditions', 'signature'];
+
     // Agrupar secciones con su contenido (solo las que tienen contenido)
-    const sections: Content[][] = [
-      textBlocksContent.length > 0 ? textBlocksContent : [],
-      materialsContent.length > 0 ? materialsContent : [],
-      simpleBlockContent ? [simpleBlockContent] : [],
-      summaryContent ? [summaryContent] : [],
-      conditionsContent ? [conditionsContent] : [],
-      signatureContent ? [signatureContent] : []
-    ].filter(section => section.length > 0);
+    const sections: Content[][] = order
+      .map(key => sectionMap[key])
+      .filter(section => section && section.length > 0);
 
     // Construir contenido con saltos de página solo entre secciones que existen
     const content: Content[] = [];

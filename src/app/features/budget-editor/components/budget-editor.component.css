@@ -279,3 +279,67 @@
 .print-toggle:hover {
   color: #0f172a;
 }
+
+/* Drag and Drop Styles */
+::ng-deep .cdk-drag-preview {
+  /* Force layout and sizing to match the original button */
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.5rem 1rem !important;
+
+  /* Visual styles matching .toggle-btn */
+  background-color: #f9fafb !important; /* bg-gray-50 */
+  border: 1px solid #e5e7eb !important; /* border-gray-200 */
+  color: #4b5563 !important; /* text-gray-600 */
+  font-size: 0.875rem !important; /* text-sm */
+  font-weight: 500 !important; /* font-medium */
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important; /* shadow-xl */
+
+  /* Critical fixes for the "black box" / scrollbars issue */
+  box-sizing: border-box !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: hidden !important;
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+}
+
+::ng-deep .cdk-drag-preview.active {
+  background-color: #fffbeb !important; /* bg-amber-50 */
+  border-color: #fde68a !important; /* border-amber-200 */
+  color: #78350f !important; /* text-amber-900 */
+}
+
+::ng-deep .cdk-drag-preview .material-symbols-rounded {
+  /* Ensure icons render correctly */
+  font-family: 'Material Symbols Rounded' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  display: inline-block !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  direction: ltr !important;
+  -webkit-font-feature-settings: 'liga' !important;
+  font-feature-settings: 'liga' !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.3;
+  background: #eee;
+  border: 1px dashed #ccc;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.flex.flex-wrap.gap-3.cdk-drop-list-dragging .toggle-btn:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

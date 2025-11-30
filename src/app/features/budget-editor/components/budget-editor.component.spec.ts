@@ -35,6 +35,7 @@ describe('BudgetEditorComponent', () => {
     showConditions: true,
     showSummary: true,
     showSignature: true,
+    sectionOrder: ['textBlocks', 'materials', 'simpleBlock', 'conditions', 'summary', 'signature'],
     materialsSectionTitle: 'Materiales',
     conditionsTitle: 'Condiciones'
   };
@@ -392,6 +393,50 @@ describe('BudgetEditorComponent', () => {
       expect(payload.printSimpleBlock).toBeTrue();
       expect(payload.printConditions).toBeFalse();
       expect(payload.printSummary).toBeTrue();
+    });
+  });
+
+  describe('Section Reordering', () => {
+    it('should initialize with default section order', () => {
+      const defaultOrder = ['textBlocks', 'materials', 'simpleBlock', 'conditions', 'summary', 'signature'];
+      expect(component['sectionOrder']()).toEqual(defaultOrder);
+    });
+
+    it('should load section order from budget', async () => {
+      const customOrder = ['summary', 'textBlocks', 'materials', 'simpleBlock', 'conditions', 'signature'];
+      const budgetWithOrder = { ...mockBudget, sectionOrder: customOrder };
+      supabaseServiceSpy.getBudget.and.returnValue(Promise.resolve(budgetWithOrder as any));
+
+      // Re-initialize component to trigger loadBudget
+      await component['loadBudget'](1);
+
+      expect(component['sectionOrder']()).toEqual(customOrder);
+    });
+
+    it('should update section order on drop', () => {
+      const initialOrder = ['textBlocks', 'materials', 'simpleBlock', 'conditions', 'summary', 'signature'];
+      component['sectionOrder'].set(initialOrder);
+
+      // Simulate moving 'textBlocks' (index 0) to index 1
+      const event = {
+        previousIndex: 0,
+        currentIndex: 1
+      } as any;
+
+      component.drop(event);
+
+      const expectedOrder = ['materials', 'textBlocks', 'simpleBlock', 'conditions', 'summary', 'signature'];
+      expect(component['sectionOrder']()).toEqual(expectedOrder);
+      expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { sectionOrder: expectedOrder });
+    });
+
+    it('should include section order in PDF payload', () => {
+      const customOrder = ['summary', 'textBlocks', 'materials', 'simpleBlock', 'conditions', 'signature'];
+      component['sectionOrder'].set(customOrder);
+
+      const payload = (component as any).buildPdfPayload();
+
+      expect(payload.sectionOrder).toEqual(customOrder);
     });
   });
 });

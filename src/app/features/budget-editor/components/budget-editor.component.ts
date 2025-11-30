@@ -1,5 +1,6 @@
 import { Component, signal, inject, effect, computed, untracked, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { BudgetTextBlocksComponent } from '../../budgets/components/budget-text-blocks.component';
 import { MaterialsTableComponent } from '../../materials/components/materials-table.component';
 import { BudgetSummaryComponent } from '../../summary/components/budget-summary.component';
@@ -22,6 +23,7 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-budget-editor',
   imports: [
+    DragDropModule,
     CustomerSelectorComponent,
     BudgetTextBlocksComponent,
     MaterialsTableComponent,
@@ -88,6 +90,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   protected readonly showConditions = signal<boolean>(true);
   protected readonly showSummary = signal<boolean>(true);
   protected readonly showSignature = signal<boolean>(true);
+  protected readonly sectionOrder = signal<string[]>(['textBlocks', 'materials', 'simpleBlock', 'conditions', 'summary', 'signature']);
   protected readonly togglingStatus = signal<boolean>(false);
 
   // PDF Preview
@@ -235,6 +238,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       summary: this.showSummary() ? filteredSummary : null,
       materialsSectionTitle: this.materialsSectionTitle(),
       conditionsTitle: this.conditionsTitle(),
+      sectionOrder: this.sectionOrder(),
       conditions: this.showConditions() ? this.conditionsList() : [],
       companyLogoUrl: this.companyLogoUrl() || undefined,
       supplierLogoUrl: this.supplierLogoUrl() || undefined,
@@ -312,6 +316,23 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     this.showPdfPreview.update(v => !v);
   }
 
+  drop(event: CdkDragDrop<string[]>) {
+    const newOrder = [...this.sectionOrder()];
+    moveItemInArray(newOrder, event.previousIndex, event.currentIndex);
+    this.sectionOrder.set(newOrder);
+    this.saveSectionOrder(newOrder);
+  }
+
+  private async saveSectionOrder(order: string[]) {
+    const id = this.currentBudgetId();
+    if (!id) return;
+    try {
+      await this.supabase.updateBudget(id, { sectionOrder: order });
+    } catch (error) {
+      console.error('Error saving section order:', error);
+    }
+  }
+
   private async loadBudget(id: number): Promise<void> {
     this.isInitialized.set(false);
     try {
@@ -334,6 +355,10 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       this.showConditions.set(budget.showConditions ?? true);
       this.showSummary.set(budget.showSummary ?? true);
       this.showSignature.set(budget.showSignature ?? true);
+
+      if (budget.sectionOrder && budget.sectionOrder.length > 0) {
+        this.sectionOrder.set(budget.sectionOrder);
+      }
 
       // Load materials section title
       this.materialsSectionTitle.set(budget.materialsSectionTitle ?? 'Materiales y equipamiento');

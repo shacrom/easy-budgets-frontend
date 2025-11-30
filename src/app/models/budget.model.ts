@@ -26,6 +26,11 @@ export interface Budget {
   showMaterials: boolean;
   showSimpleBlock: boolean;
   showConditions: boolean;
+  showSummary: boolean;
+  showSignature: boolean;
+
+  // Order
+  sectionOrder: string[];
 
   // Relations
   customer?: Customer;
