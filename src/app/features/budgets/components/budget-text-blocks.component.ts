@@ -17,7 +17,7 @@ import { SupabaseService } from '../../../services/supabase.service';
 })
 export class BudgetTextBlocksComponent {
   private readonly supabase = inject(SupabaseService);
-  private readonly defaultSectionTitle = 'Mobiliario';
+  private readonly defaultSectionTitle = 'Bloque Compuesto';
 
   // Input: Budget ID to load blocks for
   budgetId = input.required<number>();
@@ -44,6 +44,9 @@ export class BudgetTextBlocksComponent {
 
   // Output: emits blocks when they change (only on manual save)
   blocksChanged = output<BudgetTextBlock[]>();
+
+  // Output: emits section title when it changes
+  sectionTitleChanged = output<string>();
 
   // Manual save pattern
   protected readonly hasUnsavedChanges = signal<boolean>(false);
@@ -80,6 +83,7 @@ export class BudgetTextBlocksComponent {
       // Emit to parent immediately after loading to sync initial state
       this.blocksChanged.emit(blocks);
       this.totalChanged.emit(this.grandTotal());
+      this.sectionTitleChanged.emit(this.sectionTitle());
     } catch (error) {
       console.error('Error loading text blocks:', error);
     } finally {
@@ -93,6 +97,7 @@ export class BudgetTextBlocksComponent {
   protected updateSectionTitle(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.sectionTitle.set(value);
+    this.sectionTitleChanged.emit(value);
     this.hasUnsavedChanges.set(true);
   }
 

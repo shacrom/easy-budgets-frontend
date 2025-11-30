@@ -53,6 +53,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
 
   // Data arrays
   protected readonly blocks = signal<BudgetTextBlock[]>([]);
+  protected readonly blocksSectionTitle = signal<string>('Bloque Compuesto');
   protected readonly materials = signal<Material[]>([]);
   protected readonly materialTables = signal<MaterialTable[]>([]);
   protected readonly materialsSectionTitle = signal<string>('Materiales y equipamiento');

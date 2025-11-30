@@ -29,6 +29,8 @@ export class BudgetSummaryComponent {
 
   // Inputs: section titles
   simpleBlockSectionTitle = input<string>('Bloque Simple');
+  blocksSectionTitle = input<string>('Bloque Compuesto');
+  materialsSectionTitle = input<string>('Tablas de materiales');
 
   // Inputs: data arrays to show details
   blocks = input<BudgetTextBlock[]>([]);

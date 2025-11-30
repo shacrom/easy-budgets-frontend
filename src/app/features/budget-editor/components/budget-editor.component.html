@@ -253,7 +253,8 @@
           <app-budget-text-blocks
             [budgetId]="currentBudgetId() ?? 0"
             (totalChanged)="onTotalBlocksChanged($event)"
-            (blocksChanged)="onBlocksChanged($event)">
+            (blocksChanged)="onBlocksChanged($event)"
+            (sectionTitleChanged)="blocksSectionTitle.set($event)">
           </app-budget-text-blocks>
         </section>
       }
@@ -294,6 +295,8 @@
             [showMaterials]="showMaterials()"
             [showSimpleBlock]="showSimpleBlock()"
             [simpleBlockSectionTitle]="simpleBlockData()?.sectionTitle || 'Bloque Simple'"
+            [blocksSectionTitle]="blocksSectionTitle()"
+            [materialsSectionTitle]="materialsSectionTitle()"
             [blocks]="blocks()"
           [materials]="materials()"
           [materialTables]="materialTables()"

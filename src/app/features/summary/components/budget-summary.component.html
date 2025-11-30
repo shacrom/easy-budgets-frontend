@@ -40,7 +40,7 @@
             <div class="trigger-label">
               <span class="material-symbols-rounded" aria-hidden="true">layers</span>
               <div>
-                <span class="trigger-title">Mobiliario</span>
+                <span class="trigger-title">{{ blocksSectionTitle() }}</span>
                 <small>{{ blocks().length === 1 ? '1 bloque' : blocks().length + ' bloques' }}</small>
               </div>
             </div>
@@ -78,7 +78,7 @@
             <div class="trigger-label">
               <span class="material-symbols-rounded" aria-hidden="true">table_chart</span>
               <div>
-                <span class="trigger-title">Tablas de materiales</span>
+                <span class="trigger-title">{{ materialsSectionTitle() }}</span>
                 <small>
                   @if (hasMaterialTables()) {
                     {{ materialTables().length === 1 ? '1 tabla' : materialTables().length + ' tablas' }}
