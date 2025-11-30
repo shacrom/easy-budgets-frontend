@@ -500,7 +500,7 @@ describe('SupabaseService', () => {
           case 'BudgetMaterialTables': return tableBuilder;
           case 'BudgetMaterialTableRows': return rowBuilder;
           case 'BudgetAdditionalLines': return lineBuilder;
-          case 'BudgetCountertops': return simpleBlockBuilder;
+          case 'BudgetSimpleBlocks': return simpleBlockBuilder;
           case 'BudgetConditions': return conditionsBuilder;
           default: return queryBuilderSpy;
         }
@@ -515,7 +515,7 @@ describe('SupabaseService', () => {
       expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetMaterialTables');
       expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetMaterialTableRows');
       expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetAdditionalLines');
-      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetCountertops');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetSimpleBlocks');
       expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetConditions');
 
       // Verify budget insert doesn't include relation fields
@@ -818,7 +818,7 @@ describe('SupabaseService', () => {
 
       const result = await service.getSimpleBlockForBudget(1);
 
-      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetCountertops');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetSimpleBlocks');
       expect(queryBuilderSpy.eq).toHaveBeenCalledWith('budgetId', 1);
       expect(queryBuilderSpy.maybeSingle).toHaveBeenCalled();
       expect(result).toEqual(mockSimpleBlock);
@@ -831,7 +831,7 @@ describe('SupabaseService', () => {
 
       const result = await service.upsertSimpleBlock(simpleBlock);
 
-      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetCountertops');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetSimpleBlocks');
       expect(queryBuilderSpy.upsert).toHaveBeenCalledWith(simpleBlock);
       expect(result).toEqual(upsertedSimpleBlock);
     });
@@ -841,7 +841,7 @@ describe('SupabaseService', () => {
 
       await service.deleteSimpleBlock(1);
 
-      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetCountertops');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetSimpleBlocks');
       expect(queryBuilderSpy.delete).toHaveBeenCalled();
       expect(queryBuilderSpy.eq).toHaveBeenCalledWith('budgetId', 1);
     });

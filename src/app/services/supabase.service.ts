@@ -363,7 +363,7 @@ export class SupabaseService {
         ),
         additionalLines:BudgetAdditionalLines(*),
         conditions:BudgetConditions(*),
-        simpleBlock:BudgetCountertops(*)
+        simpleBlock:BudgetSimpleBlocks(*)
       `)
         .eq('id', id)
       .single();
@@ -555,7 +555,7 @@ export class SupabaseService {
       };
 
       const { error: simpleBlockError } = await this.supabase
-        .from('BudgetCountertops')
+        .from('BudgetSimpleBlocks')
         .insert([simpleBlockPayload]);
 
       if (simpleBlockError) {
@@ -1104,7 +1104,7 @@ export class SupabaseService {
   async getSimpleBlockForBudget(budgetId: number) {
     if (!Number.isFinite(budgetId)) return null;
     const { data, error } = await this.supabase
-      .from('BudgetCountertops')
+      .from('BudgetSimpleBlocks')
       .select('*')
       .eq('budgetId', budgetId)
       .maybeSingle();
@@ -1115,7 +1115,7 @@ export class SupabaseService {
 
   async upsertSimpleBlock(simpleBlock: any) {
     const { data, error } = await this.supabase
-      .from('BudgetCountertops')
+      .from('BudgetSimpleBlocks')
       .upsert(simpleBlock)
       .select()
       .single();
@@ -1127,7 +1127,7 @@ export class SupabaseService {
   async deleteSimpleBlock(budgetId: number) {
     if (!Number.isFinite(budgetId)) return;
     const { error } = await this.supabase
-      .from('BudgetCountertops')
+      .from('BudgetSimpleBlocks')
       .delete()
       .eq('budgetId', budgetId);
 
