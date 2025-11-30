@@ -270,6 +270,7 @@ describe('SupabaseService', () => {
         materialTables: [{ id: 20, title: 'Table 1', rows: [{ id: 200, reference: 'Ref 1' }] }],
         additionalLines: [{ id: 30, concept: 'Line 1' }],
         simpleBlock: { id: 40, material: 'Granite' },
+        conditions: [],
         customer: { id: 50 }
       };
 
@@ -343,6 +344,230 @@ describe('SupabaseService', () => {
       expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetTextBlocks');
       expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetMaterialTables');
       expect(result).toEqual(newBudget);
+    });
+
+    it('should duplicate budget with conditions', async () => {
+      const originalBudget = {
+        id: 1,
+        budgetNumber: 'BUD-123',
+        title: 'Original',
+        textBlocks: [],
+        materialTables: [],
+        additionalLines: [],
+        simpleBlock: null,
+        conditions: [
+          { id: 1, title: 'Condición 1', text: 'Texto condición 1', orderIndex: 0 },
+          { id: 2, title: 'Condición 2', text: 'Texto condición 2', orderIndex: 1 }
+        ],
+        customer: null
+      };
+
+      spyOn(service, 'getBudget').and.returnValue(Promise.resolve(originalBudget));
+
+      const newBudget = { id: 2, budgetNumber: 'BUD-NEW', title: 'Original (Copia)' };
+
+      const budgetBuilder = jasmine.createSpyObj('BudgetBuilder', ['insert', 'select', 'single']);
+      budgetBuilder.insert.and.returnValue(budgetBuilder);
+      budgetBuilder.select.and.returnValue(budgetBuilder);
+      budgetBuilder.single.and.returnValue(Promise.resolve({ data: newBudget, error: null }));
+
+      const conditionsBuilder = jasmine.createSpyObj('ConditionsBuilder', ['insert']);
+      conditionsBuilder.insert.and.returnValue(Promise.resolve({ error: null }));
+
+      supabaseSpy.from.and.callFake((table: string) => {
+        switch (table) {
+          case 'Budgets': return budgetBuilder;
+          case 'BudgetConditions': return conditionsBuilder;
+          default: return queryBuilderSpy;
+        }
+      });
+
+      const result = await service.duplicateBudget(1);
+
+      expect(supabaseSpy.from).toHaveBeenCalledWith('Budgets');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetConditions');
+      expect(conditionsBuilder.insert).toHaveBeenCalledWith([
+        { budgetId: 2, title: 'Condición 1', content: 'Texto condición 1', orderIndex: 0 },
+        { budgetId: 2, title: 'Condición 2', content: 'Texto condición 2', orderIndex: 1 }
+      ]);
+      expect(result).toEqual(newBudget);
+    });
+
+    it('should duplicate budget without conditions when conditions array is empty', async () => {
+      const originalBudget = {
+        id: 1,
+        budgetNumber: 'BUD-123',
+        title: 'Original',
+        textBlocks: [],
+        materialTables: [],
+        additionalLines: [],
+        simpleBlock: null,
+        conditions: [],
+        customer: null
+      };
+
+      spyOn(service, 'getBudget').and.returnValue(Promise.resolve(originalBudget));
+
+      const newBudget = { id: 2, budgetNumber: 'BUD-NEW', title: 'Original (Copia)' };
+
+      const budgetBuilder = jasmine.createSpyObj('BudgetBuilder', ['insert', 'select', 'single']);
+      budgetBuilder.insert.and.returnValue(budgetBuilder);
+      budgetBuilder.select.and.returnValue(budgetBuilder);
+      budgetBuilder.single.and.returnValue(Promise.resolve({ data: newBudget, error: null }));
+
+      supabaseSpy.from.and.callFake((table: string) => {
+        if (table === 'Budgets') return budgetBuilder;
+        return queryBuilderSpy;
+      });
+
+      const result = await service.duplicateBudget(1);
+
+      expect(supabaseSpy.from).toHaveBeenCalledWith('Budgets');
+      expect(supabaseSpy.from).not.toHaveBeenCalledWith('BudgetConditions');
+      expect(result).toEqual(newBudget);
+    });
+
+    it('should duplicate budget with all related data', async () => {
+      const originalBudget = {
+        id: 1,
+        budgetNumber: 'BUD-001',
+        title: 'Presupuesto Completo',
+        customerId: 10,
+        status: 'completed',
+        validUntil: '2025-12-31',
+        showTextBlocks: true,
+        showMaterials: true,
+        showCountertop: true,
+        showConditions: true,
+        materialsSectionTitle: 'Materiales',
+        textBlocks: [
+          { id: 10, heading: 'Bloque 1', orderIndex: 0, descriptions: [{ id: 100, title: 'Sección 1', text: 'Texto 1' }] }
+        ],
+        materialTables: [
+          { id: 20, title: 'Tabla 1', orderIndex: 0, rows: [{ id: 200, reference: 'REF-001', quantity: 2 }] }
+        ],
+        additionalLines: [
+          { id: 30, concept: 'Descuento', amount: -100, isSubtotal: false }
+        ],
+        simpleBlock: { id: 40, material: 'Mármol', sectionTitle: 'Encimera' },
+        conditions: [
+          { id: 50, title: 'Garantía', text: '2 años de garantía', orderIndex: 0 }
+        ],
+        customer: { id: 10, name: 'Cliente Test' }
+      };
+
+      spyOn(service, 'getBudget').and.returnValue(Promise.resolve(originalBudget));
+
+      const newBudget = { id: 2 };
+      const newTextBlock = { id: 11 };
+      const newTable = { id: 21 };
+
+      const budgetBuilder = jasmine.createSpyObj('BudgetBuilder', ['insert', 'select', 'single']);
+      budgetBuilder.insert.and.returnValue(budgetBuilder);
+      budgetBuilder.select.and.returnValue(budgetBuilder);
+      budgetBuilder.single.and.returnValue(Promise.resolve({ data: newBudget, error: null }));
+
+      const textBlockBuilder = jasmine.createSpyObj('TextBlockBuilder', ['insert', 'select', 'single']);
+      textBlockBuilder.insert.and.returnValue(textBlockBuilder);
+      textBlockBuilder.select.and.returnValue(textBlockBuilder);
+      textBlockBuilder.single.and.returnValue(Promise.resolve({ data: newTextBlock, error: null }));
+
+      const sectionBuilder = jasmine.createSpyObj('SectionBuilder', ['insert']);
+      sectionBuilder.insert.and.returnValue(Promise.resolve({ error: null }));
+
+      const tableBuilder = jasmine.createSpyObj('TableBuilder', ['insert', 'select', 'single']);
+      tableBuilder.insert.and.returnValue(tableBuilder);
+      tableBuilder.select.and.returnValue(tableBuilder);
+      tableBuilder.single.and.returnValue(Promise.resolve({ data: newTable, error: null }));
+
+      const rowBuilder = jasmine.createSpyObj('RowBuilder', ['insert']);
+      rowBuilder.insert.and.returnValue(Promise.resolve({ error: null }));
+
+      const lineBuilder = jasmine.createSpyObj('LineBuilder', ['insert']);
+      lineBuilder.insert.and.returnValue(Promise.resolve({ error: null }));
+
+      const simpleBlockBuilder = jasmine.createSpyObj('SimpleBlockBuilder', ['insert']);
+      simpleBlockBuilder.insert.and.returnValue(Promise.resolve({ error: null }));
+
+      const conditionsBuilder = jasmine.createSpyObj('ConditionsBuilder', ['insert']);
+      conditionsBuilder.insert.and.returnValue(Promise.resolve({ error: null }));
+
+      supabaseSpy.from.and.callFake((table: string) => {
+        switch (table) {
+          case 'Budgets': return budgetBuilder;
+          case 'BudgetTextBlocks': return textBlockBuilder;
+          case 'BudgetTextBlockSections': return sectionBuilder;
+          case 'BudgetMaterialTables': return tableBuilder;
+          case 'BudgetMaterialTableRows': return rowBuilder;
+          case 'BudgetAdditionalLines': return lineBuilder;
+          case 'BudgetCountertops': return simpleBlockBuilder;
+          case 'BudgetConditions': return conditionsBuilder;
+          default: return queryBuilderSpy;
+        }
+      });
+
+      const result = await service.duplicateBudget(1);
+
+      // Verify all tables were called
+      expect(supabaseSpy.from).toHaveBeenCalledWith('Budgets');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetTextBlocks');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetTextBlockSections');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetMaterialTables');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetMaterialTableRows');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetAdditionalLines');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetCountertops');
+      expect(supabaseSpy.from).toHaveBeenCalledWith('BudgetConditions');
+
+      // Verify budget insert doesn't include relation fields
+      const budgetInsertCall = budgetBuilder.insert.calls.mostRecent().args[0][0];
+      expect(budgetInsertCall.conditions).toBeUndefined();
+      expect(budgetInsertCall.textBlocks).toBeUndefined();
+      expect(budgetInsertCall.materialTables).toBeUndefined();
+      expect(budgetInsertCall.additionalLines).toBeUndefined();
+      expect(budgetInsertCall.simpleBlock).toBeUndefined();
+      expect(budgetInsertCall.customer).toBeUndefined();
+
+      expect(result).toEqual(newBudget);
+    });
+
+    it('should not include conditions field in duplicated budget payload', async () => {
+      const originalBudget = {
+        id: 1,
+        budgetNumber: 'BUD-123',
+        title: 'Original',
+        textBlocks: [],
+        materialTables: [],
+        additionalLines: [],
+        simpleBlock: null,
+        conditions: [{ id: 1, title: 'Test', text: 'Test text', orderIndex: 0 }],
+        customer: null
+      };
+
+      spyOn(service, 'getBudget').and.returnValue(Promise.resolve(originalBudget));
+
+      const newBudget = { id: 2 };
+
+      const budgetBuilder = jasmine.createSpyObj('BudgetBuilder', ['insert', 'select', 'single']);
+      budgetBuilder.insert.and.returnValue(budgetBuilder);
+      budgetBuilder.select.and.returnValue(budgetBuilder);
+      budgetBuilder.single.and.returnValue(Promise.resolve({ data: newBudget, error: null }));
+
+      const conditionsBuilder = jasmine.createSpyObj('ConditionsBuilder', ['insert']);
+      conditionsBuilder.insert.and.returnValue(Promise.resolve({ error: null }));
+
+      supabaseSpy.from.and.callFake((table: string) => {
+        switch (table) {
+          case 'Budgets': return budgetBuilder;
+          case 'BudgetConditions': return conditionsBuilder;
+          default: return queryBuilderSpy;
+        }
+      });
+
+      await service.duplicateBudget(1);
+
+      // The crucial test: verify the budget insert payload does NOT contain 'conditions'
+      const insertPayload = budgetBuilder.insert.calls.mostRecent().args[0][0];
+      expect(insertPayload.hasOwnProperty('conditions')).toBeFalse();
     });
   });
 
