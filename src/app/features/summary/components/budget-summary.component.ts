@@ -27,6 +27,9 @@ export class BudgetSummaryComponent {
   showMaterials = input<boolean>(true);
   showSimpleBlock = input<boolean>(true);
 
+  // Inputs: section titles
+  simpleBlockSectionTitle = input<string>('Bloque Simple');
+
   // Inputs: data arrays to show details
   blocks = input<BudgetTextBlock[]>([]);
   materials = input<Material[]>([]);
