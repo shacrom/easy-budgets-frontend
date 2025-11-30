@@ -382,12 +382,12 @@ export class SupabaseService {
 
     if (data.conditions) {
       data.conditions = data.conditions
-        .sort((a: any, b: any) => a.order_index - b.order_index)
+        .sort((a: any, b: any) => a.orderIndex - b.orderIndex)
         .map((condition: any) => ({
           id: condition.id,
           title: condition.title,
           text: condition.content,
-          orderIndex: condition.order_index
+          orderIndex: condition.orderIndex
         }));
     } else {
       data.conditions = [];
@@ -458,6 +458,7 @@ export class SupabaseService {
       textBlocks = [],
       materialTables = [],
       additionalLines = [],
+      conditions = [],
       simpleBlock,
       customer,
       id: _originalId,
@@ -559,6 +560,24 @@ export class SupabaseService {
 
       if (simpleBlockError) {
         throw simpleBlockError;
+      }
+    }
+
+    // Clone conditions
+    if (conditions?.length) {
+      const conditionsPayload = conditions.map((cond: any, index: number) => ({
+        budgetId: newBudgetId,
+        title: cond.title,
+        content: cond.text,
+        orderIndex: cond.orderIndex ?? index
+      }));
+
+      const { error: conditionsError } = await this.supabase
+        .from('BudgetConditions')
+        .insert(conditionsPayload);
+
+      if (conditionsError) {
+        throw conditionsError;
       }
     }
 
@@ -977,8 +996,8 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('ConditionTemplateSections')
       .select('*')
-      .eq('template_id', templateId)
-      .order('order_index');
+      .eq('templateId', templateId)
+      .order('orderIndex');
 
     if (error) throw error;
 
@@ -986,7 +1005,7 @@ export class SupabaseService {
       id: section.id,
       title: section.title,
       text: section.content,
-      orderIndex: section.order_index
+      orderIndex: section.orderIndex
     }));
   }
 
@@ -1004,10 +1023,10 @@ export class SupabaseService {
 
     // 2. Create sections
     const sectionsPayload = conditions.map((cond, index) => ({
-      template_id: template.id,
+      templateId: template.id,
       title: cond.title,
       content: cond.text,
-      order_index: index
+      orderIndex: index
     }));
 
     const { error: sectionsError } = await this.supabase
@@ -1037,8 +1056,8 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('BudgetConditions')
       .select('*')
-      .eq('budget_id', budgetId)
-      .order('order_index');
+      .eq('budgetId', budgetId)
+      .order('orderIndex');
 
     if (error) throw error;
 
@@ -1046,7 +1065,7 @@ export class SupabaseService {
       id: condition.id,
       title: condition.title,
       text: condition.content,
-      orderIndex: condition.order_index
+      orderIndex: condition.orderIndex
     }));
   }
 
@@ -1057,7 +1076,7 @@ export class SupabaseService {
     const { error: deleteError } = await this.supabase
       .from('BudgetConditions')
       .delete()
-      .eq('budget_id', budgetId);
+      .eq('budgetId', budgetId);
 
     if (deleteError) throw deleteError;
 
@@ -1065,10 +1084,10 @@ export class SupabaseService {
 
     // 2. Insert new conditions
     const payload = conditions.map((cond, index) => ({
-      budget_id: budgetId,
+      budgetId: budgetId,
       title: cond.title,
       content: cond.text,
-      order_index: index
+      orderIndex: index
     }));
 
     const { error: insertError } = await this.supabase
@@ -1133,8 +1152,8 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('TextBlockTemplateSections')
       .select('*')
-      .eq('template_id', templateId)
-      .order('order_index');
+      .eq('templateId', templateId)
+      .order('orderIndex');
 
     if (error) throw error;
 
@@ -1142,7 +1161,7 @@ export class SupabaseService {
       id: section.id,
       title: section.title,
       text: section.content,
-      orderIndex: section.order_index
+      orderIndex: section.orderIndex
     }));
   }
 
@@ -1182,10 +1201,10 @@ export class SupabaseService {
 
     // 2. Create sections
     const sectionsPayload = sections.map((section, index) => ({
-      template_id: template.id,
+      templateId: template.id,
       title: section.title,
       content: section.text,
-      order_index: index
+      orderIndex: index
     }));
 
     const { error: sectionsError } = await this.supabase
