@@ -1403,9 +1403,26 @@ export class PdfExportService {
   }
 
   private async convertImageToBase64(url: string): Promise<string | null> {
+    if (!url || url.trim() === '') {
+      return null;
+    }
+
     try {
       const response = await fetch(url);
+
+      // Check if the response is successful
+      if (!response.ok) {
+        console.warn(`Image not found or inaccessible: ${url} (${response.status})`);
+        return null;
+      }
+
       const blob = await response.blob();
+
+      // Validate that we got an actual image
+      if (!blob.type.startsWith('image/')) {
+        console.warn(`Invalid image type: ${blob.type} for URL: ${url}`);
+        return null;
+      }
 
       if (blob.type === 'image/webp') {
         return this.convertWebPToPng(blob);
@@ -1418,7 +1435,7 @@ export class PdfExportService {
         reader.readAsDataURL(blob);
       });
     } catch (error) {
-      console.warn('Error loading image:', error);
+      console.warn('Error loading image:', url, error);
       return null;
     }
   }
