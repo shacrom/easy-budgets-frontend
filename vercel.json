@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "if [ \"$VERCEL_GIT_COMMIT_REF\" = \"develop\" ]; then npm run build:develop; else npm run build; fi",
   "outputDirectory": "dist/easy-budgets-frontend/browser",
   "framework": null,
   "rewrites": [
@@ -7,5 +7,11 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "develop": true
+    }
+  }
 }
