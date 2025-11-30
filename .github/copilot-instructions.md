@@ -143,3 +143,9 @@ Here is a link to the most recent Angular style guide https://angular.dev/style-
 - Design services around a single responsibility
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
+
+### Database Naming Conventions
+
+- Table names MUST be in **PascalCase** (e.g., `BudgetConditions`, `TextBlockTemplates`, `Customers`)
+- Column names MUST be in **camelCase** (e.g., `budgetId`, `orderIndex`, `createdAt`, `templateId`)
+- Always use quoted identifiers for PostgreSQL tables and columns to preserve case sensitivity (e.g., `"BudgetConditions"`, `"budgetId"`)
