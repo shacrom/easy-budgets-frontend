@@ -330,7 +330,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
 
       this.showTextBlocks.set(budget.showTextBlocks ?? true);
       this.showMaterials.set(budget.showMaterials ?? true);
-      this.showSimpleBlock.set(budget.showCountertop ?? false);
+      this.showSimpleBlock.set(budget.showSimpleBlock ?? false);
       this.showConditions.set(budget.showConditions ?? true);
       this.showSummary.set(budget.showSummary ?? true);
       this.showSignature.set(budget.showSignature ?? true);
@@ -875,7 +875,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       case 'simpleBlock':
         const newSimpleBlock = !this.showSimpleBlock();
         this.showSimpleBlock.set(newSimpleBlock);
-        updates = { showCountertop: newSimpleBlock };
+        updates = { showSimpleBlock: newSimpleBlock };
         break;
       case 'conditions':
         const newConditions = !this.showConditions();

@@ -24,7 +24,7 @@ export interface Budget {
   // Visibility flags
   showTextBlocks: boolean;
   showMaterials: boolean;
-  showCountertop: boolean;
+  showSimpleBlock: boolean;
   showConditions: boolean;
 
   // Relations

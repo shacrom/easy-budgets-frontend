@@ -437,7 +437,7 @@ describe('SupabaseService', () => {
         validUntil: '2025-12-31',
         showTextBlocks: true,
         showMaterials: true,
-        showCountertop: true,
+        showSimpleBlock: true,
         showConditions: true,
         materialsSectionTitle: 'Materiales',
         textBlocks: [

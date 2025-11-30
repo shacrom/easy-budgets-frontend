@@ -31,7 +31,7 @@ describe('BudgetEditorComponent', () => {
     supplierLogoUrl: 'supplier.png',
     showTextBlocks: true,
     showMaterials: true,
-    showCountertop: false,
+    showSimpleBlock: false,
     showConditions: true,
     showSummary: true,
     showSignature: true,

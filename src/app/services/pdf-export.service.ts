@@ -1158,7 +1158,7 @@ export class PdfExportService {
       .filter(line => Number.isFinite(line.value));
 
     // Use totalSimpleBlock with fallback to totalCountertop for backward compatibility
-    const simpleBlockTotal = summary.totalSimpleBlock ?? summary.totalCountertop ?? 0;
+    const simpleBlockTotal = summary.totalSimpleBlock ?? 0;
 
     // Calcular el subtotal base
     const baseSubtotal = (summary.totalBlocks ?? 0) + (summary.totalMaterials ?? 0) + simpleBlockTotal;
