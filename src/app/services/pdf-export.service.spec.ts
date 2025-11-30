@@ -25,7 +25,7 @@ describe('PdfExportService', () => {
         id: 1,
         budgetId: 1,
         heading: 'Bloque 1',
-        sectionTitle: 'Mobiliario',
+        sectionTitle: 'Bloque Compuesto',
         subtotal: 100,
         descriptions: [{ text: 'Descripción bloque', orderIndex: 0, title: 'Titulo' }],
         orderIndex: 0
