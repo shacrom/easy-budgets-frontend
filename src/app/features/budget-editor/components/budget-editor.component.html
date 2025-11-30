@@ -330,13 +330,13 @@
               <h4>Páginas a incluir:</h4>
               <div class="print-toggles">
                 @if (showTextBlocks() && blocks().length > 0) {
-                  <label class="print-toggle" title="Incluir página de mobiliario">
+                  <label class="print-toggle" title="Incluir página de bloque compuesto">
                     <input type="checkbox" [checked]="printTextBlocks()" (change)="togglePrintOption('textBlocks')">
                     <span>Bloque Compuesto</span>
                   </label>
                 }
                 @if (showMaterials() && (materialTables().length > 0 || materials().length > 0)) {
-                  <label class="print-toggle" title="Incluir página de materiales">
+                  <label class="print-toggle" title="Incluir página de tabla">
                     <input type="checkbox" [checked]="printMaterials()" (change)="togglePrintOption('materials')">
                     <span>Tabla</span>
                   </label>

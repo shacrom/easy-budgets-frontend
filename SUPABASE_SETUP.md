@@ -402,7 +402,7 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key-aqui
 
 ## Gestión de imágenes con Supabase Storage
 
-Las secciones de "Mobiliario" y "Encimera" ahora pueden subir sus propias imágenes para evitar bloqueos CORS. Sigue estos pasos:
+Las secciones de "Bloque Simple" y "Bloque Compuesto" ahora pueden subir sus propias imágenes para evitar bloqueos CORS. Sigue estos pasos:
 
 1. **Crear bucket público**
   - Entra en *Storage → Create bucket* y llama al bucket, por ejemplo, `budget-assets`.
