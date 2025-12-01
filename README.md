@@ -1,59 +1,227 @@
-# EasyBudgetsFrontend
+# Easy Budgets Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.19.
+Aplicación web para gestión de presupuestos de reformas (cocinas, baños y reformas integrales).
 
-## Development server
+## 🚀 Tecnologías
 
-To start a local development server, run:
+- **Frontend**: Angular 20+ con Signals y Standalone Components
+- **Base de datos**: Supabase (PostgreSQL)
+- **Generación PDF**: Puppeteer
+- **Estilos**: CSS + Material Icons (MUI)
 
-```bash
-ng serve
-```
+## 📋 Prerequisitos
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Node.js (v18 o superior)
+- npm o yarn
+- Cuenta en [Supabase](https://supabase.com)
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## 🛠️ Instalación
 
 ```bash
-ng generate --help
+# Clonar repositorio
+git clone https://github.com/shacrom/easy-budgets-frontend.git
+cd easy-budgets-frontend
+
+# Instalar dependencias
+npm install
+
+# Instalar Supabase CLI globalmente
+npm install -g supabase
 ```
 
-## Building
+## 🔐 Configuración
 
-To build the project run:
+### 1. Variables de Entorno
+
+Crea archivos `.env` para cada entorno:
+
+**`.env.development`**
+```env
+SUPABASE_URL=https://tu-proyecto-develop.supabase.co
+SUPABASE_ANON_KEY=tu-anon-key-develop
+```
+
+**`.env.production`**
+```env
+SUPABASE_URL=https://tu-proyecto-main.supabase.co
+SUPABASE_ANON_KEY=tu-anon-key-main
+```
+
+### 2. Supabase CLI
 
 ```bash
-ng build
+# Login en Supabase
+supabase login
+
+# Listar proyectos
+supabase projects list
+
+# Vincular proyecto de develop
+supabase link --project-ref <tu-project-ref-develop>
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## 🗄️ Base de Datos - Comandos Supabase
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+### Migraciones
 
 ```bash
-ng test
+# Crear nueva migración
+supabase migration new nombre_descriptivo
+
+# Aplicar migraciones pendientes a base de datos remota
+supabase db push
+
+# Ver estado de migraciones
+supabase migration list
+
+# Traer cambios remotos y crear migración local
+supabase db pull
+
+# Ver diferencias entre local y remoto
+supabase db diff
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+### Generar Tipos TypeScript
 
 ```bash
-ng e2e
+# Generar tipos desde base de datos vinculada
+supabase gen types typescript --linked > src/types/supabase.types.ts
+
+# O desde proyecto específico
+supabase gen types typescript --project-id <project-ref> > src/types/supabase.types.ts
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+### Cambiar entre Entornos
 
-## Additional Resources
+```bash
+# Vincular a develop
+supabase link --project-ref <project-ref-develop>
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+# Vincular a main (producción)
+supabase link --project-ref <project-ref-main>
+```
+
+## 🏃 Desarrollo
+
+```bash
+# Iniciar servidor de desarrollo
+npm start
+
+# Ejecutar tests
+npm test
+
+# Build para producción
+npm run build
+```
+
+## 📦 Scripts NPM Disponibles
+
+```json
+{
+  "start": "ng serve",
+  "build": "ng build",
+  "test": "ng test",
+  "db:migration:new": "supabase migration new",
+  "db:push": "supabase db push",
+  "db:pull": "supabase db pull",
+  "db:diff": "supabase db diff",
+  "db:types": "supabase gen types typescript --linked > src/types/supabase.types.ts",
+  "db:link:develop": "supabase link --project-ref <project-ref-develop>",
+  "db:link:main": "supabase link --project-ref <project-ref-main>"
+}
+```
+
+## 🔄 Flujo de Trabajo con Migraciones
+
+### En Develop
+
+1. Crear migración:
+   ```bash
+   npm run db:migration:new nombre_cambio
+   ```
+
+2. Editar archivo SQL generado en `supabase/migrations/`
+
+3. Aplicar cambios a base de datos de develop:
+   ```bash
+   npm run db:push
+   ```
+
+4. Generar tipos TypeScript actualizados:
+   ```bash
+   npm run db:types
+   ```
+
+5. Commit y push:
+   ```bash
+   git add supabase/migrations/ src/types/
+   git commit -m "feat(db): descripción del cambio"
+   git push origin develop
+   ```
+
+### En Main (Producción)
+
+1. Merge de develop a main:
+   ```bash
+   git checkout main
+   git merge develop
+   git push origin main
+   ```
+
+2. Vincular a base de datos de producción:
+   ```bash
+   npm run db:link:main
+   ```
+
+3. Aplicar migraciones:
+   ```bash
+   npm run db:push
+   ```
+
+4. Verificar cambios en Supabase Dashboard
+
+## 📐 Convenciones de Base de Datos
+
+- **Tablas**: PascalCase (ej: `Customers`, `Budgets`)
+- **Columnas**: camelCase (ej: `budgetId`, `createdAt`)
+- Usar comillas dobles para preservar case-sensitivity en PostgreSQL
+
+## 🗂️ Estructura del Proyecto
+
+```
+easy-budgets-frontend/
+├── src/
+│   ├── app/
+│   │   ├── features/          # Módulos por funcionalidad
+│   │   ├── models/            # Interfaces y tipos
+│   │   ├── services/          # Servicios de Angular
+│   │   └── shared/            # Componentes compartidos
+│   ├── types/
+│   │   └── supabase.types.ts  # Tipos generados automáticamente
+│   └── environments/
+├── supabase/
+│   ├── config.toml
+│   └── migrations/            # Migraciones SQL versionadas
+├── database/
+│   ├── migrations/            # Migraciones legacy (referencia)
+│   └── seeds/                 # Datos de prueba
+└── README.md
+```
+
+## 📚 Documentación Adicional
+
+- [Supabase Documentation](https://supabase.com/docs)
+- [Angular Documentation](https://angular.dev)
+- [Configuración Supabase](./SUPABASE_SETUP.md)
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'feat: add amazing feature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📝 Licencia
+
+Este proyecto es privado y confidencial.
