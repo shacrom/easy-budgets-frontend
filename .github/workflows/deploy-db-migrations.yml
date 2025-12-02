@@ -7,6 +7,9 @@ on:
     paths:
       - 'supabase/migrations/**'
 
+permissions:
+  contents: write
+
 jobs:
   deploy-migrations:
     runs-on: ubuntu-latest
@@ -14,6 +17,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
@@ -42,10 +48,15 @@ jobs:
         run: |
           supabase gen types typescript --linked > src/types/supabase.types.ts
 
-      - name: Commit updated types
+      - name: Commit and push types if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add src/types/supabase.types.ts
-          git diff --staged --quiet || git commit -m "chore: update database types [skip ci]"
-          git push
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update database types [skip ci]"
+            git push
+          fi
