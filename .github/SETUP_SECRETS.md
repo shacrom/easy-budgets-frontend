@@ -39,16 +39,24 @@ Ejemplo: `abcdefghijklmnop`
 - **Value**: El Reference ID de tu proyecto de producción
 - Click **"Add secret"**
 
-## 4. Verificación
+## 4. Configurar Permisos de GitHub Actions
 
-Una vez configurados los secrets, deberías ver:
+1. Ve a **Settings** > **Actions** > **General**
+2. En **Workflow permissions**, selecciona:
+   - ✅ **Read and write permissions**
+   - ✅ **Allow GitHub Actions to create and approve pull requests**
+3. Click **"Save"**
+
+## 5. Verificación
+
+Una vez configurados los secrets y permisos, deberías ver:
 
 ```
 SUPABASE_ACCESS_TOKEN          Updated X minutes ago
 SUPABASE_PROJECT_REF_MAIN      Updated X minutes ago
 ```
 
-## 5. Probar el Workflow
+## 6. Probar el Workflow
 
 1. Haz un cambio en alguna migración en la rama `develop`
 2. Haz commit y push a `develop`
@@ -59,6 +67,28 @@ SUPABASE_PROJECT_REF_MAIN      Updated X minutes ago
    git push origin main
    ```
 4. Ve a la pestaña **Actions** en GitHub para ver el workflow en ejecución
+
+## ⚠️ Troubleshooting
+
+### Error: "Write access to repository not granted"
+
+Si ves este error, verifica que:
+
+1. ✅ Has configurado **Read and write permissions** en Settings > Actions > General
+2. ✅ El workflow tiene `permissions: contents: write`
+3. ✅ No hay protección de rama que impida a GitHub Actions hacer push
+
+### Solución Alternativa: Personal Access Token
+
+Si el problema persiste, crea un Personal Access Token:
+
+1. Ve a https://github.com/settings/tokens
+2. **Generate new token (classic)**
+3. Nombre: `GitHub Actions - Easy Budgets`
+4. Scope: **`repo`** (acceso completo)
+5. Copia el token
+6. Añádelo como secret `GH_PAT` en tu repositorio
+7. Actualiza el workflow para usar `${{ secrets.GH_PAT }}` en lugar de `${{ secrets.GITHUB_TOKEN }}`
 
 ## ⚠️ Importante
 
