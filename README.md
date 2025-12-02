@@ -121,13 +121,19 @@ npm run build
   "start": "ng serve",
   "build": "ng build",
   "test": "ng test",
+  
   "db:migration:new": "supabase migration new",
   "db:push": "supabase db push",
   "db:pull": "supabase db pull",
   "db:diff": "supabase db diff",
+  "db:reset": "supabase db reset",
   "db:types": "supabase gen types typescript --linked > src/types/supabase.types.ts",
-  "db:link:develop": "supabase link --project-ref <project-ref-develop>",
-  "db:link:main": "supabase link --project-ref <project-ref-main>"
+  
+  "db:link:develop": "supabase link --project-ref %SUPABASE_PROJECT_REF_DEVELOP%",
+  "db:link:main": "supabase link --project-ref %SUPABASE_PROJECT_REF_MAIN%",
+  
+  "db:deploy:develop": "npm run db:link:develop && npm run db:push && npm run db:types",
+  "db:deploy:main": "npm run db:link:main && npm run db:push && npm run db:types"
 }
 ```
 
@@ -159,7 +165,7 @@ npm run build
    git push origin develop
    ```
 
-### En Main (Producción)
+### En Main (Producción) - Automatizado ✨
 
 1. Merge de develop a main:
    ```bash
@@ -168,17 +174,23 @@ npm run build
    git push origin main
    ```
 
-2. Vincular a base de datos de producción:
-   ```bash
-   npm run db:link:main
-   ```
+2. **¡GitHub Actions se encarga del resto!** 🎉
+   - Detecta cambios en `supabase/migrations/`
+   - Aplica migraciones automáticamente
+   - Genera tipos TypeScript actualizados
+   - Hace commit de los tipos
 
-3. Aplicar migraciones:
-   ```bash
-   npm run db:push
-   ```
+3. Verificar el workflow en la pestaña **Actions** de GitHub
 
-4. Verificar cambios en Supabase Dashboard
+#### Despliegue Manual (si es necesario)
+
+Si prefieres desplegar manualmente o GitHub Actions falla:
+
+```bash
+npm run db:deploy:main
+```
+
+Este comando vincula, aplica migraciones y genera tipos en un solo paso.
 
 ## 📐 Convenciones de Base de Datos
 
@@ -190,6 +202,10 @@ npm run build
 
 ```
 easy-budgets-frontend/
+├── .github/
+│   ├── workflows/
+│   │   └── deploy-db-migrations.yml  # GitHub Actions para producción
+│   └── SETUP_SECRETS.md              # Guía de configuración de secrets
 ├── src/
 │   ├── app/
 │   │   ├── features/          # Módulos por funcionalidad
@@ -208,10 +224,35 @@ easy-budgets-frontend/
 └── README.md
 ```
 
+## 🤖 GitHub Actions - Despliegue Automático
+
+El proyecto incluye un workflow de GitHub Actions que automatiza el despliegue de migraciones a producción.
+
+### Configuración Inicial (Solo una vez)
+
+Sigue la guía completa en [`.github/SETUP_SECRETS.md`](.github/SETUP_SECRETS.md) para:
+
+1. Obtener tu Access Token de Supabase
+2. Obtener tu Project Reference ID de producción
+3. Configurar los secrets en GitHub
+
+### ¿Cómo Funciona?
+
+Cuando haces push a `main` con cambios en `supabase/migrations/`:
+
+1. ✅ GitHub Actions detecta los cambios automáticamente
+2. ✅ Se conecta a tu base de datos de producción
+3. ✅ Aplica las migraciones pendientes
+4. ✅ Genera tipos TypeScript actualizados
+5. ✅ Hace commit automático de los tipos
+
+**No necesitas ejecutar comandos manualmente en producción** 🎉
+
 ## 📚 Documentación Adicional
 
 - [Supabase Documentation](https://supabase.com/docs)
 - [Angular Documentation](https://angular.dev)
+- [Configuración de GitHub Actions](.github/SETUP_SECRETS.md)
 - [Configuración Supabase](./SUPABASE_SETUP.md)
 
 ## 🤝 Contribuir
