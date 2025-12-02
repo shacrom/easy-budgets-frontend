@@ -39,6 +39,24 @@ Ejemplo: `abcdefghijklmnop`
 - **Value**: El Reference ID de tu proyecto de producción
 - Click **"Add secret"**
 
+### Secret 3: GH_PAT (Personal Access Token)
+
+⚠️ **Necesario para repositorios en organizaciones**
+
+1. Ve a https://github.com/settings/tokens
+2. Click en **"Generate new token (classic)"**
+3. **Note**: `GitHub Actions - Easy Budgets`
+4. **Expiration**: `No expiration` (o el tiempo que prefieras)
+5. **Scopes**:
+   - ✅ **repo** (acceso completo al repositorio)
+   - ✅ **workflow**
+6. Click **"Generate token"**
+7. **Copia el token** (solo lo verás una vez)
+8. Vuelve a los secrets del repositorio
+9. **Name**: `GH_PAT`
+10. **Value**: El token que copiaste
+11. Click **"Add secret"**
+
 ## 4. Configurar Permisos de GitHub Actions
 
 1. Ve a **Settings** > **Actions** > **General**
@@ -52,6 +70,7 @@ Ejemplo: `abcdefghijklmnop`
 Una vez configurados los secrets y permisos, deberías ver:
 
 ```
+GH_PAT                         Updated X minutes ago
 SUPABASE_ACCESS_TOKEN          Updated X minutes ago
 SUPABASE_PROJECT_REF_MAIN      Updated X minutes ago
 ```
