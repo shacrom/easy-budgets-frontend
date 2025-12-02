@@ -8,6 +8,8 @@
     "build:develop": "ng build --configuration develop",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadless --code-coverage",
+    "lint": "ng lint",
     "db:migration:new": "supabase migration new",
     "db:push": "supabase db push",
     "db:pull": "supabase db pull",

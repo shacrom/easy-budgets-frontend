@@ -165,19 +165,38 @@ npm run build
    git push origin develop
    ```
 
-### En Main (Producción) - Automatizado ✨
+### En Main (Producción) - Con Pull Request ✨
 
-1. Merge de develop a main:
+**La rama `main` está protegida. NO puedes hacer push directo.**
+
+1. **Crear Pull Request desde develop a main:**
+   
    ```bash
-   git checkout main
-   git merge develop
-   git push origin main
+   # Asegúrate de que develop está actualizado
+   git checkout develop
+   git push origin develop
    ```
 
-2. **¡GitHub Actions se encarga del resto!** 🎉
-   - Detecta cambios en `supabase/migrations/`
-   - Aplica migraciones automáticamente
-   - Genera tipos TypeScript actualizados
+2. **En GitHub:**
+   - Ve a tu repositorio
+   - Click en **"Compare & pull request"** (aparece automáticamente)
+   - O ve a **Pull requests** > **New pull request**
+   - Base: `main` ← Compare: `develop`
+   - Click en **"Create pull request"**
+
+3. **GitHub Actions ejecuta automáticamente:**
+   - ✅ Tests unitarios
+   - ✅ Build de producción
+   - ✅ Validación de código
+
+4. **Mergear cuando todo esté verde:**
+   - Click en **"Merge pull request"**
+   - Click en **"Confirm merge"**
+
+5. **GitHub Actions en `main` (automático):**
+   - 🚀 Aplica migraciones a producción
+   - 📝 Genera tipos TypeScript actualizados
+   - ✅ Hace commit automático de los tipos
    - Hace commit de los tipos
 
 3. Verificar el workflow en la pestaña **Actions** de GitHub
@@ -226,7 +245,25 @@ easy-budgets-frontend/
 
 ## 🤖 GitHub Actions - Despliegue Automático
 
-El proyecto incluye un workflow de GitHub Actions que automatiza el despliegue de migraciones a producción.
+El proyecto incluye dos workflows de GitHub Actions:
+
+### 1. CI - Tests and Build (`.github/workflows/ci.yml`)
+
+Se ejecuta en cada **Pull Request** a `main` o `develop`:
+
+- ✅ Ejecuta tests unitarios con coverage
+- ✅ Valida el build de producción
+- ✅ Ejecuta linter (si está configurado)
+- ❌ **Bloquea el merge** si algún paso falla
+
+### 2. Deploy Database Migrations (`.github/workflows/deploy-db-migrations.yml`)
+
+Se ejecuta cuando se hace **merge a `main`** con cambios en migraciones:
+
+- 🔗 Conecta a base de datos de producción
+- 🚀 Aplica migraciones pendientes
+- 📝 Genera tipos TypeScript actualizados
+- ✅ Hace commit automático de los tipos
 
 ### Configuración Inicial (Solo una vez)
 
@@ -253,6 +290,7 @@ Cuando haces push a `main` con cambios en `supabase/migrations/`:
 - [Supabase Documentation](https://supabase.com/docs)
 - [Angular Documentation](https://angular.dev)
 - [Configuración de GitHub Actions](.github/SETUP_SECRETS.md)
+- [Protección de Ramas](.github/BRANCH_PROTECTION.md)
 - [Configuración Supabase](./SUPABASE_SETUP.md)
 
 ## 🤝 Contribuir
