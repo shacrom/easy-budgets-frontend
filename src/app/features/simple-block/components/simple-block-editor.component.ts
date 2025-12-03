@@ -190,7 +190,7 @@ export class SimpleBlockEditorComponent {
       this.hasUnsavedChanges.set(true);
     } catch (error) {
       console.error('Error uploading simple block image:', error);
-      this.imageUploadError.set('No se pudo subir la imagen. Inténtalo de nuevo.');
+      this.imageUploadError.set('No se pudo subir la imagen. Inténtalo de nuevo más tarde.');
     } finally {
       this.isUploadingImage.set(false);
       if (input) {
