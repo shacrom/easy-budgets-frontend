@@ -75,7 +75,7 @@ SUPABASE_ACCESS_TOKEN          Updated X minutes ago
 SUPABASE_PROJECT_REF_MAIN      Updated X minutes ago
 ```
 
-## 6. Probar el Workflow
+## 6. Probar el Workfloww
 
 1. Haz un cambio en alguna migración en la rama `develop`
 2. Haz commit y push a `develop`
