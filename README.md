@@ -121,17 +121,17 @@ npm run build
   "start": "ng serve",
   "build": "ng build",
   "test": "ng test",
-  
+
   "db:migration:new": "supabase migration new",
   "db:push": "supabase db push",
   "db:pull": "supabase db pull",
   "db:diff": "supabase db diff",
   "db:reset": "supabase db reset",
   "db:types": "supabase gen types typescript --linked > src/types/supabase.types.ts",
-  
+
   "db:link:develop": "supabase link --project-ref %SUPABASE_PROJECT_REF_DEVELOP%",
   "db:link:main": "supabase link --project-ref %SUPABASE_PROJECT_REF_MAIN%",
-  
+
   "db:deploy:develop": "npm run db:link:develop && npm run db:push && npm run db:types",
   "db:deploy:main": "npm run db:link:main && npm run db:push && npm run db:types"
 }
@@ -170,7 +170,7 @@ npm run build
 **La rama `main` está protegida. NO puedes hacer push directo.**
 
 1. **Crear Pull Request desde develop a main:**
-   
+
    ```bash
    # Asegúrate de que develop está actualizado
    git checkout develop
