@@ -30,9 +30,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linter
-        run: npm run lint --if-present
-        continue-on-error: true
+      - name: Run linter (if configured)
+        run: |
+          if [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || [ -f .eslintrc ] || grep -q "\"lint\"" angular.json; then
+            echo "Lint target found, running linter..."
+            npm run lint --if-present || echo "Lint failed but not blocking CI"
+          else
+            echo "No lint configuration found, skipping lint step."
+          fi
 
       - name: Run unit tests (fast)
         run: npm test -- --watch=false --browsers=ChromeHeadless --code-coverage=false
