@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output, signal, inject, effect, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { BudgetTextBlock, DescriptionSection } from '../../../models/budget-text-block.model';
 import { SupabaseService } from '../../../services/supabase.service';
@@ -20,7 +20,7 @@ export interface TextBlockTemplate {
   selector: 'app-budget-text-block',
   templateUrl: './budget-text-block.component.html',
   styleUrls: ['./budget-text-block.component.css'],
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BudgetTextBlockComponent implements OnInit {

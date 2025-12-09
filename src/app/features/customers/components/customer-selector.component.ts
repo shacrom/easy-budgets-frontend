@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Customer } from '../../../models/customer.model';
 
 @Component({
@@ -7,7 +7,7 @@ import { Customer } from '../../../models/customer.model';
   standalone: true,
   templateUrl: './customer-selector.component.html',
   styleUrls: ['./customer-selector.component.css'],
-  imports: [CommonModule],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CustomerSelectorComponent {

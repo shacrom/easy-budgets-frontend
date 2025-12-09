@@ -6,115 +6,119 @@
       [value]="sectionTitle()"
       placeholder="Título de la sección"
       (input)="updateSectionTitle($event)">
-    <div class="header-actions">
-      @if (hasUnsavedChanges()) {
-        <span class="unsaved-indicator">
-          <span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
-          <span>Cambios sin guardar</span>
-        </span>
-      }
-      @if (hasUnsavedChanges()) {
-        <button
-          type="button"
-          class="btn ghost"
-          (click)="discardChanges()"
-          [disabled]="isSaving()">
-          <span class="material-symbols-rounded" aria-hidden="true">undo</span>
-          <span>Descartar</span>
-        </button>
-      }
-      <button
-        type="button"
-        [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
-        (click)="saveChanges()"
-        [disabled]="isSaving() || !hasUnsavedChanges()">
-        <span class="material-symbols-rounded" aria-hidden="true">save</span>
-        <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
-      </button>
-    </div>
-  </div>
-
-  <div class="content">
-    <div class="form-group">
-      <label>Título</label>
-      <input
-        type="text"
-        [ngModel]="simpleBlock().model"
-        (ngModelChange)="updateModel($event)"
-        placeholder=""
-        class="form-input">
-    </div>
-
-    <div class="form-group">
-      <label>Descripción</label>
-      <textarea
-        [ngModel]="simpleBlock().description"
-        (ngModelChange)="updateDescription($event)"
-        rows="3"
-        class="form-textarea"></textarea>
-    </div>
-
-    <div class="image-section">
-      <input
-        #simpleBlockFileInput
-        type="file"
-        class="sr-only"
-        accept="image/*"
-        (change)="onImageFileSelected($event)">
-
-      <div class="image-placeholder" *ngIf="!simpleBlock().imageUrl">
-        <span>FOTO BLOQUE SIMPLE</span>
-        <div class="url-input-group">
-          <input #urlInput
-                 type="text"
-                 placeholder="URL de la imagen"
-                 (keydown.enter)="setImageUrl(urlInput.value)"
-                 class="url-input">
-          <button type="button"
-                  (click)="setImageUrl(urlInput.value)"
-                  class="add-image-btn"
-                  title="Añadir imagen">
-            <span class="material-symbols-rounded">add_photo_alternate</span>
-          </button>
-        </div>
-        <button
-          type="button"
-          class="upload-image-btn mt-2"
-          (click)="simpleBlockFileInput.click()"
-          [disabled]="isUploadingImage()">
-          <span class="material-symbols-rounded" aria-hidden="true">file_upload</span>
-          {{ isUploadingImage() ? 'Subiendo...' : 'Subir imagen desde archivo' }}
-        </button>
-      </div>
-
-      <div *ngIf="simpleBlock().imageUrl" class="image-preview-container">
-        <img [src]="simpleBlock().imageUrl" alt="Bloque Simple" class="preview-image">
-        <div class="image-preview-actions">
+      <div class="header-actions">
+        @if (hasUnsavedChanges()) {
+          <span class="unsaved-indicator">
+            <span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
+            <span>Cambios sin guardar</span>
+          </span>
+        }
+        @if (hasUnsavedChanges()) {
           <button
             type="button"
-            class="upload-image-btn"
-            (click)="simpleBlockFileInput.click()"
-            [disabled]="isUploadingImage()">
-            <span class="material-symbols-rounded" aria-hidden="true">file_upload</span>
-            {{ isUploadingImage() ? 'Subiendo...' : 'Cambiar imagen' }}
+            class="btn ghost"
+            (click)="discardChanges()"
+            [disabled]="isSaving()">
+            <span class="material-symbols-rounded" aria-hidden="true">undo</span>
+            <span>Descartar</span>
           </button>
-          <button type="button" (click)="clearImageUrl()" class="remove-image-btn">Quitar imagen</button>
-        </div>
+        }
+        <button
+          type="button"
+          [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
+          (click)="saveChanges()"
+          [disabled]="isSaving() || !hasUnsavedChanges()">
+          <span class="material-symbols-rounded" aria-hidden="true">save</span>
+          <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
+        </button>
       </div>
-
-      @if (imageUploadError()) {
-        <p class="upload-error">{{ imageUploadError() }}</p>
-      }
     </div>
 
-    <div class="price-section">
-      <label>Total Precio</label>
-      <input
-        type="number"
-        [ngModel]="simpleBlock().price"
-        (ngModelChange)="updatePrice($event)"
-        class="price-input">
-      <span class="currency">€</span>
-    </div>
-  </div>
-</div>
+    <div class="content">
+      <div class="form-group">
+        <label>Título</label>
+        <input
+          type="text"
+          [ngModel]="simpleBlock().model"
+          (ngModelChange)="updateModel($event)"
+          placeholder=""
+          class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea
+            [ngModel]="simpleBlock().description"
+            (ngModelChange)="updateDescription($event)"
+            rows="3"
+          class="form-textarea"></textarea>
+        </div>
+
+        <div class="image-section">
+          <input
+            #simpleBlockFileInput
+            type="file"
+            class="sr-only"
+            accept="image/*"
+            (change)="onImageFileSelected($event)">
+
+            @if (!simpleBlock().imageUrl) {
+              <div class="image-placeholder">
+                <span>FOTO BLOQUE SIMPLE</span>
+                <div class="url-input-group">
+                  <input #urlInput
+                    type="text"
+                    placeholder="URL de la imagen"
+                    (keydown.enter)="setImageUrl(urlInput.value)"
+                    class="url-input">
+                    <button type="button"
+                      (click)="setImageUrl(urlInput.value)"
+                      class="add-image-btn"
+                      title="Añadir imagen">
+                      <span class="material-symbols-rounded">add_photo_alternate</span>
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    class="upload-image-btn mt-2"
+                    (click)="simpleBlockFileInput.click()"
+                    [disabled]="isUploadingImage()">
+                    <span class="material-symbols-rounded" aria-hidden="true">file_upload</span>
+                    {{ isUploadingImage() ? 'Subiendo...' : 'Subir imagen desde archivo' }}
+                  </button>
+                </div>
+              }
+
+              @if (simpleBlock().imageUrl) {
+                <div class="image-preview-container">
+                  <img [src]="simpleBlock().imageUrl" alt="Bloque Simple" class="preview-image">
+                  <div class="image-preview-actions">
+                    <button
+                      type="button"
+                      class="upload-image-btn"
+                      (click)="simpleBlockFileInput.click()"
+                      [disabled]="isUploadingImage()">
+                      <span class="material-symbols-rounded" aria-hidden="true">file_upload</span>
+                      {{ isUploadingImage() ? 'Subiendo...' : 'Cambiar imagen' }}
+                    </button>
+                    <button type="button" (click)="clearImageUrl()" class="remove-image-btn">Quitar imagen</button>
+                  </div>
+                </div>
+              }
+
+              @if (imageUploadError()) {
+                <p class="upload-error">{{ imageUploadError() }}</p>
+              }
+            </div>
+
+            <div class="price-section">
+              <label>Total Precio</label>
+              <input
+                type="number"
+                [ngModel]="simpleBlock().price"
+                (ngModelChange)="updatePrice($event)"
+                class="price-input">
+                <span class="currency">€</span>
+              </div>
+            </div>
+          </div>

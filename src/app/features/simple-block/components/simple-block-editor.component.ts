@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal, input, output, inject, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../../services/supabase.service';
 import { SimpleBlock } from '../../../models/simple-block.model';
@@ -8,7 +8,7 @@ import { SimpleBlock } from '../../../models/simple-block.model';
   selector: 'app-simple-block-editor',
   templateUrl: './simple-block-editor.component.html',
   styleUrls: ['./simple-block-editor.component.css'],
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SimpleBlockEditorComponent {
