@@ -149,3 +149,20 @@ Here is a link to the most recent Angular style guide https://angular.dev/style-
 - Table names MUST be in **PascalCase** (e.g., `BudgetConditions`, `TextBlockTemplates`, `Customers`)
 - Column names MUST be in **camelCase** (e.g., `budgetId`, `orderIndex`, `createdAt`, `templateId`)
 - Always use quoted identifiers for PostgreSQL tables and columns to preserve case sensitivity (e.g., `"BudgetConditions"`, `"budgetId"`)
+
+### Database Schema Reference
+
+**IMPORTANT**: Always consult the file `database/schema.sql` for the complete and up-to-date database schema before:
+- Writing database queries
+- Creating or modifying models/interfaces
+- Working with Supabase client calls
+- Suggesting database changes or migrations
+
+The `schema.sql` file contains:
+- All table definitions with correct column names and types
+- Relationships and foreign keys
+- Indexes and constraints
+- Valid values for enums (status, conceptType, etc.)
+- Naming conventions and best practices
+
+When working with database-related code, reference this file to ensure accuracy and consistency.
