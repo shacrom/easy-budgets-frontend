@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, beforeAll, vi, afterEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MaterialsTableComponent } from './materials-table.component';
-import { SupabaseService } from '../../../services/supabase.service';
+import { SupabaseService } from '../../../../services/supabase.service';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
-import { MaterialTable, Material } from '../../../models/material.model';
-import { Product } from '../../../models/product.model';
+import { MaterialTable, Material } from '../../../../models/material.model';
+import { Product } from '../../../../models/product.model';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('MaterialsTableComponent', () => {

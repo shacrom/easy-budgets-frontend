@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import { BudgetTextBlocksComponent } from './budget-text-blocks.component';
-import { SupabaseService } from '../../../services/supabase.service';
+import { SupabaseService } from '../../../../services/supabase.service';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
-import { BudgetTextBlock } from '../../../models/budget-text-block.model';
+import { BudgetTextBlock } from '../../../../models/budget-text-block.model';
 
 describe('BudgetTextBlocksComponent', () => {
   let component: BudgetTextBlocksComponent;

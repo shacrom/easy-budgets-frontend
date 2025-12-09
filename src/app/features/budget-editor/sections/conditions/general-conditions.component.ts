@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal, effect, output, inject, input, OnInit } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { Condition } from '../../../models/conditions.model';
-import { SupabaseService } from '../../../services/supabase.service';
+import { Condition } from '../../../../models/conditions.model';
+import { SupabaseService } from '../../../../services/supabase.service';
 
 /**
  * Component to manage budget general conditions

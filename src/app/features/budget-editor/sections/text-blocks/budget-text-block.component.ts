@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, output, signal, inject, effect, OnInit } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { BudgetTextBlock, DescriptionSection } from '../../../models/budget-text-block.model';
-import { SupabaseService } from '../../../services/supabase.service';
+import { BudgetTextBlock, DescriptionSection } from '../../../../models/budget-text-block.model';
+import { SupabaseService } from '../../../../services/supabase.service';
 
 export interface TextBlockTemplate {
   id: number;

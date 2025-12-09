@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal, computed, output, input, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BudgetTextBlockComponent } from './budget-text-block.component';
-import { BudgetTextBlock } from '../../../models/budget-text-block.model';
-import { SupabaseService } from '../../../services/supabase.service';
+import { BudgetTextBlock } from '../../../../models/budget-text-block.model';
+import { SupabaseService } from '../../../../services/supabase.service';
 
 /**
  * Container component to manage all budget text blocks

@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BudgetTextBlockComponent } from './budget-text-block.component';
-import { BudgetTextBlock } from '../../../models/budget-text-block.model';
-import { SupabaseService } from '../../../services/supabase.service';
+import { BudgetTextBlock } from '../../../../models/budget-text-block.model';
+import { SupabaseService } from '../../../../services/supabase.service';
 
 describe('BudgetTextBlockComponent', () => {
   let component: BudgetTextBlockComponent;

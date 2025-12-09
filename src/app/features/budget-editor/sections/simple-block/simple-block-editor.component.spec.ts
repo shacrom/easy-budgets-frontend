@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SimpleBlockEditorComponent } from './simple-block-editor.component';
-import { SupabaseService } from '../../../services/supabase.service';
+import { SupabaseService } from '../../../../services/supabase.service';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
-import { SimpleBlock } from '../../../models/simple-block.model';
+import { SimpleBlock } from '../../../../models/simple-block.model';
 
 describe('SimpleBlockEditorComponent', () => {
   let component: SimpleBlockEditorComponent;

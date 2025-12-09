@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, signal, computed, output, inject, i
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
 import { MaterialRowComponent } from './material-row.component';
-import { Material, MaterialTable } from '../../../models/material.model';
-import { Product } from '../../../models/product.model';
-import { SupabaseService } from '../../../services/supabase.service';
+import { Material, MaterialTable } from '../../../../models/material.model';
+import { Product } from '../../../../models/product.model';
+import { SupabaseService } from '../../../../services/supabase.service';
 
 /**
  * Container component for the materials table

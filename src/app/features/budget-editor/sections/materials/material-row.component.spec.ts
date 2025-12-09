@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MaterialRowComponent } from './material-row.component';
-import { Material } from '../../../models/material.model';
-import { Product } from '../../../models/product.model';
+import { Material } from '../../../../models/material.model';
+import { Product } from '../../../../models/product.model';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 

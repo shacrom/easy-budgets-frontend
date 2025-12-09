@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GeneralConditionsComponent } from './general-conditions.component';
-import { SupabaseService } from '../../../services/supabase.service';
+import { SupabaseService } from '../../../../services/supabase.service';
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 
 describe('GeneralConditionsComponent', () => {

@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, input, signal, computed, effect, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BudgetSummary, SummaryLine, SummaryLineType } from '../../../models/budget-summary.model';
-import { BudgetTextBlock } from '../../../models/budget-text-block.model';
-import { Material, MaterialTable } from '../../../models/material.model';
+import { BudgetSummary, SummaryLine, SummaryLineType } from '../../../../models/budget-summary.model';
+import { BudgetTextBlock } from '../../../../models/budget-text-block.model';
+import { Material, MaterialTable } from '../../../../models/material.model';
 
 /**
  * Component to display the budget summary

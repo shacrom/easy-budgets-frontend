@@ -4,7 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BudgetSummaryComponent } from './budget-summary.component';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
-import { SummaryLine } from '../../../models/budget-summary.model';
+import { SummaryLine } from '../../../../models/budget-summary.model';
 
 describe('BudgetSummaryComponent', () => {
   let component: BudgetSummaryComponent;

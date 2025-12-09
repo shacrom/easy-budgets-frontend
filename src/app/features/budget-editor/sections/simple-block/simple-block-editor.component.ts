@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal, input, output, inject, effect } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { SupabaseService } from '../../../services/supabase.service';
-import { SimpleBlock } from '../../../models/simple-block.model';
+import { SupabaseService } from '../../../../services/supabase.service';
+import { SimpleBlock } from '../../../../models/simple-block.model';
 
 @Component({
   selector: 'app-simple-block-editor',

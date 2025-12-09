@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, input, output, computed, signal, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Material } from '../../../models/material.model';
-import { Product } from '../../../models/product.model';
+import { Material } from '../../../../models/material.model';
+import { Product } from '../../../../models/product.model';
 
 /**
  * Component to display and edit a material row in the table
