@@ -8,7 +8,7 @@ Te paso algunas de las imágenes de su plantilla que utiliza para dar informaci�
 
 Me gustaría hacer una página web con Astro para poder facilitarle la vida.
 
-Esa página también tiene que permitir crear archivos pdf para poder imprimirlos. Para generar los PDFs utilizaremos **Puppeteer**.
+Esa página también tiene que permitir crear archivos pdf para poder imprimirlos. 
 
 La idea principal es tener 4 tipos de documento. 
 
