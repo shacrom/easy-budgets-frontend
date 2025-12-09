@@ -166,3 +166,27 @@ The `schema.sql` file contains:
 - Naming conventions and best practices
 
 When working with database-related code, reference this file to ensure accuracy and consistency.
+
+### Database Migration Workflow
+
+**CRITICAL**: Any modification to the database schema MUST be done through Supabase migrations:
+
+1. **Never modify the database directly** - All schema changes must go through migration files
+2. **Create migrations using Supabase CLI**:
+   ```bash
+   npx supabase migration new descriptive_migration_name
+   ```
+3. **Write SQL changes** in the generated migration file under `supabase/migrations/`
+4. **Apply migrations locally** to test:
+   ```bash
+   npx supabase db reset
+   ```
+5. **Update `database/schema.sql`** to reflect the changes after the migration is applied
+6. **Commit both** the migration file and the updated schema.sql
+
+**Migration Best Practices**:
+- Use descriptive names that explain what the migration does (e.g., `add_payment_status_to_budgets`, `rename_customer_field`)
+- Always include rollback considerations in comments
+- Test migrations locally before pushing to production
+- Keep migrations atomic - one logical change per migration file
+- Never edit existing migration files that have been applied to production
