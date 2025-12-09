@@ -41,7 +41,7 @@ jobs:
           fi
 
       - name: Run unit tests (coverage)
-        run: npm test -- --watch=false --browsers=ChromeHeadless --code-coverage
+        run: npm run test:ci
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3

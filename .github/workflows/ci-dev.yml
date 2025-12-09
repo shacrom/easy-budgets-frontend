@@ -40,4 +40,4 @@ jobs:
           fi
 
       - name: Run unit tests (fast)
-        run: npm test -- --watch=false --browsers=ChromeHeadless --code-coverage=false
+        run: npm run test:run
