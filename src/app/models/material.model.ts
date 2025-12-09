@@ -1,31 +1,11 @@
 /**
- * Modelo para un material en el presupuesto
- * Contiene: descripción, fabricante, cantidad, precio unitario y precio total
+ * @deprecated Use item-table.model.ts instead
+ * This file is kept for backward compatibility
  */
-export interface Material {
-  id: number;
-  tableId?: number;
-  productId?: number;
-  orderIndex: number;
-  description: string;
-  reference: string;
-  manufacturer: string;
-  quantity: number;
-  unitPrice: number;
-  totalPrice: number; // calculado: cantidad * precioUnitario
-}
+export type {
+  ItemTableRow as Material,
+  ItemTable as MaterialTable,
+  ItemTableRow,
+  ItemTable
+} from './item-table.model';
 
-export interface MaterialTable {
-  id: number;
-  budgetId?: number;
-  orderIndex: number;
-  title: string;
-  rows: Material[];
-  // Column visibility for PDF export (per table)
-  showReference?: boolean;
-  showDescription?: boolean;
-  showManufacturer?: boolean;
-  showQuantity?: boolean;
-  showUnitPrice?: boolean;
-  showTotalPrice?: boolean;
-}

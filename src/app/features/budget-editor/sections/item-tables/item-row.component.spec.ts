@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MaterialRowComponent } from './material-row.component';
-import { Material } from '../../../../models/material.model';
+import { ItemRowComponent } from './item-row.component';
+import { ItemRow } from '../../../../models/item-table.model';
 import { Product } from '../../../../models/product.model';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 
-describe('MaterialRowComponent', () => {
-  let component: MaterialRowComponent;
-  let fixture: ComponentFixture<MaterialRowComponent>;
+describe('ItemRowComponent', () => {
+  let component: ItemRowComponent;
+  let fixture: ComponentFixture<ItemRowComponent>;
 
-  const mockMaterial: Material = {
+  const mockItem: ItemRow = {
     id: 1,
     reference: 'REF1',
     description: 'Desc',
@@ -32,12 +32,12 @@ describe('MaterialRowComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MaterialRowComponent]
+      imports: [ItemRowComponent]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MaterialRowComponent);
+    fixture = TestBed.createComponent(ItemRowComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('material', mockMaterial);
+    fixture.componentRef.setInput('row', mockItem);
     fixture.componentRef.setInput('products', mockProducts);
     fixture.detectChanges();
   });
@@ -152,18 +152,18 @@ describe('MaterialRowComponent', () => {
 
   it('should emit deleteRequested', () => {
     let emittedId: number | undefined;
-    component.deleteRequested.subscribe(id => emittedId = id);
+    component.deleteRequested.subscribe((id: number) => emittedId = id);
 
     component['requestDelete']();
 
     expect(emittedId).toBe(1);
   });
 
-  it('should return current material with local values', () => {
+  it('should return current item with local values', () => {
     component['onQuantityChange'](10);
     component['onUnitPriceChange'](5);
 
-    const current = component.getCurrentMaterial();
+    const current = component.getCurrentRow();
 
     expect(current.quantity).toBe(10);
     expect(current.unitPrice).toBe(5);

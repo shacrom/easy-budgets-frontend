@@ -102,13 +102,13 @@
                   <span>Bloque compuesto</span>
                 </button>
               }
-              @case ('materials') {
+              @case ('itemTables') {
                 <button
                   cdkDrag
                   type="button"
                   class="toggle-btn"
-                  [class.active]="showMaterials()"
-                  (click)="toggleSection('materials')">
+                  [class.active]="showItemTables()"
+                  (click)="toggleSection('itemTables')">
                   <span class="material-symbols-rounded">table_chart</span>
                   <span>Tablas</span>
                 </button>
@@ -271,26 +271,26 @@
           @case ('textBlocks') {
             @if (showTextBlocks()) {
               <section class="section-divider">
-                <app-budget-text-blocks
+                <app-composite-blocks
                   [budgetId]="currentBudgetId() ?? 0"
                   (totalChanged)="onTotalBlocksChanged($event)"
                   (blocksChanged)="onBlocksChanged($event)"
                   (sectionTitleChanged)="blocksSectionTitle.set($event)">
-                </app-budget-text-blocks>
+                </app-composite-blocks>
               </section>
             }
           }
-          @case ('materials') {
-            @if (showMaterials()) {
+          @case ('itemTables') {
+            @if (showItemTables()) {
               <section class="section-divider">
-                <app-materials-table
-                  [tables]="materialTables()"
-                  [sectionTitle]="materialsSectionTitle()"
-                  (totalChanged)="onTotalMaterialsChanged($event)"
-                  (materialsChanged)="onMaterialsChanged($event)"
+                <app-item-table
+                  [tables]="itemTables()"
+                  [sectionTitle]="itemsSectionTitle()"
+                  (totalChanged)="onTotalItemsChanged($event)"
+                  (rowsChanged)="onItemsChanged($event)"
                   (tablesChanged)="onTablesChanged($event)"
-                  (sectionTitleChanged)="onMaterialsSectionTitleChanged($event)">
-                </app-materials-table>
+                  (sectionTitleChanged)="onItemsSectionTitleChanged($event)">
+                </app-item-table>
               </section>
             }
           }
@@ -310,17 +310,17 @@
               <section class="section-divider">
                 <app-budget-summary
                   [totalBlocks]="totalBlocks()"
-                  [totalMaterials]="totalMaterials()"
+                  [totalItems]="totalItems()"
                   [totalSimpleBlock]="totalSimpleBlock()"
                   [showBlocks]="showTextBlocks()"
-                  [showMaterials]="showMaterials()"
+                  [showItemTables]="showItemTables()"
                   [showSimpleBlock]="showSimpleBlock()"
                   [simpleBlockSectionTitle]="simpleBlockData()?.sectionTitle || 'Bloque Simple'"
                   [blocksSectionTitle]="blocksSectionTitle()"
-                  [materialsSectionTitle]="materialsSectionTitle()"
+                  [itemsSectionTitle]="itemsSectionTitle()"
                   [blocks]="blocks()"
-                  [materials]="materials()"
-                  [materialTables]="materialTables()"
+                  [items]="items()"
+                  [itemTables]="itemTables()"
                   [initialAdditionalLines]="additionalLines()"
                   [budgetId]="currentBudgetId() ?? 0"
                   (summaryChanged)="onSummaryChanged($event)">
@@ -360,9 +360,9 @@
                     <span>Bloque Compuesto</span>
                   </label>
                 }
-                @if (showMaterials() && (materialTables().length > 0 || materials().length > 0)) {
+                @if (showItemTables() && (itemTables().length > 0 || items().length > 0)) {
                   <label class="print-toggle" title="Incluir página de tabla">
-                    <input type="checkbox" [checked]="printMaterials()" (change)="togglePrintOption('materials')">
+                    <input type="checkbox" [checked]="printItemTables()" (change)="togglePrintOption('itemTables')">
                     <span>Tabla</span>
                   </label>
                 }

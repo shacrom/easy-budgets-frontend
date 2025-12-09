@@ -1,23 +1,23 @@
-import { describe, it, expect, beforeEach, beforeAll, vi, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MaterialsTableComponent } from './materials-table.component';
+import { ItemTableComponent } from './item-table.component';
 import { SupabaseService } from '../../../../services/supabase.service';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
-import { MaterialTable, Material } from '../../../../models/material.model';
+import { ItemTable } from '../../../../models/item-table.model';
 import { Product } from '../../../../models/product.model';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-describe('MaterialsTableComponent', () => {
-  let component: MaterialsTableComponent;
-  let fixture: ComponentFixture<MaterialsTableComponent>;
+describe('ItemTableComponent', () => {
+  let component: ItemTableComponent;
+  let fixture: ComponentFixture<ItemTableComponent>;
   let supabaseServiceSpy: { getProducts: ReturnType<typeof vi.fn> };
 
   const mockProducts: Product[] = [
     { id: 1, reference: 'P1', description: 'Prod 1', manufacturer: 'M1', basePrice: 10, category: 'C1', vatRate: 21, active: true }
   ];
 
-  const mockTables: MaterialTable[] = [
+  const mockTables: ItemTable[] = [
     {
       id: 1,
       title: 'Table 1',
@@ -43,13 +43,13 @@ describe('MaterialsTableComponent', () => {
     supabaseServiceSpy.getProducts.mockReturnValue(Promise.resolve(mockProducts as any));
 
     await TestBed.configureTestingModule({
-      imports: [MaterialsTableComponent, NoopAnimationsModule],
+      imports: [ItemTableComponent, NoopAnimationsModule],
       providers: [
         { provide: SupabaseService, useValue: supabaseServiceSpy }
       ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MaterialsTableComponent);
+    fixture = TestBed.createComponent(ItemTableComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -107,20 +107,20 @@ describe('MaterialsTableComponent', () => {
     expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
-  it('should add new material to table', () => {
+  it('should add new item to table', () => {
     fixture.componentRef.setInput('tables', mockTables);
     fixture.detectChanges();
 
-    component['addNewMaterial'](1);
+    component['addNewRow'](1);
     expect(component['tables']()[0].rows.length).toBe(2);
     expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
-  it('should delete material from table', () => {
+  it('should delete item from table', () => {
     fixture.componentRef.setInput('tables', mockTables);
     fixture.detectChanges();
 
-    component['deleteMaterial'](1, 101);
+    component['deleteRow'](1, 101);
     expect(component['tables']()[0].rows.length).toBe(0);
     expect(component['hasUnsavedChanges']()).toBe(true);
   });
@@ -134,11 +134,11 @@ describe('MaterialsTableComponent', () => {
     expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
-  it('should calculate total materials', () => {
+  it('should calculate total items', () => {
     fixture.componentRef.setInput('tables', mockTables);
     fixture.detectChanges();
 
-    expect(component['totalMaterials']()).toBe(10);
+    expect(component['totalItems']()).toBe(10);
   });
 
   it('should save changes and emit events', async () => {
@@ -148,10 +148,10 @@ describe('MaterialsTableComponent', () => {
     await vi.advanceTimersByTimeAsync(0); // Allow view children to settle
 
     let emittedTotal: number | undefined;
-    component.totalChanged.subscribe(val => emittedTotal = val);
+    component.totalChanged.subscribe((val: number) => emittedTotal = val);
 
-    let emittedTables: MaterialTable[] | undefined;
-    component.tablesChanged.subscribe(val => emittedTables = val);
+    let emittedTables: ItemTable[] | undefined;
+    component.tablesChanged.subscribe((val: ItemTable[]) => emittedTables = val);
 
     component['saveChanges']();
 

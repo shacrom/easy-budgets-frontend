@@ -1,22 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
-import { BudgetTextBlocksComponent } from './budget-text-blocks.component';
+import { CompositeBlocksComponent } from './composite-blocks.component';
 import { SupabaseService } from '../../../../services/supabase.service';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
-import { BudgetTextBlock } from '../../../../models/budget-text-block.model';
+import { CompositeBlock } from '../../../../models/composite-block.model';
 
-describe('BudgetTextBlocksComponent', () => {
-  let component: BudgetTextBlocksComponent;
-  let fixture: ComponentFixture<BudgetTextBlocksComponent>;
+describe('CompositeBlocksComponent', () => {
+  let component: CompositeBlocksComponent;
+  let fixture: ComponentFixture<CompositeBlocksComponent>;
   let supabaseServiceSpy: {
-    getTextBlocksForBudget: ReturnType<typeof vi.fn>;
-    addTextBlockToBudget: ReturnType<typeof vi.fn>;
-    updateBudgetTextBlock: ReturnType<typeof vi.fn>;
-    updateTextBlockSection: ReturnType<typeof vi.fn>;
+    getCompositeBlocksForBudget: ReturnType<typeof vi.fn>;
+    addCompositeBlockToBudget: ReturnType<typeof vi.fn>;
+    updateCompositeBlock: ReturnType<typeof vi.fn>;
+    updateCompositeBlockSection: ReturnType<typeof vi.fn>;
   };
 
-  const mockBlocks: BudgetTextBlock[] = [
+  const mockBlocks: CompositeBlock[] = [
     {
       id: 1,
       budgetId: 100,
@@ -25,7 +25,7 @@ describe('BudgetTextBlocksComponent', () => {
       heading: 'Bloque 1',
       subtotal: 100,
       descriptions: [
-        { id: 10, textBlockId: 1, orderIndex: 0, title: 'D1', text: 'T1' }
+        { id: 10, compositeBlockId: 1, orderIndex: 0, title: 'D1', text: 'T1' }
       ]
     },
     {
@@ -45,23 +45,23 @@ describe('BudgetTextBlocksComponent', () => {
 
   beforeEach(async () => {
     supabaseServiceSpy = {
-      getTextBlocksForBudget: vi.fn(),
-      addTextBlockToBudget: vi.fn(),
-      updateBudgetTextBlock: vi.fn(),
-      updateTextBlockSection: vi.fn()
+      getCompositeBlocksForBudget: vi.fn(),
+      addCompositeBlockToBudget: vi.fn(),
+      updateCompositeBlock: vi.fn(),
+      updateCompositeBlockSection: vi.fn()
     };
 
     // Default behavior
-    supabaseServiceSpy.getTextBlocksForBudget.mockReturnValue(Promise.resolve([...mockBlocks]));
+    supabaseServiceSpy.getCompositeBlocksForBudget.mockReturnValue(Promise.resolve([...mockBlocks]));
 
     await TestBed.configureTestingModule({
-      imports: [BudgetTextBlocksComponent],
+      imports: [CompositeBlocksComponent],
       providers: [
         { provide: SupabaseService, useValue: supabaseServiceSpy }
       ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(BudgetTextBlocksComponent);
+    fixture = TestBed.createComponent(CompositeBlocksComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('budgetId', 100);
     fixture.detectChanges();
@@ -73,7 +73,7 @@ describe('BudgetTextBlocksComponent', () => {
 
   it('should load blocks and set section title on init', async () => {
     await fixture.whenStable();
-    expect(supabaseServiceSpy.getTextBlocksForBudget).toHaveBeenCalledWith(100);
+    expect(supabaseServiceSpy.getCompositeBlocksForBudget).toHaveBeenCalledWith(100);
     expect(component['blocks']().length).toBe(2);
     expect(component['sectionTitle']()).toBe('Bloque Compuesto');
   });
@@ -86,14 +86,14 @@ describe('BudgetTextBlocksComponent', () => {
 
   it('should add new block', async () => {
     const newBlock = { id: 3, budgetId: 100, orderIndex: 2, heading: '', subtotal: 0 };
-    supabaseServiceSpy.addTextBlockToBudget.mockReturnValue(Promise.resolve(newBlock));
+    supabaseServiceSpy.addCompositeBlockToBudget.mockReturnValue(Promise.resolve(newBlock));
     // Mock reload to return new list
-    supabaseServiceSpy.getTextBlocksForBudget.mockReturnValue(Promise.resolve([...mockBlocks, newBlock]));
+    supabaseServiceSpy.getCompositeBlocksForBudget.mockReturnValue(Promise.resolve([...mockBlocks, newBlock]));
 
     await component['addNewBlock']();
 
-    expect(supabaseServiceSpy.addTextBlockToBudget).toHaveBeenCalled();
-    expect(supabaseServiceSpy.getTextBlocksForBudget).toHaveBeenCalledTimes(2); // Init + Reload
+    expect(supabaseServiceSpy.addCompositeBlockToBudget).toHaveBeenCalled();
+    expect(supabaseServiceSpy.getCompositeBlocksForBudget).toHaveBeenCalledTimes(2); // Init + Reload
     expect(component['blocks']().length).toBe(3);
   });
 
@@ -130,18 +130,18 @@ describe('BudgetTextBlocksComponent', () => {
     const event = { target: { value: 'Updated Title' } } as any;
     component['updateSectionTitle'](event);
 
-    supabaseServiceSpy.updateBudgetTextBlock.mockReturnValue(Promise.resolve({} as any));
-    supabaseServiceSpy.updateTextBlockSection.mockReturnValue(Promise.resolve({} as any));
+    supabaseServiceSpy.updateCompositeBlock.mockReturnValue(Promise.resolve({} as any));
+    supabaseServiceSpy.updateCompositeBlockSection.mockReturnValue(Promise.resolve({} as any));
 
     await component.saveChanges();
 
     // Should update blocks
-    expect(supabaseServiceSpy.updateBudgetTextBlock).toHaveBeenCalledTimes(2); // 2 blocks
+    expect(supabaseServiceSpy.updateCompositeBlock).toHaveBeenCalledTimes(2); // 2 blocks
     // Should update sections (Block 1 has 1 section)
-    expect(supabaseServiceSpy.updateTextBlockSection).toHaveBeenCalledTimes(1);
+    expect(supabaseServiceSpy.updateCompositeBlockSection).toHaveBeenCalledTimes(1);
 
     // Should reload
-    expect(supabaseServiceSpy.getTextBlocksForBudget).toHaveBeenCalledTimes(2);
+    expect(supabaseServiceSpy.getCompositeBlocksForBudget).toHaveBeenCalledTimes(2);
     // Should clear unsaved changes
     expect(component['hasUnsavedChanges']()).toBe(false);
   });

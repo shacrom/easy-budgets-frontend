@@ -71,34 +71,34 @@
         </div>
       }
 
-      <!-- Materials accordion -->
-      @if (hasMaterials()) {
+      <!-- Item Tables accordion -->
+      @if (hasItemTables()) {
         <div class="accordion-item">
-          <button type="button" class="accordion-trigger" (click)="toggleMaterialsExpanded()">
+          <button type="button" class="accordion-trigger" (click)="toggleItemTablesExpanded()">
             <div class="trigger-label">
               <span class="material-symbols-rounded" aria-hidden="true">table_chart</span>
               <div>
-                <span class="trigger-title">{{ materialsSectionTitle() }}</span>
+                <span class="trigger-title">{{ itemsSectionTitle() }}</span>
                 <small>
-                  @if (hasMaterialTables()) {
-                    {{ materialTables().length === 1 ? '1 tabla' : materialTables().length + ' tablas' }}
+                  @if (hasItemTablesData()) {
+                    {{ itemTables().length === 1 ? '1 tabla' : itemTables().length + ' tablas' }}
                   } @else {
-                    {{ materials().length === 1 ? '1 partida' : materials().length + ' partidas' }}
+                    {{ items().length === 1 ? '1 partida' : items().length + ' partidas' }}
                   }
                 </small>
               </div>
             </div>
             <div class="trigger-value">
-              <span>{{ effectiveTotalMaterials() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+              <span>{{ effectiveTotalItems() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
               <span class="material-symbols-rounded" aria-hidden="true">
-                {{ materialsExpanded() ? 'expand_less' : 'expand_more' }}
+                {{ itemTablesExpanded() ? 'expand_less' : 'expand_more' }}
               </span>
             </div>
           </button>
-          @if (materialsExpanded() && (hasMaterialTables() || materials().length > 0)) {
+          @if (itemTablesExpanded() && (hasItemTablesData() || items().length > 0)) {
             <div class="accordion-panel">
-              @if (hasMaterialTables()) {
-                @for (table of materialTables(); track table.id) {
+              @if (hasItemTablesData()) {
+                @for (table of itemTables(); track table.id) {
                   <div class="detail-row">
                     <div>
                       <p class="detail-title">{{ table.title || 'Tabla sin título' }}</p>
@@ -110,16 +110,16 @@
                   </div>
                 }
               } @else {
-                @for (material of materials(); track material.id) {
+                @for (item of items(); track item.id) {
                   <div class="detail-row">
                     <div>
-                      <p class="detail-title">{{ material.description || 'Material sin descripción' }}</p>
+                      <p class="detail-title">{{ item.description || 'Elemento sin descripción' }}</p>
                       <p class="detail-subtitle">
-                        {{ material.manufacturer || 'Fabricante no definido' }} | Ref: {{ material.reference || '—' }}
+                        {{ item.manufacturer || 'Fabricante no definido' }} | Ref: {{ item.reference || '—' }}
                       </p>
                     </div>
                     <span class="detail-value">
-                      {{ material.totalPrice | currency:'EUR':'symbol':'1.2-2':'es' }}
+                      {{ item.totalPrice | currency:'EUR':'symbol':'1.2-2':'es' }}
                     </span>
                   </div>
                 }

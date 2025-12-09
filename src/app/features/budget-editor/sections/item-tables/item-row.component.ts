@@ -1,22 +1,22 @@
 import { ChangeDetectionStrategy, Component, input, output, computed, signal, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Material } from '../../../../models/material.model';
+import { ItemRow } from '../../../../models/item-table.model';
 import { Product } from '../../../../models/product.model';
 
 /**
  * Component to display and edit a material row in the table
  */
 @Component({
-  selector: 'app-material-row',
-  templateUrl: './material-row.component.html',
-  styleUrls: ['./material-row.component.css'],
+  selector: 'app-item-row',
+  templateUrl: './item-row.component.html',
+  styleUrls: ['./item-row.component.css'],
   imports: [CommonModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MaterialRowComponent implements OnInit {
-  // Input: material data
-  material = input.required<Material>();
+export class ItemRowComponent implements OnInit {
+  // Input: row data
+  row = input.required<ItemRow>();
 
   // Input: available products for reference search
   products = input<Product[]>([]);
@@ -81,17 +81,17 @@ export class MaterialRowComponent implements OnInit {
   }
 
   /**
-   * Syncs local signals from the material input (called only on init)
+   * Syncs local signals from the row input (called only on init)
    */
   private syncFromInput(): void {
     if (this.initialized) return;
-    const mat = this.material();
-    this.localReference.set(mat.reference ?? '');
-    this.localDescription.set(mat.description ?? '');
-    this.localManufacturer.set(mat.manufacturer ?? '');
-    this.localQuantity.set(mat.quantity ?? 0);
-    this.localUnitPrice.set(mat.unitPrice ?? 0);
-    this.referenceSearchTerm.set(mat.reference ?? '');
+    const rowData = this.row();
+    this.localReference.set(rowData.reference ?? '');
+    this.localDescription.set(rowData.description ?? '');
+    this.localManufacturer.set(rowData.manufacturer ?? '');
+    this.localQuantity.set(rowData.quantity ?? 0);
+    this.localUnitPrice.set(rowData.unitPrice ?? 0);
+    this.referenceSearchTerm.set(rowData.reference ?? '');
     this.initialized = true;
   }
 
@@ -173,12 +173,12 @@ export class MaterialRowComponent implements OnInit {
   }
 
   /**
-   * Returns the current material with local values applied
+   * Returns the current row with local values applied
    * Used by parent component when saving
    */
-  getCurrentMaterial(): Material {
+  getCurrentRow(): ItemRow {
     return {
-      ...this.material(),
+      ...this.row(),
       reference: this.localReference(),
       description: this.localDescription(),
       manufacturer: this.localManufacturer(),
@@ -189,10 +189,10 @@ export class MaterialRowComponent implements OnInit {
   }
 
   /**
-   * Requests deletion of this material
+   * Requests deletion of this row
    */
   protected requestDelete(): void {
-    this.deleteRequested.emit(this.material().id);
+    this.deleteRequested.emit(this.row().id);
   }
 
   /**

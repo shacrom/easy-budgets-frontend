@@ -2,12 +2,12 @@ import { ChangeDetectionStrategy, Component, input, signal, computed, effect, ou
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BudgetSummary, SummaryLine, SummaryLineType } from '../../../../models/budget-summary.model';
-import { BudgetTextBlock } from '../../../../models/budget-text-block.model';
-import { Material, MaterialTable } from '../../../../models/material.model';
+import { CompositeBlock } from '../../../../models/composite-block.model';
+import { ItemRow, ItemTable, MaterialTable } from '../../../../models/item-table.model';
 
 /**
  * Component to display the budget summary
- * Shows totals for blocks, materials, VAT and grand total
+ * Shows totals for blocks, items, VAT and grand total
  */
 @Component({
   selector: 'app-budget-summary',
@@ -19,23 +19,23 @@ import { Material, MaterialTable } from '../../../../models/material.model';
 export class BudgetSummaryComponent {
   // Inputs: totals from each section
   totalBlocks = input<number>(0);
-  totalMaterials = input<number>(0);
+  totalItems = input<number>(0);
   totalSimpleBlock = input<number>(0);
 
   // Inputs: visibility flags for each section
   showBlocks = input<boolean>(true);
-  showMaterials = input<boolean>(true);
+  showItemTables = input<boolean>(true);
   showSimpleBlock = input<boolean>(true);
 
   // Inputs: section titles
   simpleBlockSectionTitle = input<string>('Bloque Simple');
   blocksSectionTitle = input<string>('Bloque Compuesto');
-  materialsSectionTitle = input<string>('Tablas de materiales');
+  itemsSectionTitle = input<string>('Tablas de elementos');
 
   // Inputs: data arrays to show details
-  blocks = input<BudgetTextBlock[]>([]);
-  materials = input<Material[]>([]);
-  materialTables = input<MaterialTable[]>([]);
+  blocks = input<CompositeBlock[]>([]);
+  items = input<ItemRow[]>([]);
+  itemTables = input<ItemTable[]>([]);
 
   // Inputs
   budgetId = input<number | null>(null);
@@ -87,18 +87,18 @@ export class BudgetSummaryComponent {
     effect(() => {
       // Register all dependencies - when any changes, recalculate
       const totalBlocks = this.totalBlocks();
-      const totalMaterials = this.totalMaterials();
+      const totalItems = this.totalItems();
       const totalSimpleBlock = this.totalSimpleBlock();
       this.additionalLines(); // Track changes to additional lines too
       this.vatPercentage(); // Track VAT changes
 
       // Emit whenever totals change (for PDF updates with recalculated discounts)
-      if (totalBlocks > 0 || totalMaterials > 0 || totalSimpleBlock > 0) {
+      if (totalBlocks > 0 || totalItems > 0 || totalSimpleBlock > 0) {
         const normalizedLines = this.additionalLines().map(line => this.normalizeLine(line));
 
         this.summaryChanged.emit({
           totalBlocks: this.effectiveTotalBlocks(),
-          totalMaterials: this.effectiveTotalMaterials(),
+          totalItems: this.effectiveTotalItems(),
           totalSimpleBlock: this.effectiveTotalSimpleBlock(),
           taxableBase: this.taxableBase(),
           vat: this.vat(),
@@ -112,20 +112,20 @@ export class BudgetSummaryComponent {
 
   // Dropdown states (expanded by default)
   protected readonly blocksExpanded = signal<boolean>(true);
-  protected readonly materialsExpanded = signal<boolean>(true);
+  protected readonly itemTablesExpanded = signal<boolean>(true);
   protected readonly hasBlocks = computed(() => this.showBlocks() && this.blocks().length > 0);
-  protected readonly hasMaterials = computed(() => this.showMaterials() && (this.materials().length > 0 || this.materialTables().length > 0));
-  protected readonly hasMaterialTables = computed(() => this.materialTables().length > 0);
+  protected readonly hasItemTables = computed(() => this.showItemTables() && (this.items().length > 0 || this.itemTables().length > 0));
+  protected readonly hasItemTablesData = computed(() => this.itemTables().length > 0);
   protected readonly hasSimpleBlock = computed(() => this.showSimpleBlock());
 
   // Computed values
   // Computed: effective totals based on visibility
   protected readonly effectiveTotalBlocks = computed(() => this.showBlocks() ? (this.totalBlocks() ?? 0) : 0);
-  protected readonly effectiveTotalMaterials = computed(() => this.showMaterials() ? (this.totalMaterials() ?? 0) : 0);
+  protected readonly effectiveTotalItems = computed(() => this.showItemTables() ? (this.totalItems() ?? 0) : 0);
   protected readonly effectiveTotalSimpleBlock = computed(() => this.showSimpleBlock() ? (this.totalSimpleBlock() ?? 0) : 0);
 
   protected readonly baseSubtotal = computed(() => {
-    return this.effectiveTotalBlocks() + this.effectiveTotalMaterials() + this.effectiveTotalSimpleBlock();
+    return this.effectiveTotalBlocks() + this.effectiveTotalItems() + this.effectiveTotalSimpleBlock();
   });
 
   // Solo recargos (adjustments) - los descuentos se aplican después del IVA
@@ -200,10 +200,10 @@ export class BudgetSummaryComponent {
   }
 
   /**
-   * Toggles materials dropdown
+   * Toggles item tables dropdown
    */
-  protected toggleMaterialsExpanded(): void {
-    this.materialsExpanded.update(expanded => !expanded);
+  protected toggleItemTablesExpanded(): void {
+    this.itemTablesExpanded.update(expanded => !expanded);
   }
 
   /**
@@ -325,7 +325,7 @@ export class BudgetSummaryComponent {
 
     this.summaryChanged.emit({
       totalBlocks: this.effectiveTotalBlocks(),
-      totalMaterials: this.effectiveTotalMaterials(),
+      totalItems: this.effectiveTotalItems(),
       totalSimpleBlock: this.effectiveTotalSimpleBlock(),
       taxableBase: this.taxableBase(),
       vat: this.vat(),

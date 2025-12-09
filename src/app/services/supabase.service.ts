@@ -723,6 +723,74 @@ export class SupabaseService {
   }
 
   // ============================================
+  // COMPOSITE BLOCKS (Aliases for TEXT BLOCKS)
+  // ============================================
+
+  /** @alias getTextBlocksForBudget */
+  async getCompositeBlocksForBudget(budgetId: number) {
+    return this.getTextBlocksForBudget(budgetId);
+  }
+
+  /** @alias addTextBlockToBudget */
+  async addCompositeBlockToBudget(block: any) {
+    return this.addTextBlockToBudget(block);
+  }
+
+  /** @alias updateBudgetTextBlock */
+  async updateCompositeBlock(id: number, updates: any) {
+    return this.updateBudgetTextBlock(id, updates);
+  }
+
+  /** @alias deleteBudgetTextBlock */
+  async deleteCompositeBlock(id: number) {
+    return this.deleteBudgetTextBlock(id);
+  }
+
+  /** @alias addSectionToTextBlock */
+  async addSectionToCompositeBlock(section: any) {
+    return this.addSectionToTextBlock(section);
+  }
+
+  /** @alias updateTextBlockSection */
+  async updateCompositeBlockSection(id: number, updates: any) {
+    return this.updateTextBlockSection(id, updates);
+  }
+
+  /** @alias deleteTextBlockSection */
+  async deleteCompositeBlockSection(id: number) {
+    return this.deleteTextBlockSection(id);
+  }
+
+  /** @alias getTextBlockTemplates */
+  async getCompositeBlockTemplates() {
+    return this.getTextBlockTemplates();
+  }
+
+  /** @alias getTextBlockTemplateWithSections */
+  async getCompositeBlockTemplateWithSections(templateId: number) {
+    return this.getTextBlockTemplateWithSections(templateId);
+  }
+
+  /** @alias createTextBlockTemplate */
+  async createCompositeBlockTemplate(name: string, heading: string | null, provider: string | null, sections: any[]) {
+    return this.createTextBlockTemplate(name, heading, provider, sections);
+  }
+
+  /** @alias deleteTextBlockTemplate */
+  async deleteCompositeBlockTemplate(templateId: number) {
+    return this.deleteTextBlockTemplate(templateId);
+  }
+
+  // ============================================
+  // ITEM TABLES (Aliases for MATERIALS)
+  // ============================================
+
+  /** @alias saveMaterialTables */
+  async saveItemTables(budgetId: number, tables: MaterialTable[]): Promise<{ tables: any[]; rows: any[] } | void> {
+    return this.saveMaterialTables(budgetId, tables);
+  }
+
+  // ============================================
   // MATERIALS
   // ============================================
 

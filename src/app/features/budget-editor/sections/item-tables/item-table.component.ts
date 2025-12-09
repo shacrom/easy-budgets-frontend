@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal, computed, output, inject, input, effect, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
-import { MaterialRowComponent } from './material-row.component';
-import { Material, MaterialTable } from '../../../../models/material.model';
+import { ItemRowComponent } from './item-row.component';
+import { ItemRow, ItemTable } from '../../../../models/item-table.model';
 import { Product } from '../../../../models/product.model';
 import { SupabaseService } from '../../../../services/supabase.service';
 
@@ -11,13 +11,13 @@ import { SupabaseService } from '../../../../services/supabase.service';
  * Manages the complete list of budget materials
  */
 @Component({
-  selector: 'app-materials-table',
-  templateUrl: './materials-table.component.html',
-  styleUrls: ['./materials-table.component.css'],
-  imports: [CommonModule, MaterialRowComponent, CdkDropList, CdkDrag],
+  selector: 'app-item-table',
+  templateUrl: './item-table.component.html',
+  styleUrls: ['./item-table.component.css'],
+  imports: [CommonModule, ItemRowComponent, CdkDropList, CdkDrag],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MaterialsTableComponent {
+export class ItemTableComponent {
   private readonly defaultTableTitle = 'Título';
   private readonly defaultSectionTitle = 'Materiales y equipamiento';
   private readonly supabase = inject(SupabaseService);
@@ -27,9 +27,9 @@ export class MaterialsTableComponent {
   protected readonly sectionTitle = signal<string>(this.defaultSectionTitle);
   sectionTitleChanged = output<string>();
 
-  // List of material tables
-  protected readonly tables = signal<MaterialTable[]>([]);
-  readonly tablesInput = input<MaterialTable[]>([], { alias: 'tables' });
+  // List of item tables
+  protected readonly tables = signal<ItemTable[]>([]);
+  readonly tablesInput = input<ItemTable[]>([], { alias: 'tables' });
 
   // Catalog products used for reference search
   protected readonly products = signal<Product[]>([]);
@@ -39,26 +39,26 @@ export class MaterialsTableComponent {
   protected readonly hasUnsavedChanges = signal<boolean>(false);
   protected readonly isSaving = signal<boolean>(false);
 
-  // Total calculated from all materials
-  protected readonly totalMaterials = computed(() => {
+  // Total calculated from all items
+  protected readonly totalItems = computed(() => {
     return this.tables().reduce((sum, table) => sum + this.calculateTableTotal(table), 0);
   });
 
   // Output: emits total when it changes
   totalChanged = output<number>();
 
-  // Output: emits materials tables when they change
-  tablesChanged = output<MaterialTable[]>();
+  // Output: emits item tables when they change
+  tablesChanged = output<ItemTable[]>();
 
-  // Backward compatibility: flattened materials collection
-  materialsChanged = output<Material[]>();
+  // Backward compatibility: flattened items collection
+  rowsChanged = output<ItemRow[]>();
 
   // Track if initial sync from input has been done
   private initialSyncDone = false;
   private lastInputTablesSignature = '';
 
-  // Reference to all material-row components
-  @ViewChildren(MaterialRowComponent) materialRowComponents!: QueryList<MaterialRowComponent>;
+  // Reference to all item-row components
+  @ViewChildren(ItemRowComponent) itemRowComponents!: QueryList<ItemRowComponent>;
 
   constructor() {
     // Sync section title from input
@@ -92,7 +92,7 @@ export class MaterialsTableComponent {
   /**
    * Creates a signature based on table/row IDs to detect structural changes
    */
-  private getTablesSignature(tables: MaterialTable[]): string {
+  private getTablesSignature(tables: ItemTable[]): string {
     return tables.map(t => `${t.id}:[${t.rows.map(r => r.id).join(',')}]`).join('|');
   }
 
@@ -139,13 +139,13 @@ export class MaterialsTableComponent {
   }
 
   /**
-   * Adds a new empty material inside a table
+   * Adds a new empty row inside a table
    */
-  protected addNewMaterial(tableId: number): void {
+  protected addNewRow(tableId: number): void {
     this.mutateTables(tables =>
       tables.map(table =>
         table.id === tableId
-          ? { ...table, rows: [...table.rows, this.createMaterial(table.id, table.rows.length)] }
+          ? { ...table, rows: [...table.rows, this.createRow(table.id, table.rows.length)] }
           : table
       )
     );
@@ -153,13 +153,13 @@ export class MaterialsTableComponent {
   }
 
   /**
-   * Deletes a material by its ID
+   * Deletes a row by its ID
    */
-  protected deleteMaterial(tableId: number, materialId: number): void {
+  protected deleteRow(tableId: number, rowId: number): void {
     this.mutateTables(tables =>
       tables.map(table =>
         table.id === tableId
-          ? { ...table, rows: table.rows.filter(material => material.id !== materialId) }
+          ? { ...table, rows: table.rows.filter(row => row.id !== rowId) }
           : table
       )
     );
@@ -167,16 +167,16 @@ export class MaterialsTableComponent {
   }
 
   /**
-   * Called when a material-row component has local changes
+   * Called when an item-row component has local changes
    */
-  protected onMaterialLocalChange(): void {
+  protected onRowLocalChange(): void {
     this.hasUnsavedChanges.set(true);
   }
 
   /**
-   * Handles drag & drop reordering of materials within a table
+   * Handles drag & drop reordering of rows within a table
    */
-  protected drop(event: CdkDragDrop<Material[]>, tableId: number): void {
+  protected drop(event: CdkDragDrop<ItemRow[]>, tableId: number): void {
     if (event.previousIndex === event.currentIndex) {
       return;
     }
@@ -203,16 +203,16 @@ export class MaterialsTableComponent {
   protected saveChanges(): void {
     this.isSaving.set(true);
 
-    // Collect current values from all material-row components
+    // Collect current values from all item-row components
     const updatedTables = this.tables().map(table => ({
       ...table,
       rows: table.rows.map(row => {
-        // Find the corresponding MaterialRowComponent
-        const rowComponent = this.materialRowComponents?.find(
-          comp => comp.material().id === row.id
+        // Find the corresponding ItemRowComponent
+        const rowComponent = this.itemRowComponents?.find(
+          comp => comp.row().id === row.id
         );
-        // Return the current material from the component if found, otherwise keep original
-        return rowComponent ? rowComponent.getCurrentMaterial() : row;
+        // Return the current row from the component if found, otherwise keep original
+        return rowComponent ? rowComponent.getCurrentRow() : row;
       })
     }));
 
@@ -221,8 +221,8 @@ export class MaterialsTableComponent {
 
     // Emit all changes
     this.sectionTitleChanged.emit(this.sectionTitle());
-    this.totalChanged.emit(this.totalMaterials());
-    this.materialsChanged.emit(this.flattenMaterials(updatedTables));
+    this.totalChanged.emit(this.totalItems());
+    this.rowsChanged.emit(this.flattenRows(updatedTables));
     this.tablesChanged.emit(updatedTables);
 
     // Mark as saved
@@ -248,11 +248,11 @@ export class MaterialsTableComponent {
   /**
    * Calculates a table total
    */
-  protected tableTotal(table: MaterialTable): number {
+  protected tableTotal(table: ItemTable): number {
     return this.calculateTableTotal(table);
   }
 
-  protected getVisibleColumnCount(table: MaterialTable): number {
+  protected getVisibleColumnCount(table: ItemTable): number {
     let count = 0;
     if (table.showReference) count++;
     if (table.showDescription) count++;
@@ -268,9 +268,9 @@ export class MaterialsTableComponent {
    * Emits the current state
    */
   private emitChanges(options?: { skipTableOutput?: boolean }): void {
-    this.totalChanged.emit(this.totalMaterials());
+    this.totalChanged.emit(this.totalItems());
     const tablesSnapshot = this.tables();
-    this.materialsChanged.emit(this.flattenMaterials(tablesSnapshot));
+    this.rowsChanged.emit(this.flattenRows(tablesSnapshot));
 
     if (!options?.skipTableOutput) {
       this.tablesChanged.emit(tablesSnapshot);
@@ -286,7 +286,7 @@ export class MaterialsTableComponent {
     return this.tempIdCounter--;
   }
 
-  private createTable(title: string, orderIndex: number): MaterialTable {
+  private createTable(title: string, orderIndex: number): ItemTable {
     const id = this.generateId();
     return {
       id,
@@ -302,7 +302,7 @@ export class MaterialsTableComponent {
     };
   }
 
-  private createMaterial(tableId: number, orderIndex: number): Material {
+  private createRow(tableId: number, orderIndex: number): ItemRow {
     const id = this.generateId();
     return {
       id,
@@ -317,14 +317,14 @@ export class MaterialsTableComponent {
     };
   }
 
-  private calculateTableTotal(table: MaterialTable): number {
+  private calculateTableTotal(table: ItemTable): number {
     return table.rows.reduce((sum, row) => sum + row.totalPrice, 0);
   }
 
   /**
    * Toggles the show flag of a given column in a table
    */
-  protected toggleShowColumn(tableId: number, field: keyof Omit<MaterialTable, 'id' | 'budgetId' | 'orderIndex' | 'title' | 'rows'>): void {
+  protected toggleShowColumn(tableId: number, field: keyof Omit<ItemTable, 'id' | 'budgetId' | 'orderIndex' | 'title' | 'rows'>): void {
     this.mutateTables(tables =>
       tables.map(table => {
         if (table.id !== tableId) return table;
@@ -332,23 +332,23 @@ export class MaterialsTableComponent {
         return {
           ...table,
           [field]: !(table as any)[field]
-        } as MaterialTable;
+        } as ItemTable;
       })
     );
     this.hasUnsavedChanges.set(true);
   }
 
-  private flattenMaterials(tables: MaterialTable[]): Material[] {
+  private flattenRows(tables: ItemTable[]): ItemRow[] {
     return tables.flatMap(table => table.rows);
   }
 
-  private cloneTables(tables: MaterialTable[]): MaterialTable[] {
+  private cloneTables(tables: ItemTable[]): ItemTable[] {
     return typeof structuredClone === 'function'
       ? structuredClone(tables)
       : JSON.parse(JSON.stringify(tables));
   }
 
-  private normalizeTables(tables: MaterialTable[]): MaterialTable[] {
+  private normalizeTables(tables: ItemTable[]): ItemTable[] {
     return tables.map((table, tableIndex) => ({
       ...table,
       orderIndex: tableIndex,
@@ -368,12 +368,12 @@ export class MaterialsTableComponent {
     }));
   }
 
-  private prepareTables(tables: MaterialTable[]): MaterialTable[] {
+  private prepareTables(tables: ItemTable[]): ItemTable[] {
     return this.normalizeTables(this.cloneTables(tables ?? []));
   }
 
   private mutateTables(
-    mutator: (tables: MaterialTable[]) => MaterialTable[]
+    mutator: (tables: ItemTable[]) => ItemTable[]
   ): void {
     this.tables.update(current => this.normalizeTables(mutator(this.cloneTables(current))));
     // No auto-emit - changes are only emitted when saveChanges() is called

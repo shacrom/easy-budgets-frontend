@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, input, output, signal, inject, effect, OnInit } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { BudgetTextBlock, DescriptionSection } from '../../../../models/budget-text-block.model';
+import { CompositeBlock, CompositeBlockSection } from '../../../../models/composite-block.model';
 import { SupabaseService } from '../../../../services/supabase.service';
 
-export interface TextBlockTemplate {
+export interface CompositeBlockTemplate {
   id: number;
   name: string;
   provider?: string | null;
@@ -13,32 +13,32 @@ export interface TextBlockTemplate {
 }
 
 /**
- * Component to display and edit a budget text block
+ * Component to display and edit a budget composite block
  * Includes: heading, description sections, optional link, optional photo and total
  */
 @Component({
-  selector: 'app-budget-text-block',
-  templateUrl: './budget-text-block.component.html',
-  styleUrls: ['./budget-text-block.component.css'],
+  selector: 'app-composite-block',
+  templateUrl: './composite-block.component.html',
+  styleUrls: ['./composite-block.component.css'],
   imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BudgetTextBlockComponent implements OnInit {
+export class CompositeBlockComponent implements OnInit {
   private readonly supabase = inject(SupabaseService);
 
-  // Input: text block data
-  block = input.required<BudgetTextBlock>();
+  // Input: composite block data
+  block = input.required<CompositeBlock>();
 
   // Output: event when block is updated
-  blockUpdated = output<BudgetTextBlock>();
+  blockUpdated = output<CompositeBlock>();
 
   // Output: event when block is deleted
   blockDeleted = output<number>();
 
   // Local state for sections (writable version)
-  protected readonly sections = signal<DescriptionSection[]>([]);
+  protected readonly sections = signal<CompositeBlockSection[]>([]);
 
-  protected readonly templateOptions = signal<TextBlockTemplate[]>([]);
+  protected readonly templateOptions = signal<CompositeBlockTemplate[]>([]);
   protected readonly selectedTemplateId = signal<number | null>(null);
   protected readonly isApplyingTemplate = signal<boolean>(false);
   protected readonly isUploadingImage = signal<boolean>(false);
@@ -65,7 +65,7 @@ export class BudgetTextBlockComponent implements OnInit {
 
   private async loadTemplates() {
     try {
-      const templates = await this.supabase.getTextBlockTemplates();
+      const templates = await this.supabase.getCompositeBlockTemplates();
       // Map to include empty sections array initially (sections loaded on demand)
       this.templateOptions.set((templates || []).map((t: any) => ({
         id: t.id,
@@ -91,7 +91,7 @@ export class BudgetTextBlockComponent implements OnInit {
     }
 
     try {
-      await this.supabase.deleteBudgetTextBlock(blockId);
+      await this.supabase.deleteCompositeBlock(blockId);
       this.blockDeleted.emit(blockId);
     } catch (error) {
       console.error('Error deleting block:', error);
@@ -109,8 +109,8 @@ export class BudgetTextBlockComponent implements OnInit {
     const nextOrderIndex = currentSections.length;
 
     try {
-      const newSection = await this.supabase.addSectionToTextBlock({
-        textBlockId: blockId,
+      const newSection = await this.supabase.addSectionToCompositeBlock({
+        compositeBlockId: blockId,
         orderIndex: nextOrderIndex,
         title: '',
         text: ''
@@ -120,7 +120,7 @@ export class BudgetTextBlockComponent implements OnInit {
       this.sections.update(sections => [...sections, newSection]);
 
       // Emit update event to notify parent component
-      const updatedBlock: BudgetTextBlock = {
+      const updatedBlock: CompositeBlock = {
         ...this.block(),
         descriptions: [...currentSections, newSection]
       };
@@ -148,7 +148,7 @@ export class BudgetTextBlockComponent implements OnInit {
     this.sections.set(updatedSections);
 
     // Emit update event to notify parent component
-    const updatedBlock: BudgetTextBlock = {
+    const updatedBlock: CompositeBlock = {
       ...this.block(),
       descriptions: this.sections()
     };
@@ -166,14 +166,14 @@ export class BudgetTextBlockComponent implements OnInit {
     }
 
     try {
-      await this.supabase.deleteTextBlockSection(sectionId as number);
+      await this.supabase.deleteCompositeBlockSection(sectionId as number);
 
       // Remove from local state
       const updatedSections = this.sections().filter(s => s.id !== sectionId);
       this.sections.set(updatedSections);
 
       // Emit update event to notify parent component
-      const updatedBlock: BudgetTextBlock = {
+      const updatedBlock: CompositeBlock = {
         ...this.block(),
         descriptions: updatedSections
       };
@@ -186,15 +186,15 @@ export class BudgetTextBlockComponent implements OnInit {
   /**
    * Updates a block field
    */
-  protected updateBlockField(field: keyof BudgetTextBlock, event: Event): void {
+  protected updateBlockField(field: keyof CompositeBlock, event: Event): void {
     const input = event.target as HTMLInputElement | HTMLTextAreaElement;
     const value = field === 'subtotal' ? parseFloat(input.value) || 0 : input.value;
 
-    this.emitBlockPatch({ [field]: value } as Partial<BudgetTextBlock>);
+    this.emitBlockPatch({ [field]: value } as Partial<CompositeBlock>);
   }
 
-  private emitBlockPatch(patch: Partial<BudgetTextBlock>): void {
-    const updatedBlock: BudgetTextBlock = {
+  private emitBlockPatch(patch: Partial<CompositeBlock>): void {
+    const updatedBlock: CompositeBlock = {
       ...this.block(),
       descriptions: this.sections(),
       ...patch
@@ -226,22 +226,22 @@ export class BudgetTextBlockComponent implements OnInit {
 
     try {
       // Load template with sections from database
-      const template = await this.supabase.getTextBlockTemplateWithSections(templateId);
+      const template = await this.supabase.getCompositeBlockTemplateWithSections(templateId);
 
       // Delete existing sections
       const existingSections = this.sections();
       await Promise.all(
         existingSections
           .filter(section => !!section.id)
-          .map(section => this.supabase.deleteTextBlockSection(section.id as number))
+          .map(section => this.supabase.deleteCompositeBlockSection(section.id as number))
       );
 
       // Create sections from template sequentially to preserve order
-      const createdSections: DescriptionSection[] = [];
+      const createdSections: CompositeBlockSection[] = [];
       for (let index = 0; index < template.sections.length; index += 1) {
         const sectionTemplate = template.sections[index];
-        const createdSection = await this.supabase.addSectionToTextBlock({
-          textBlockId: blockId,
+        const createdSection = await this.supabase.addSectionToCompositeBlock({
+          compositeBlockId: blockId,
           orderIndex: index,
           title: sectionTemplate.title,
           text: sectionTemplate.text
@@ -251,7 +251,7 @@ export class BudgetTextBlockComponent implements OnInit {
 
       this.sections.set(createdSections);
 
-      const updatedBlock: BudgetTextBlock = {
+      const updatedBlock: CompositeBlock = {
         ...this.block(),
         descriptions: createdSections,
         heading: template.heading ?? this.block().heading
@@ -297,7 +297,7 @@ export class BudgetTextBlockComponent implements OnInit {
         text: s.text || ''
       }));
 
-      const newTemplate = await this.supabase.createTextBlockTemplate(
+      const newTemplate = await this.supabase.createCompositeBlockTemplate(
         name,
         this.block().heading || null,
         null, // provider
@@ -331,7 +331,7 @@ export class BudgetTextBlockComponent implements OnInit {
 
     this.isSavingTemplate.set(true);
     try {
-      await this.supabase.deleteTextBlockTemplate(templateId);
+      await this.supabase.deleteCompositeBlockTemplate(templateId);
       await this.loadTemplates();
       this.selectedTemplateId.set(null);
     } catch (error) {
@@ -362,16 +362,16 @@ export class BudgetTextBlockComponent implements OnInit {
 
     try {
       const { publicUrl } = await this.supabase.uploadPublicAsset(file, {
-        folder: `text-blocks/${block.budgetId}`
+        folder: `composite-blocks/${block.budgetId}`
       });
 
-      const updatedBlock: BudgetTextBlock = {
+      const updatedBlock: CompositeBlock = {
         ...block,
         imageUrl: publicUrl,
         descriptions: this.sections()
       };
 
-      await this.supabase.updateBudgetTextBlock(block.id, {
+      await this.supabase.updateCompositeBlock(block.id, {
         heading: updatedBlock.heading,
         link: updatedBlock.link,
         imageUrl: updatedBlock.imageUrl,

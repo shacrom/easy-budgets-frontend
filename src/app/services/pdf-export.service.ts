@@ -3,8 +3,8 @@ import pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import type { Content, TableCell, TDocumentDefinitions, TableLayout } from 'pdfmake/interfaces';
 import { Customer } from '../models/customer.model';
-import { BudgetTextBlock } from '../models/budget-text-block.model';
-import { Material, MaterialTable } from '../models/material.model';
+import { CompositeBlock } from '../models/composite-block.model';
+import { ItemRow, ItemTable } from '../models/item-table.model';
 import { BudgetSummary, SummaryLine, SummaryLineType } from '../models/budget-summary.model';
 import { Condition } from '../models/conditions.model';
 import { SimpleBlock } from '../models/simple-block.model';
@@ -21,11 +21,15 @@ export interface BudgetPdfMetadata {
 export interface BudgetPdfPayload {
   metadata: BudgetPdfMetadata | null;
   customer: Customer | null;
-  blocks: BudgetTextBlock[];
-  materials: Material[];
-  materialTables: MaterialTable[];
+  blocks: CompositeBlock[];
+  // Support both old and new naming for backward compatibility
+  items?: ItemRow[];
+  materials?: ItemRow[];
+  itemTables?: ItemTable[];
+  materialTables?: ItemTable[];
   simpleBlock: SimpleBlock | null;
   summary: BudgetSummary | null;
+  itemsSectionTitle?: string;
   materialsSectionTitle?: string;
   conditionsTitle?: string;
   sectionOrder?: string[];
@@ -34,6 +38,7 @@ export interface BudgetPdfPayload {
   supplierLogoUrl?: string;
   showSignature?: boolean;
   printTextBlocks?: boolean;
+  printItemTables?: boolean;
   printMaterials?: boolean;
   printSimpleBlock?: boolean;
   printConditions?: boolean;
@@ -203,8 +208,14 @@ export class PdfExportService {
 
 
     // Construir secciones individuales
+    // Usar nuevas propiedades con fallback a las antiguas para retrocompatibilidad
+    const itemTables = payload.itemTables ?? payload.materialTables ?? [];
+    const items = payload.items ?? payload.materials ?? [];
+    const itemsSectionTitle = payload.itemsSectionTitle ?? payload.materialsSectionTitle;
+    const printItemTables = payload.printItemTables ?? payload.printMaterials ?? true;
+
     const textBlocksContent = (payload.printTextBlocks !== false) ? this.buildTextBlocksSection(blocks) : [];
-    const materialsContent = (payload.printMaterials !== false) ? this.buildMaterialsSection(payload.materialTables, payload.materials, payload.materialsSectionTitle) : [];
+    const materialsContent = (printItemTables !== false) ? this.buildMaterialsSection(itemTables, items, itemsSectionTitle) : [];
     const simpleBlockContent = (payload.printSimpleBlock !== false) ? this.buildSimpleBlockSection(simpleBlock) : null;
 
     // Obtener títulos personalizados
@@ -214,8 +225,8 @@ export class PdfExportService {
     const summaryContent = (payload.printSummary !== false) ? this.buildSummarySection(
       payload.summary,
       blocks,
-      payload.materialTables,
-      payload.materialsSectionTitle,
+      itemTables,
+      itemsSectionTitle,
       blocksSectionTitle,
       simpleBlockSectionTitle
     ) : null;
@@ -555,7 +566,7 @@ export class PdfExportService {
   return customer.dni || '';
   }
 
-  private buildTextBlocksSection(blocks: BudgetTextBlock[]): Content[] {
+  private buildTextBlocksSection(blocks: CompositeBlock[]): Content[] {
      if (!blocks?.length) {
       return [];
     }
@@ -739,7 +750,7 @@ export class PdfExportService {
     };
   }
 
-  private buildMaterialsSection(tables: MaterialTable[], standaloneMaterials: Material[], sectionTitle?: string): Content[] {
+  private buildMaterialsSection(tables: ItemTable[], standaloneMaterials: ItemRow[], sectionTitle?: string): Content[] {
     const groupedTables = tables ?? [];
     const filteredStandalone = standaloneMaterials?.filter(material => !groupedTables.some(table => table.rows?.some(row => row.id === material.id))) ?? [];
 
@@ -799,7 +810,7 @@ export class PdfExportService {
     return content;
   }
 
-  private buildMaterialsTable(materials: Material[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
+  private buildMaterialsTable(materials: ItemRow[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
     const v = visibility ?? { reference: true, description: true, manufacturer: true, quantity: true, unitPrice: true, totalPrice: true };
     const headers: TableCell[] = [];
     const widths: (string | number)[] = [];
@@ -851,7 +862,7 @@ export class PdfExportService {
     };
   }
 
-  private buildMaterialGroupCard(title: string, rows: Material[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
+  private buildMaterialGroupCard(title: string, rows: ItemRow[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
     const countLabel = rows.length === 1 ? '1 partida' : `${rows.length} partidas`;
     const subtotal = rows.reduce((sum, row) => sum + (row.totalPrice ?? 0), 0);
 
@@ -1041,8 +1052,8 @@ export class PdfExportService {
     ];
   }
 
-  private calculateMaterialTableTotal(table: MaterialTable): number {
-    return table.rows.reduce((sum, material) => {
+  private calculateMaterialTableTotal(table: ItemTable): number {
+    return table.rows.reduce((sum: number, material: ItemRow) => {
       const total = material.totalPrice ?? (material.quantity ?? 0) * (material.unitPrice ?? 0);
       return sum + total;
     }, 0);
@@ -1140,9 +1151,9 @@ export class PdfExportService {
 
   private buildSummarySection(
     summary: BudgetSummary | null,
-    blocks: BudgetTextBlock[],
-    materialTables: MaterialTable[],
-    materialsSectionTitle?: string,
+    blocks: CompositeBlock[],
+    itemTables: ItemTable[],
+    itemsSectionTitle?: string,
     blocksSectionTitle?: string,
     simpleBlockSectionTitle?: string
   ): Content | null {
@@ -1157,7 +1168,7 @@ export class PdfExportService {
       }))
       .filter(line => Number.isFinite(line.value));
 
-    const materialBreakdown = materialTables
+    const materialBreakdown = itemTables
       .map(table => ({
         label: table.title?.trim() || 'Tabla sin título',
         value: this.calculateMaterialTableTotal(table)
@@ -1167,8 +1178,9 @@ export class PdfExportService {
     // Use totalSimpleBlock with fallback to totalCountertop for backward compatibility
     const simpleBlockTotal = summary.totalSimpleBlock ?? 0;
 
-    // Calcular el subtotal base
-    const baseSubtotal = (summary.totalBlocks ?? 0) + (summary.totalMaterials ?? 0) + simpleBlockTotal;
+    // Calcular el subtotal base (use totalItems with fallback to totalMaterials for backward compatibility)
+    const itemsTotal = summary.totalItems ?? summary.totalMaterials ?? 0;
+    const baseSubtotal = (summary.totalBlocks ?? 0) + itemsTotal + simpleBlockTotal;
 
     // Filtrar líneas opcionales para el cálculo de totales
     const nonOptionalLines = (summary.additionalLines ?? []).filter(line => this.resolveSummaryLineType(line) !== 'optional');
@@ -1209,8 +1221,10 @@ export class PdfExportService {
       pushCategory(`Total ${blocksSectionTitle || 'bloque compuesto'}`, summary.totalBlocks, blockBreakdown);
     }
 
-    if (summary.totalMaterials > 0) {
-      pushCategory(materialsSectionTitle || 'Materiales y equipamiento', summary.totalMaterials, materialBreakdown);
+    // Use totalItems with fallback to totalMaterials for backward compatibility
+    const totalItems = summary.totalItems ?? summary.totalMaterials ?? 0;
+    if (totalItems > 0) {
+      pushCategory(itemsSectionTitle || 'Materiales y equipamiento', totalItems, materialBreakdown);
     }
 
     if (simpleBlockTotal > 0) {

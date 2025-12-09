@@ -1,21 +1,21 @@
 import { ChangeDetectionStrategy, Component, signal, computed, output, input, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BudgetTextBlockComponent } from './budget-text-block.component';
-import { BudgetTextBlock } from '../../../../models/budget-text-block.model';
+import { CompositeBlockComponent } from './composite-block.component';
+import { CompositeBlock } from '../../../../models/composite-block.model';
 import { SupabaseService } from '../../../../services/supabase.service';
 
 /**
- * Container component to manage all budget text blocks
+ * Container component to manage all budget composite blocks
  * Allows adding, editing, and deleting blocks
  */
 @Component({
-  selector: 'app-budget-text-blocks',
-  templateUrl: './budget-text-blocks.component.html',
-  styleUrls: ['./budget-text-blocks.component.css'],
-  imports: [CommonModule, BudgetTextBlockComponent],
+  selector: 'app-composite-blocks',
+  templateUrl: './composite-blocks.component.html',
+  styleUrls: ['./composite-blocks.component.css'],
+  imports: [CommonModule, CompositeBlockComponent],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BudgetTextBlocksComponent {
+export class CompositeBlocksComponent {
   private readonly supabase = inject(SupabaseService);
   private readonly defaultSectionTitle = 'Bloque Compuesto';
 
@@ -25,8 +25,8 @@ export class BudgetTextBlocksComponent {
   // Section title (editable)
   protected readonly sectionTitle = signal<string>(this.defaultSectionTitle);
 
-  // List of text blocks
-  protected readonly blocks = signal<BudgetTextBlock[]>([]);
+  // List of composite blocks
+  protected readonly blocks = signal<CompositeBlock[]>([]);
 
   // Loading state
   protected readonly isLoading = signal<boolean>(false);
@@ -43,7 +43,7 @@ export class BudgetTextBlocksComponent {
   totalChanged = output<number>();
 
   // Output: emits blocks when they change (only on manual save)
-  blocksChanged = output<BudgetTextBlock[]>();
+  blocksChanged = output<CompositeBlock[]>();
 
   // Output: emits section title when it changes
   sectionTitleChanged = output<string>();
@@ -70,7 +70,7 @@ export class BudgetTextBlocksComponent {
   private async loadBlocks(budgetId: number): Promise<void> {
     this.isLoading.set(true);
     try {
-      const blocks = await this.supabase.getTextBlocksForBudget(budgetId);
+      const blocks = await this.supabase.getCompositeBlocksForBudget(budgetId);
       this.blocks.set(blocks);
 
       // Load section title from first block if exists
@@ -85,7 +85,7 @@ export class BudgetTextBlocksComponent {
       this.totalChanged.emit(this.grandTotal());
       this.sectionTitleChanged.emit(this.sectionTitle());
     } catch (error) {
-      console.error('Error loading text blocks:', error);
+      console.error('Error loading composite blocks:', error);
     } finally {
       this.isLoading.set(false);
     }
@@ -111,7 +111,7 @@ export class BudgetTextBlocksComponent {
       return;
     }
     if (!budgetId) {
-      console.error('No budgetId available to create a text block.');
+      console.error('No budgetId available to create a composite block.');
       return;
     }
 
@@ -123,7 +123,7 @@ export class BudgetTextBlocksComponent {
 
     this.isCreating.set(true);
     try {
-      await this.supabase.addTextBlockToBudget({
+      await this.supabase.addCompositeBlockToBudget({
         budgetId,
         orderIndex: nextOrderIndex,
         heading: '',
@@ -134,7 +134,7 @@ export class BudgetTextBlocksComponent {
 
       await this.loadBlocks(budgetId);
     } catch (error) {
-      console.error('Error adding text block:', error);
+      console.error('Error adding composite block:', error);
     } finally {
       this.isCreating.set(false);
     }
@@ -143,7 +143,7 @@ export class BudgetTextBlocksComponent {
   /**
    * Updates an existing block
    */
-  protected updateBlock(updatedBlock: BudgetTextBlock): void {
+  protected updateBlock(updatedBlock: CompositeBlock): void {
     this.blocks.update(blocks =>
       blocks.map(block => block.id === updatedBlock.id ? updatedBlock : block)
     );
@@ -172,7 +172,7 @@ export class BudgetTextBlocksComponent {
 
       for (const block of currentBlocks) {
         if (block.id) {
-          await this.supabase.updateBudgetTextBlock(block.id, {
+          await this.supabase.updateCompositeBlock(block.id, {
             sectionTitle: currentSectionTitle,
             heading: block.heading,
             link: block.link,
@@ -185,7 +185,7 @@ export class BudgetTextBlocksComponent {
           if (block.descriptions) {
             for (const section of block.descriptions) {
               if (section.id) {
-                await this.supabase.updateTextBlockSection(section.id, {
+                await this.supabase.updateCompositeBlockSection(section.id, {
                   title: section.title,
                   text: section.text,
                   orderIndex: section.orderIndex
@@ -201,7 +201,7 @@ export class BudgetTextBlocksComponent {
 
       this.hasUnsavedChanges.set(false);
     } catch (error) {
-      console.error('Error saving text blocks:', error);
+      console.error('Error saving composite blocks:', error);
     } finally {
       this.isSaving.set(false);
     }

@@ -1,4 +1,4 @@
-<div class="budget-text-blocks-container">
+<div class="composite-blocks-container">
   <div class="header">
     <input
       class="section-title-input"
@@ -48,11 +48,11 @@
       </div>
     } @else {
       @for (block of blocks(); track block.id) {
-        <app-budget-text-block
+        <app-composite-block
           [block]="block"
           (blockUpdated)="updateBlock($event)"
           (blockDeleted)="deleteBlock($event)">
-        </app-budget-text-block>
+        </app-composite-block>
       }
     }
   </div>

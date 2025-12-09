@@ -1,13 +1,13 @@
 import { Component, signal, inject, effect, computed, untracked, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { BudgetTextBlocksComponent } from '../sections/text-blocks/budget-text-blocks.component';
-import { MaterialsTableComponent } from '../sections/materials/materials-table.component';
+import { CompositeBlocksComponent } from '../sections/composite-blocks/composite-blocks.component';
+import { ItemTableComponent } from '../sections/item-tables/item-table.component';
 import { BudgetSummaryComponent } from '../sections/summary/budget-summary.component';
 import { GeneralConditionsComponent } from '../sections/conditions/general-conditions.component';
 import { CustomerSelectorComponent } from '../../customers/components/customer-selector.component';
-import { BudgetTextBlock } from '../../../models/budget-text-block.model';
-import { Material, MaterialTable } from '../../../models/material.model';
+import { CompositeBlock } from '../../../models/composite-block.model';
+import { ItemRow, ItemTable } from '../../../models/item-table.model';
 import { Customer } from '../../../models/customer.model';
 import { BudgetSummary, SummaryLine } from '../../../models/budget-summary.model';
 import { Condition } from '../../../models/conditions.model';
@@ -25,8 +25,8 @@ import { environment } from '../../../../environments/environment';
   imports: [
     DragDropModule,
     CustomerSelectorComponent,
-    BudgetTextBlocksComponent,
-    MaterialsTableComponent,
+    CompositeBlocksComponent,
+    ItemTableComponent,
     SimpleBlockEditorComponent,
     BudgetSummaryComponent,
     GeneralConditionsComponent
@@ -50,15 +50,15 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
 
   // Totals from each section
   protected readonly totalBlocks = signal<number>(0);
-  protected readonly totalMaterials = signal<number>(0);
+  protected readonly totalItems = signal<number>(0);
   protected readonly totalSimpleBlock = signal<number>(0);
 
   // Data arrays
-  protected readonly blocks = signal<BudgetTextBlock[]>([]);
+  protected readonly blocks = signal<CompositeBlock[]>([]);
   protected readonly blocksSectionTitle = signal<string>('Bloque Compuesto');
-  protected readonly materials = signal<Material[]>([]);
-  protected readonly materialTables = signal<MaterialTable[]>([]);
-  protected readonly materialsSectionTitle = signal<string>('Materiales y equipamiento');
+  protected readonly items = signal<ItemRow[]>([]);
+  protected readonly itemTables = signal<ItemTable[]>([]);
+  protected readonly itemsSectionTitle = signal<string>('Materiales y equipamiento');
   protected readonly customers = signal<Customer[]>([]);
   protected readonly customerSearchTerm = signal<string>('');
   protected readonly customersLoading = signal<boolean>(false);
@@ -85,12 +85,12 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
 
   // Visibility signals
   protected readonly showTextBlocks = signal<boolean>(true);
-  protected readonly showMaterials = signal<boolean>(true);
+  protected readonly showItemTables = signal<boolean>(true);
   protected readonly showSimpleBlock = signal<boolean>(false);
   protected readonly showConditions = signal<boolean>(true);
   protected readonly showSummary = signal<boolean>(true);
   protected readonly showSignature = signal<boolean>(true);
-  protected readonly sectionOrder = signal<string[]>(['textBlocks', 'materials', 'simpleBlock', 'conditions', 'summary', 'signature']);
+  protected readonly sectionOrder = signal<string[]>(['textBlocks', 'itemTables', 'simpleBlock', 'conditions', 'summary', 'signature']);
   protected readonly togglingStatus = signal<boolean>(false);
 
   // PDF Preview
@@ -107,7 +107,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
 
   // Print options signals
   protected readonly printTextBlocks = signal<boolean>(true);
-  protected readonly printMaterials = signal<boolean>(true);
+  protected readonly printItemTables = signal<boolean>(true);
   protected readonly printSimpleBlock = signal<boolean>(true);
   protected readonly printConditions = signal<boolean>(true);
   protected readonly printSummary = signal<boolean>(true);
@@ -149,21 +149,21 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       if (this.showPdfPreview() && this.isInitialized()) {
         // Register dependencies to trigger re-run
         this.blocks();
-        this.materials();
-        this.materialTables();
-        this.materialsSectionTitle();
+        this.items();
+        this.itemTables();
+        this.itemsSectionTitle();
         this.simpleBlockData();
         this.summarySnapshot();
         this.conditionsList();
         this.selectedCustomer();
         this.showTextBlocks();
-        this.showMaterials();
+        this.showItemTables();
         this.showSimpleBlock();
         this.showConditions();
         this.showSummary();
         this.showSignature();
         this.printTextBlocks();
-        this.printMaterials();
+        this.printItemTables();
         this.printSimpleBlock();
         this.printConditions();
         this.printSummary();
@@ -205,13 +205,13 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     const filteredSummary: BudgetSummary | null = originalSummary ? {
       ...originalSummary,
       totalBlocks: this.showTextBlocks() ? originalSummary.totalBlocks : 0,
-      totalMaterials: this.showMaterials() ? originalSummary.totalMaterials : 0,
+      totalItems: this.showItemTables() ? originalSummary.totalItems : 0,
       totalSimpleBlock: this.showSimpleBlock() ? originalSummary.totalSimpleBlock : 0
     } : null;
 
     // Recalcular taxableBase y grandTotal basado en secciones visibles
     if (filteredSummary) {
-      const visibleTotal = filteredSummary.totalBlocks + filteredSummary.totalMaterials + (filteredSummary.totalSimpleBlock ?? 0);
+      const visibleTotal = filteredSummary.totalBlocks + filteredSummary.totalItems + (filteredSummary.totalSimpleBlock ?? 0);
 
       // Sumar líneas adicionales (descuentos, ajustes, etc.)
       let additionalTotal = 0;
@@ -232,11 +232,11 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       metadata: this.budgetMeta(),
       customer: this.selectedCustomer(),
       blocks: this.showTextBlocks() ? this.blocks() : [],
-      materials: this.showMaterials() ? this.materials() : [],
-      materialTables: this.showMaterials() ? this.materialTables() : [],
+      items: this.showItemTables() ? this.items() : [],
+      itemTables: this.showItemTables() ? this.itemTables() : [],
       simpleBlock: this.showSimpleBlock() ? this.simpleBlockData() : null,
       summary: this.showSummary() ? filteredSummary : null,
-      materialsSectionTitle: this.materialsSectionTitle(),
+      itemsSectionTitle: this.itemsSectionTitle(),
       conditionsTitle: this.conditionsTitle(),
       sectionOrder: this.sectionOrder(),
       conditions: this.showConditions() ? this.conditionsList() : [],
@@ -244,7 +244,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       supplierLogoUrl: this.supplierLogoUrl() || undefined,
       showSignature: this.showSignature(),
       printTextBlocks: this.printTextBlocks(),
-      printMaterials: this.printMaterials(),
+      printItemTables: this.printItemTables(),
       printSimpleBlock: this.printSimpleBlock(),
       printConditions: this.printConditions(),
       printSummary: this.printSummary(),
@@ -350,7 +350,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       this.budgetTitleInput.set(budget?.title ?? '');
 
       this.showTextBlocks.set(budget.showTextBlocks ?? true);
-      this.showMaterials.set(budget.showMaterials ?? true);
+      this.showItemTables.set(budget.showItemTables ?? true);
       this.showSimpleBlock.set(budget.showSimpleBlock ?? false);
       this.showConditions.set(budget.showConditions ?? true);
       this.showSummary.set(budget.showSummary ?? true);
@@ -360,17 +360,17 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
         this.sectionOrder.set(budget.sectionOrder);
       }
 
-      // Load materials section title
-      this.materialsSectionTitle.set(budget.materialsSectionTitle ?? 'Materiales y equipamiento');
+      // Load items section title
+      this.itemsSectionTitle.set(budget.itemsSectionTitle ?? 'Materiales y equipamiento');
 
       // Load logo URLs (use default company logo if not set)
       this.companyLogoUrl.set(budget.companyLogoUrl || this.DEFAULT_COMPANY_LOGO);
       this.supplierLogoUrl.set(budget.supplierLogoUrl ?? '');
 
-      const relationalTables = Array.isArray(budget.materialTables) ? budget.materialTables : [];
-      this.materialTables.set(relationalTables);
-      this.materials.set(this.flattenMaterials(relationalTables));
-      this.totalMaterials.set(this.calculateMaterialsTotal(relationalTables));
+      const relationalTables = Array.isArray(budget.itemTables) ? budget.itemTables : [];
+      this.itemTables.set(relationalTables);
+      this.items.set(this.flattenItems(relationalTables));
+      this.totalItems.set(this.calculateItemsTotal(relationalTables));
 
       const customerId = budget?.customer?.id ?? budget?.customerId ?? null;
       this.selectedCustomerId.set(customerId);
@@ -513,22 +513,22 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   }
 
   /**
-   * Updates the materials total
+   * Updates the items total
    */
-  protected onTotalMaterialsChanged(total: number): void {
-    this.totalMaterials.set(total);
+  protected onTotalItemsChanged(total: number): void {
+    this.totalItems.set(total);
   }
 
-  protected async onMaterialsSectionTitleChanged(title: string): Promise<void> {
-    this.materialsSectionTitle.set(title);
+  protected async onItemsSectionTitleChanged(title: string): Promise<void> {
+    this.itemsSectionTitle.set(title);
 
     const id = this.currentBudgetId();
     if (!id) return;
 
     try {
-      await this.supabase.updateBudget(id, { materialsSectionTitle: title });
+      await this.supabase.updateBudget(id, { itemsSectionTitle: title });
     } catch (error) {
-      console.error('Error saving materials section title:', error);
+      console.error('Error saving items section title:', error);
     }
   }
 
@@ -629,24 +629,24 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   /**
    * Updates the blocks
    */
-  protected onBlocksChanged(blocks: BudgetTextBlock[]): void {
+  protected onBlocksChanged(blocks: CompositeBlock[]): void {
     this.blocks.set(blocks);
   }
 
   /**
-   * Updates the materials
+   * Updates the items
    */
-  protected onMaterialsChanged(materials: Material[]): void {
-    this.materials.set(materials);
+  protected onItemsChanged(items: ItemRow[]): void {
+    this.items.set(items);
   }
 
-  protected async onTablesChanged(tables: MaterialTable[]): Promise<void> {
-    this.materialTables.set(tables);
+  protected async onTablesChanged(tables: ItemTable[]): Promise<void> {
+    this.itemTables.set(tables);
 
     const id = this.currentBudgetId();
     if (id) {
       try {
-        const result = await this.supabase.saveMaterialTables(id, tables);
+        const result = await this.supabase.saveItemTables(id, tables);
         // If result contains inserted data, map it back to the UI
         if (result && result.tables && result.rows) {
           const insertedTables = result.tables as any[];
@@ -674,14 +674,14 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
               unitPrice: Number(r.unitPrice ?? 0),
               totalPrice: Number(r.totalPrice ?? 0)
             }))
-          } as MaterialTable));
+          } as ItemTable));
 
-          this.materialTables.set(updatedTables);
-          // Also update flattened materials list
-          this.materials.set(updatedTables.flatMap(t => t.rows ?? []));
+          this.itemTables.set(updatedTables);
+          // Also update flattened items list
+          this.items.set(updatedTables.flatMap(t => t.rows ?? []));
         }
       } catch (error) {
-        console.error('Error saving material tables:', error);
+        console.error('Error saving item tables:', error);
       }
     }
   }
@@ -833,7 +833,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  private flattenMaterials(tables: MaterialTable[]): Material[] {
+  private flattenItems(tables: ItemTable[]): ItemRow[] {
     return tables.flatMap(table =>
       (table.rows ?? []).map((row, rowIndex) => ({
         ...row,
@@ -843,7 +843,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     );
   }
 
-  private calculateMaterialsTotal(tables: MaterialTable[]): number {
+  private calculateItemsTotal(tables: ItemTable[]): number {
     return tables.reduce((tableSum, table) =>
       tableSum + (table.rows ?? []).reduce((rowSum, row) => rowSum + (row.totalPrice ?? 0), 0),
     0);
@@ -881,7 +881,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  async toggleSection(section: 'textBlocks' | 'materials' | 'simpleBlock' | 'conditions' | 'summary' | 'signature') {
+  async toggleSection(section: 'textBlocks' | 'itemTables' | 'simpleBlock' | 'conditions' | 'summary' | 'signature') {
     const id = this.currentBudgetId();
     if (!id) return;
 
@@ -892,10 +892,10 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
         this.showTextBlocks.set(newTextBlocks);
         updates = { showTextBlocks: newTextBlocks };
         break;
-      case 'materials':
-        const newMaterials = !this.showMaterials();
-        this.showMaterials.set(newMaterials);
-        updates = { showMaterials: newMaterials };
+      case 'itemTables':
+        const newItemTables = !this.showItemTables();
+        this.showItemTables.set(newItemTables);
+        updates = { showItemTables: newItemTables };
         break;
       case 'simpleBlock':
         const newSimpleBlock = !this.showSimpleBlock();
@@ -926,13 +926,13 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  togglePrintOption(option: 'textBlocks' | 'materials' | 'simpleBlock' | 'conditions' | 'summary') {
+  togglePrintOption(option: 'textBlocks' | 'itemTables' | 'simpleBlock' | 'conditions' | 'summary') {
     switch (option) {
       case 'textBlocks':
         this.printTextBlocks.update((v: boolean) => !v);
         break;
-      case 'materials':
-        this.printMaterials.update((v: boolean) => !v);
+      case 'itemTables':
+        this.printItemTables.update((v: boolean) => !v);
         break;
       case 'simpleBlock':
         this.printSimpleBlock.update((v: boolean) => !v);

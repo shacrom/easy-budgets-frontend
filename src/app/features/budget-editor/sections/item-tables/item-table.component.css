@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-.materials-module {
+.item-tables-module {
   @apply max-w-6xl mx-auto space-y-6 px-6 py-6;
 }
 
@@ -104,7 +104,7 @@
   @apply text-xs font-semibold uppercase tracking-[0.2em] text-gray-400;
 }
 
-.materials-card {
+.item-table-card {
   @apply border border-gray-200 bg-white shadow-sm;
   overflow: visible !important;
 }
@@ -148,22 +148,22 @@
   @apply w-full overflow-x-auto;
 }
 
-.materials-table {
+.item-table {
   @apply w-full border border-gray-200 text-sm;
   border-spacing: 0;
   border-collapse: separate;
 }
 
-.materials-table tbody {
+.item-table tbody {
   isolation: auto;
 }
 
-.materials-table thead {
+.item-table thead {
   @apply bg-gray-50 text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-gray-600;
 }
 
-.materials-table th,
-.materials-table td {
+.item-table th,
+.item-table td {
   @apply border-b border-gray-200 px-4 py-3 text-left align-middle;
 }
 
@@ -175,20 +175,20 @@
   @apply p-1 border rounded text-sm;
 }
 
-.materials-table th:nth-child(4),
-.materials-table td:nth-child(4) {
+.item-table th:nth-child(4),
+.item-table td:nth-child(4) {
   @apply text-center;
 }
 
-.materials-table th:nth-child(5),
-.materials-table th:nth-child(6),
-.materials-table td:nth-child(5),
-.materials-table td:nth-child(6) {
+.item-table th:nth-child(5),
+.item-table th:nth-child(6),
+.item-table td:nth-child(5),
+.item-table td:nth-child(6) {
   @apply text-right;
 }
 
-.materials-table th:last-child,
-.materials-table td:last-child {
+.item-table th:last-child,
+.item-table td:last-child {
   @apply text-center;
 }
 

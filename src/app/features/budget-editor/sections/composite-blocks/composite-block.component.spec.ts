@@ -1,32 +1,32 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BudgetTextBlockComponent } from './budget-text-block.component';
-import { BudgetTextBlock } from '../../../../models/budget-text-block.model';
+import { CompositeBlockComponent } from './composite-block.component';
+import { CompositeBlock } from '../../../../models/composite-block.model';
 import { SupabaseService } from '../../../../services/supabase.service';
 
-describe('BudgetTextBlockComponent', () => {
-  let component: BudgetTextBlockComponent;
-  let fixture: ComponentFixture<BudgetTextBlockComponent>;
+describe('CompositeBlockComponent', () => {
+  let component: CompositeBlockComponent;
+  let fixture: ComponentFixture<CompositeBlockComponent>;
   let supabaseServiceSpy: {
-    deleteBudgetTextBlock: ReturnType<typeof vi.fn>;
-    addSectionToTextBlock: ReturnType<typeof vi.fn>;
-    updateTextBlockSection: ReturnType<typeof vi.fn>;
-    deleteTextBlockSection: ReturnType<typeof vi.fn>;
-    updateBudgetTextBlock: ReturnType<typeof vi.fn>;
+    deleteCompositeBlock: ReturnType<typeof vi.fn>;
+    addSectionToCompositeBlock: ReturnType<typeof vi.fn>;
+    updateCompositeBlockSection: ReturnType<typeof vi.fn>;
+    deleteCompositeBlockSection: ReturnType<typeof vi.fn>;
+    updateCompositeBlock: ReturnType<typeof vi.fn>;
     uploadPublicAsset: ReturnType<typeof vi.fn>;
-    getTextBlockTemplates: ReturnType<typeof vi.fn>;
-    getTextBlockTemplateWithSections: ReturnType<typeof vi.fn>;
-    createTextBlockTemplate: ReturnType<typeof vi.fn>;
-    deleteTextBlockTemplate: ReturnType<typeof vi.fn>;
+    getCompositeBlockTemplates: ReturnType<typeof vi.fn>;
+    getCompositeBlockTemplateWithSections: ReturnType<typeof vi.fn>;
+    createCompositeBlockTemplate: ReturnType<typeof vi.fn>;
+    deleteCompositeBlockTemplate: ReturnType<typeof vi.fn>;
   };
 
-  const mockBlock: BudgetTextBlock = {
+  const mockBlock: CompositeBlock = {
     id: 1,
     budgetId: 1,
     sectionTitle: 'Test Section',
     heading: 'Test Header',
     descriptions: [
-      { id: 10, textBlockId: 1, orderIndex: 0, title: 'Desc 1', text: 'Text 1' }
+      { id: 10, compositeBlockId: 1, orderIndex: 0, title: 'Desc 1', text: 'Text 1' }
     ],
     imageUrl: undefined,
     link: undefined,
@@ -45,39 +45,38 @@ describe('BudgetTextBlockComponent', () => {
   ];
 
   beforeEach(async () => {
-    // Mock completo de SupabaseService para evitar llamadas reales
     supabaseServiceSpy = {
-      deleteBudgetTextBlock: vi.fn(),
-      addSectionToTextBlock: vi.fn(),
-      updateTextBlockSection: vi.fn(),
-      deleteTextBlockSection: vi.fn(),
-      updateBudgetTextBlock: vi.fn(),
+      deleteCompositeBlock: vi.fn(),
+      addSectionToCompositeBlock: vi.fn(),
+      updateCompositeBlockSection: vi.fn(),
+      deleteCompositeBlockSection: vi.fn(),
+      updateCompositeBlock: vi.fn(),
       uploadPublicAsset: vi.fn(),
-      getTextBlockTemplates: vi.fn(),
-      getTextBlockTemplateWithSections: vi.fn(),
-      createTextBlockTemplate: vi.fn(),
-      deleteTextBlockTemplate: vi.fn()
+      getCompositeBlockTemplates: vi.fn(),
+      getCompositeBlockTemplateWithSections: vi.fn(),
+      createCompositeBlockTemplate: vi.fn(),
+      deleteCompositeBlockTemplate: vi.fn()
     };
 
-    supabaseServiceSpy.getTextBlockTemplates.mockReturnValue(Promise.resolve(mockTemplates));
-    supabaseServiceSpy.getTextBlockTemplateWithSections.mockReturnValue(Promise.resolve({
+    supabaseServiceSpy.getCompositeBlockTemplates.mockReturnValue(Promise.resolve(mockTemplates));
+    supabaseServiceSpy.getCompositeBlockTemplateWithSections.mockReturnValue(Promise.resolve({
       id: 1,
       name: 'Template 1',
       provider: 'Provider 1',
       heading: 'Heading 1',
       sections: mockTemplateSections
     }));
-    supabaseServiceSpy.createTextBlockTemplate.mockReturnValue(Promise.resolve({ id: 3, name: 'New Template' }));
-    supabaseServiceSpy.deleteTextBlockTemplate.mockReturnValue(Promise.resolve());
+    supabaseServiceSpy.createCompositeBlockTemplate.mockReturnValue(Promise.resolve({ id: 3, name: 'New Template' }));
+    supabaseServiceSpy.deleteCompositeBlockTemplate.mockReturnValue(Promise.resolve());
 
     await TestBed.configureTestingModule({
-      imports: [BudgetTextBlockComponent],
+      imports: [CompositeBlockComponent],
       providers: [
         { provide: SupabaseService, useValue: supabaseServiceSpy }
       ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(BudgetTextBlockComponent);
+    fixture = TestBed.createComponent(CompositeBlockComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('block', mockBlock);
     fixture.detectChanges();
@@ -89,26 +88,25 @@ describe('BudgetTextBlockComponent', () => {
   });
 
   it('should load templates on init', async () => {
-    expect(supabaseServiceSpy.getTextBlockTemplates).toHaveBeenCalled();
+    expect(supabaseServiceSpy.getCompositeBlockTemplates).toHaveBeenCalled();
     expect(component['templateOptions']().length).toBe(2);
   });
 
   it('should initialize sections from block input', () => {
-    // Verificamos que la señal 'sections' se inicializa con los datos del input
     expect(component['sections']().length).toBe(1);
     expect(component['sections']()[0].title).toBe('Desc 1');
   });
 
   it('should delete block when confirmed', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
-    supabaseServiceSpy.deleteBudgetTextBlock.mockReturnValue(Promise.resolve());
+    supabaseServiceSpy.deleteCompositeBlock.mockReturnValue(Promise.resolve());
 
     let deletedId: number | undefined;
-    component.blockDeleted.subscribe(id => deletedId = id);
+    component.blockDeleted.subscribe((id: number) => deletedId = id);
 
     await component['deleteBlock']();
 
-    expect(supabaseServiceSpy.deleteBudgetTextBlock).toHaveBeenCalledWith(1);
+    expect(supabaseServiceSpy.deleteCompositeBlock).toHaveBeenCalledWith(1);
     expect(deletedId).toBe(1);
   });
 
@@ -117,53 +115,47 @@ describe('BudgetTextBlockComponent', () => {
 
     await component['deleteBlock']();
 
-    expect(supabaseServiceSpy.deleteBudgetTextBlock).not.toHaveBeenCalled();
+    expect(supabaseServiceSpy.deleteCompositeBlock).not.toHaveBeenCalled();
   });
 
   it('should add description section', async () => {
-    const newSection = { id: 11, textBlockId: 1, orderIndex: 1, title: '', text: '' };
-    supabaseServiceSpy.addSectionToTextBlock.mockReturnValue(Promise.resolve(newSection));
+    const newSection = { id: 11, compositeBlockId: 1, orderIndex: 1, title: '', text: '' };
+    supabaseServiceSpy.addSectionToCompositeBlock.mockReturnValue(Promise.resolve(newSection));
 
-    let updatedBlock: BudgetTextBlock | undefined;
-    component.blockUpdated.subscribe(b => updatedBlock = b);
+    let updatedBlock: CompositeBlock | undefined;
+    component.blockUpdated.subscribe((b: CompositeBlock) => updatedBlock = b);
 
     await component['addDescriptionSection']();
 
-    expect(supabaseServiceSpy.addSectionToTextBlock).toHaveBeenCalled();
-    // Debe actualizar el estado local
+    expect(supabaseServiceSpy.addSectionToCompositeBlock).toHaveBeenCalled();
     expect(component['sections']().length).toBe(2);
-    // Debe emitir el evento de actualización
     expect(updatedBlock?.descriptions?.length).toBe(2);
   });
 
   it('should update description section locally and emit event', () => {
     const event = { target: { value: 'New Title' } } as any;
 
-    let updatedBlock: BudgetTextBlock | undefined;
-    component.blockUpdated.subscribe(b => updatedBlock = b);
+    let updatedBlock: CompositeBlock | undefined;
+    component.blockUpdated.subscribe((b: CompositeBlock) => updatedBlock = b);
 
-    // Simulamos la escritura del usuario
     component['updateDescriptionSection'](10, 'title', event);
 
-    // El estado local debe actualizarse inmediatamente
     expect(component['sections']()[0].title).toBe('New Title');
-
-    // El servicio NO debe llamarse NUNCA (ahora se guarda en el padre)
-    expect(supabaseServiceSpy.updateTextBlockSection).not.toHaveBeenCalled();
-
-    // Debe emitir el evento inmediatamente
+    expect(supabaseServiceSpy.updateCompositeBlockSection).not.toHaveBeenCalled();
     expect(updatedBlock).toBeDefined();
     expect(updatedBlock?.descriptions?.[0].title).toBe('New Title');
-  });  it('should delete description section', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    supabaseServiceSpy.deleteTextBlockSection.mockReturnValue(Promise.resolve());
+  });
 
-    let updatedBlock: BudgetTextBlock | undefined;
-    component.blockUpdated.subscribe(b => updatedBlock = b);
+  it('should delete description section', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    supabaseServiceSpy.deleteCompositeBlockSection.mockReturnValue(Promise.resolve());
+
+    let updatedBlock: CompositeBlock | undefined;
+    component.blockUpdated.subscribe((b: CompositeBlock) => updatedBlock = b);
 
     await component['deleteDescriptionSection'](10);
 
-    expect(supabaseServiceSpy.deleteTextBlockSection).toHaveBeenCalledWith(10);
+    expect(supabaseServiceSpy.deleteCompositeBlockSection).toHaveBeenCalledWith(10);
     expect(component['sections']().length).toBe(0);
     expect(updatedBlock?.descriptions?.length).toBe(0);
   });
@@ -171,8 +163,8 @@ describe('BudgetTextBlockComponent', () => {
   it('should update block field (heading)', () => {
     const event = { target: { value: 'New Heading' } } as any;
 
-    let updatedBlock: BudgetTextBlock | undefined;
-    component.blockUpdated.subscribe(b => updatedBlock = b);
+    let updatedBlock: CompositeBlock | undefined;
+    component.blockUpdated.subscribe((b: CompositeBlock) => updatedBlock = b);
 
     component['updateBlockField']('heading', event);
 
@@ -182,8 +174,8 @@ describe('BudgetTextBlockComponent', () => {
   it('should update block field (subtotal) as number', () => {
     const event = { target: { value: '500' } } as any;
 
-    let updatedBlock: BudgetTextBlock | undefined;
-    component.blockUpdated.subscribe(b => updatedBlock = b);
+    let updatedBlock: CompositeBlock | undefined;
+    component.blockUpdated.subscribe((b: CompositeBlock) => updatedBlock = b);
 
     component['updateBlockField']('subtotal', event);
 
@@ -191,10 +183,10 @@ describe('BudgetTextBlockComponent', () => {
   });
 
   it('should apply selected template', async () => {
-    supabaseServiceSpy.deleteTextBlockSection.mockReturnValue(Promise.resolve());
-    supabaseServiceSpy.addSectionToTextBlock.mockImplementation((params: any) => Promise.resolve({
+    supabaseServiceSpy.deleteCompositeBlockSection.mockReturnValue(Promise.resolve());
+    supabaseServiceSpy.addSectionToCompositeBlock.mockImplementation((params: any) => Promise.resolve({
       id: 100 + params.orderIndex,
-      textBlockId: params.textBlockId,
+      compositeBlockId: params.compositeBlockId,
       orderIndex: params.orderIndex,
       title: params.title,
       text: params.text
@@ -203,14 +195,14 @@ describe('BudgetTextBlockComponent', () => {
 
     component['selectedTemplateId'].set(1);
 
-    let updatedBlock: BudgetTextBlock | undefined;
-    component.blockUpdated.subscribe(b => updatedBlock = b);
+    let updatedBlock: CompositeBlock | undefined;
+    component.blockUpdated.subscribe((b: CompositeBlock) => updatedBlock = b);
 
     await component['applySelectedTemplate']();
 
-    expect(supabaseServiceSpy.getTextBlockTemplateWithSections).toHaveBeenCalledWith(1);
-    expect(supabaseServiceSpy.deleteTextBlockSection).toHaveBeenCalled();
-    expect(supabaseServiceSpy.addSectionToTextBlock).toHaveBeenCalled();
+    expect(supabaseServiceSpy.getCompositeBlockTemplateWithSections).toHaveBeenCalledWith(1);
+    expect(supabaseServiceSpy.deleteCompositeBlockSection).toHaveBeenCalled();
+    expect(supabaseServiceSpy.addSectionToCompositeBlock).toHaveBeenCalled();
     expect(updatedBlock?.descriptions?.length).toBe(2);
   });
 
@@ -219,7 +211,7 @@ describe('BudgetTextBlockComponent', () => {
 
     await component['saveAsTemplate']();
 
-    expect(supabaseServiceSpy.createTextBlockTemplate).toHaveBeenCalledWith(
+    expect(supabaseServiceSpy.createCompositeBlockTemplate).toHaveBeenCalledWith(
       'My New Template',
       'Test Header',
       null,
@@ -234,7 +226,7 @@ describe('BudgetTextBlockComponent', () => {
 
     await component['deleteSelectedTemplate']();
 
-    expect(supabaseServiceSpy.deleteTextBlockTemplate).toHaveBeenCalledWith(1);
+    expect(supabaseServiceSpy.deleteCompositeBlockTemplate).toHaveBeenCalledWith(1);
     expect(component['selectedTemplateId']()).toBeNull();
   });
 });

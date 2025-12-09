@@ -1,4 +1,4 @@
-<section class="materials-module">
+<section class="item-tables-module">
   <header class="module-header">
     <div class="module-title">
       <input
@@ -44,12 +44,12 @@
     @if (tables().length === 0) {
       <div class="tables-empty">
         <span class="material-symbols-rounded" aria-hidden="true">grid_on</span>
-        <p>Añade tu primera tabla para empezar a desglosar materiales.</p>
+        <p>Añade tu primera tabla para empezar a desglosar elementos.</p>
         <p class="hint">Utiliza "Nueva tabla" para crear el bloque inicial.</p>
       </div>
     } @else {
       @for (table of tables(); track table.id; let index = $index) {
-      <article class="materials-card">
+      <article class="item-table-card">
         <div class="card-header">
           <div class="title-group">
             <input
@@ -61,7 +61,7 @@
             <p class="card-subtitle">Bloque {{ index + 1 }}</p>
           </div>
           <div class="card-actions">
-            <button type="button" class="btn icon" (click)="addNewMaterial(table.id)">
+            <button type="button" class="btn icon" (click)="addNewRow(table.id)">
               <span class="material-symbols-rounded" aria-hidden="true">add</span>
               <span>Fila</span>
             </button>
@@ -76,7 +76,7 @@
         </div>
 
         <div class="table-wrapper">
-          <table class="materials-table">
+          <table class="item-table">
             <!-- colgroup removed: column widths are dynamic based on visible columns -->
             <thead>
               <tr>
@@ -136,22 +136,22 @@
                 <tr>
                   <td [attr.colspan]="6" class="empty-state">
                     <span class="material-symbols-rounded" aria-hidden="true">table_rows_narrow</span>
-                    <p>Este bloque aún no tiene conceptos.</p>
-                    <button type="button" class="btn ghost" (click)="addNewMaterial(table.id)">
+                    <p>Este bloque aún no tiene elementos.</p>
+                    <button type="button" class="btn ghost" (click)="addNewRow(table.id)">
                       <span class="material-symbols-rounded" aria-hidden="true">add</span>
                       <span>Añadir fila</span>
                     </button>
                   </td>
                 </tr>
               } @else {
-                @for (material of table.rows; track material.id) {
+                @for (row of table.rows; track row.id) {
                   <tr cdkDrag class="draggable-row">
                     <td colspan="7" class="drag-cell">
                       <div class="drag-handle" cdkDragHandle>
                         <span class="material-symbols-rounded">drag_indicator</span>
                       </div>
-                      <app-material-row
-                        [material]="material"
+                      <app-item-row
+                        [row]="row"
                         [products]="products()"
                         [showReference]="table.showReference ?? true"
                         [showDescription]="table.showDescription ?? true"
@@ -159,9 +159,9 @@
                         [showQuantity]="table.showQuantity ?? true"
                         [showUnitPrice]="table.showUnitPrice ?? true"
                         [showTotalPrice]="table.showTotalPrice ?? true"
-                        (deleteRequested)="deleteMaterial(table.id, $event)"
-                        (localValuesChanged)="onMaterialLocalChange()">
-                      </app-material-row>
+                        (deleteRequested)="deleteRow(table.id, $event)"
+                        (localValuesChanged)="onRowLocalChange()">
+                      </app-item-row>
                     </td>
                   </tr>
                 }
@@ -185,7 +185,7 @@
   <footer class="module-footer">
     <div>
       <p class="module-kicker">Total acumulado</p>
-      <h3>{{ totalMaterials() | currency:'EUR':'symbol':'1.2-2':'es' }}</h3>
+      <h3>{{ totalItems() | currency:'EUR':'symbol':'1.2-2':'es' }}</h3>
     </div>
   </footer>
 </section>

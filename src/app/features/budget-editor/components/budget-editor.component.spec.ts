@@ -44,19 +44,19 @@ describe('BudgetEditorComponent', () => {
     customerId: 10,
     customer: { id: 10, name: 'John Doe', address: '123 St' },
     textBlocks: [],
-    materialTables: [],
+    itemTables: [],
     simpleBlock: null,
     additionalLines: [],
     companyLogoUrl: 'logo.png',
     supplierLogoUrl: 'supplier.png',
     showTextBlocks: true,
-    showMaterials: true,
+    showItemTables: true,
     showSimpleBlock: false,
     showConditions: true,
     showSummary: true,
     showSignature: true,
-    sectionOrder: ['textBlocks', 'materials', 'simpleBlock', 'conditions', 'summary', 'signature'],
-    materialsSectionTitle: 'Materiales',
+    sectionOrder: ['textBlocks', 'itemTables', 'simpleBlock', 'conditions', 'summary', 'signature'],
+    itemsSectionTitle: 'Elementos',
     conditionsTitle: 'Condiciones'
   };
 
@@ -224,19 +224,19 @@ describe('BudgetEditorComponent', () => {
     expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { showTextBlocks: false });
     expect(component['showTextBlocks']()).toBe(false);
 
-    // Toggle materials
-    await component.toggleSection('materials');
-    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { showMaterials: false });
-    expect(component['showMaterials']()).toBe(false);
+    // Toggle item tables (formerly materials)
+    await component.toggleSection('itemTables');
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { showItemTables: false });
+    expect(component['showItemTables']()).toBe(false);
   });
 
-  it('should update materials section title', async () => {
+  it('should update items section title', async () => {
     await fixture.whenStable();
 
-    await component['onMaterialsSectionTitleChanged']('New Materials Title');
+    await component['onItemsSectionTitleChanged']('New Items Title');
 
-    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { materialsSectionTitle: 'New Materials Title' });
-    expect(component['materialsSectionTitle']()).toBe('New Materials Title');
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { itemsSectionTitle: 'New Items Title' });
+    expect(component['itemsSectionTitle']()).toBe('New Items Title');
   });
 
   it('should handle PDF preview', async () => {
@@ -269,7 +269,7 @@ describe('BudgetEditorComponent', () => {
   describe('buildPdfPayload', () => {
     const mockSummary = {
       totalBlocks: 100,
-      totalMaterials: 200,
+      totalItems: 200,
       totalSimpleBlock: 300,
       taxableBase: 600,
       vatPercentage: 21,
@@ -286,8 +286,8 @@ describe('BudgetEditorComponent', () => {
       // Setup initial state
       (component as any).summarySnapshot.set(mockSummary);
       (component as any).blocks.set([{ id: 1, text: 'Block 1' }]);
-      (component as any).materials.set([{ id: 1, name: 'Material 1' }]);
-      (component as any).materialTables.set([{ id: 1, title: 'Table 1' }]);
+      (component as any).items.set([{ id: 1, name: 'Item 1' }]);
+      (component as any).itemTables.set([{ id: 1, title: 'Table 1' }]);
       (component as any).simpleBlockData.set({ id: 1, model: 'Simple Block 1' });
       (component as any).budgetMeta.set({ id: 1, budgetNumber: 'B-001' });
       (component as any).cachedSelectedCustomer.set({ id: 1, name: 'Customer 1' });
@@ -295,33 +295,33 @@ describe('BudgetEditorComponent', () => {
 
     it('should include all sections when they are visible', () => {
       (component as any).showTextBlocks.set(true);
-      (component as any).showMaterials.set(true);
+      (component as any).showItemTables.set(true);
       (component as any).showSimpleBlock.set(true);
 
       const payload = (component as any).buildPdfPayload();
 
       expect(payload.blocks.length).toBe(1);
-      expect(payload.materials.length).toBe(1);
-      expect(payload.materialTables.length).toBe(1);
+      expect(payload.items.length).toBe(1);
+      expect(payload.itemTables.length).toBe(1);
       expect(payload.simpleBlock).not.toBeNull();
     });
 
     it('should exclude hidden sections from payload', () => {
       (component as any).showTextBlocks.set(false);
-      (component as any).showMaterials.set(false);
+      (component as any).showItemTables.set(false);
       (component as any).showSimpleBlock.set(false);
 
       const payload = (component as any).buildPdfPayload();
 
       expect(payload.blocks.length).toBe(0);
-      expect(payload.materials.length).toBe(0);
-      expect(payload.materialTables.length).toBe(0);
+      expect(payload.items.length).toBe(0);
+      expect(payload.itemTables.length).toBe(0);
       expect(payload.simpleBlock).toBeNull();
     });
 
     it('should calculate totals correctly with all sections visible', () => {
       (component as any).showTextBlocks.set(true);
-      (component as any).showMaterials.set(true);
+      (component as any).showItemTables.set(true);
       (component as any).showSimpleBlock.set(true);
 
       const payload = (component as any).buildPdfPayload();
@@ -331,7 +331,7 @@ describe('BudgetEditorComponent', () => {
       // Additional: -50 + 20 = -30 (Note is ignored)
       // Taxable Base: 600 - 30 = 570
       expect(summary.totalBlocks).toBe(100);
-      expect(summary.totalMaterials).toBe(200);
+      expect(summary.totalItems).toBe(200);
       expect(summary.totalSimpleBlock).toBe(300);
       expect(summary.taxableBase).toBe(570);
 
@@ -344,7 +344,7 @@ describe('BudgetEditorComponent', () => {
 
     it('should calculate totals correctly with some sections hidden', () => {
       (component as any).showTextBlocks.set(true);   // 100
-      (component as any).showMaterials.set(false);  // 0 (hidden)
+      (component as any).showItemTables.set(false);  // 0 (hidden)
       (component as any).showSimpleBlock.set(true);  // 300
 
       const payload = (component as any).buildPdfPayload();
@@ -354,7 +354,7 @@ describe('BudgetEditorComponent', () => {
       // Additional: -30
       // Taxable Base: 400 - 30 = 370
       expect(summary.totalBlocks).toBe(100);
-      expect(summary.totalMaterials).toBe(0);
+      expect(summary.totalItems).toBe(0);
       expect(summary.totalSimpleBlock).toBe(300);
       expect(summary.taxableBase).toBe(370);
 
@@ -375,7 +375,7 @@ describe('BudgetEditorComponent', () => {
 
     it('should ignore "note" type additional lines in calculation', () => {
       (component as any).showTextBlocks.set(true);
-      (component as any).showMaterials.set(false);
+      (component as any).showItemTables.set(false);
       (component as any).showSimpleBlock.set(false);
 
       // Only blocks visible: 100
@@ -393,7 +393,7 @@ describe('BudgetEditorComponent', () => {
   describe('PDF Print Options', () => {
     it('should initialize print options to true by default', () => {
       expect((component as any).printTextBlocks()).toBe(true);
-      expect((component as any).printMaterials()).toBe(true);
+      expect((component as any).printItemTables()).toBe(true);
       expect((component as any).printSimpleBlock()).toBe(true);
       expect((component as any).printConditions()).toBe(true);
       expect((component as any).printSummary()).toBe(true);
@@ -403,8 +403,8 @@ describe('BudgetEditorComponent', () => {
       component.togglePrintOption('textBlocks');
       expect((component as any).printTextBlocks()).toBe(false);
 
-      component.togglePrintOption('materials');
-      expect((component as any).printMaterials()).toBe(false);
+      component.togglePrintOption('itemTables');
+      expect((component as any).printItemTables()).toBe(false);
 
       component.togglePrintOption('textBlocks');
       expect((component as any).printTextBlocks()).toBe(true);
@@ -412,13 +412,13 @@ describe('BudgetEditorComponent', () => {
 
     it('should include print flags in PDF payload', () => {
       // Set some options to false
-      component.togglePrintOption('materials');
+      component.togglePrintOption('itemTables');
       component.togglePrintOption('conditions');
 
       const payload = (component as any).buildPdfPayload();
 
       expect(payload.printTextBlocks).toBe(true);
-      expect(payload.printMaterials).toBe(false);
+      expect(payload.printItemTables).toBe(false);
       expect(payload.printSimpleBlock).toBe(true);
       expect(payload.printConditions).toBe(false);
       expect(payload.printSummary).toBe(true);
@@ -427,7 +427,7 @@ describe('BudgetEditorComponent', () => {
 
   describe('Section Reordering', () => {
     it('should initialize with default section order', () => {
-      const defaultOrder = ['textBlocks', 'materials', 'simpleBlock', 'conditions', 'summary', 'signature'];
+      const defaultOrder = ['textBlocks', 'itemTables', 'simpleBlock', 'conditions', 'summary', 'signature'];
       expect(component['sectionOrder']()).toEqual(defaultOrder);
     });
 
