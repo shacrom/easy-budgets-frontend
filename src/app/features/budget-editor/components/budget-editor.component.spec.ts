@@ -25,6 +25,7 @@ describe('BudgetEditorComponent', () => {
     getCompositeBlocksForBudget: ReturnType<typeof vi.fn>;
     getSimpleBlockForBudget: ReturnType<typeof vi.fn>;
     getGeneralConditions: ReturnType<typeof vi.fn>;
+    getConditionTemplates: ReturnType<typeof vi.fn>;
   };
   let pdfExportServiceSpy: {
     getBudgetPdfBlobUrlWithPageCount: ReturnType<typeof vi.fn>;
@@ -43,20 +44,20 @@ describe('BudgetEditorComponent', () => {
     expirationDate: new Date(),
     customerId: 10,
     customer: { id: 10, name: 'John Doe', address: '123 St' },
-    textBlocks: [],
+    compositeBlocks: [],
     itemTables: [],
     simpleBlock: null,
     additionalLines: [],
     companyLogoUrl: 'logo.png',
     supplierLogoUrl: 'supplier.png',
-    showTextBlocks: true,
+    showCompositeBlocks: true,
     showItemTables: true,
     showSimpleBlock: false,
     showConditions: true,
     showSummary: true,
     showSignature: true,
-    sectionOrder: ['textBlocks', 'itemTables', 'simpleBlock', 'conditions', 'summary', 'signature'],
-    itemsSectionTitle: 'Elementos',
+    sectionOrder: ['compositeBlocks', 'itemTables', 'simpleBlock', 'conditions', 'summary', 'signature'],
+    itemTablesSectionTitle: 'Elementos',
     conditionsTitle: 'Condiciones'
   };
 
@@ -77,7 +78,8 @@ describe('BudgetEditorComponent', () => {
       getProducts: vi.fn(),
       getCompositeBlocksForBudget: vi.fn(),
       getSimpleBlockForBudget: vi.fn(),
-      getGeneralConditions: vi.fn()
+      getGeneralConditions: vi.fn(),
+      getConditionTemplates: vi.fn()
     };
     pdfExportServiceSpy = {
       getBudgetPdfBlobUrlWithPageCount: vi.fn(),
@@ -101,6 +103,7 @@ describe('BudgetEditorComponent', () => {
     supabaseServiceSpy.getCompositeBlocksForBudget.mockReturnValue(Promise.resolve([]));
     supabaseServiceSpy.getSimpleBlockForBudget.mockReturnValue(Promise.resolve(null));
     supabaseServiceSpy.getGeneralConditions.mockReturnValue(Promise.resolve([]));
+    supabaseServiceSpy.getConditionTemplates.mockReturnValue(Promise.resolve([]));
 
     pdfExportServiceSpy.getBudgetPdfBlobUrlWithPageCount.mockReturnValue(Promise.resolve({ url: 'blob:url', pageCount: 1 }));
     pdfExportServiceSpy.generateBudgetPdf.mockReturnValue(Promise.resolve());
@@ -176,10 +179,10 @@ describe('BudgetEditorComponent', () => {
     expect(component['isBudgetCompleted']()).toBe(false);
 
     // Toggle to completed
-    supabaseServiceSpy.updateBudget.mockReturnValue(Promise.resolve({ ...mockBudget, status: 'completed' } as any));
+    supabaseServiceSpy.updateBudget.mockReturnValue(Promise.resolve({ ...mockBudget, status: 'approved' } as any));
     await component['toggleCompletionState']();
 
-    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { status: 'completed' });
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { status: 'approved' });
     expect(component['isBudgetCompleted']()).toBe(true);
 
     // Toggle back to not completed
@@ -220,9 +223,9 @@ describe('BudgetEditorComponent', () => {
     await fixture.whenStable();
 
     // Toggle text blocks
-    await component.toggleSection('textBlocks');
-    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { showTextBlocks: false });
-    expect(component['showTextBlocks']()).toBe(false);
+    await component.toggleSection('compositeBlocks');
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { showCompositeBlocks: false });
+    expect(component['showCompositeBlocks']()).toBe(false);
 
     // Toggle item tables (formerly materials)
     await component.toggleSection('itemTables');
@@ -233,10 +236,10 @@ describe('BudgetEditorComponent', () => {
   it('should update items section title', async () => {
     await fixture.whenStable();
 
-    await component['onItemsSectionTitleChanged']('New Items Title');
+    await component['onItemTablesSectionTitleChanged']('New Items Title');
 
-    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { itemsSectionTitle: 'New Items Title' });
-    expect(component['itemsSectionTitle']()).toBe('New Items Title');
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { itemTablesSectionTitle: 'New Items Title' });
+    expect(component['itemTablesSectionTitle']()).toBe('New Items Title');
   });
 
   it('should handle PDF preview', async () => {
@@ -294,7 +297,7 @@ describe('BudgetEditorComponent', () => {
     });
 
     it('should include all sections when they are visible', () => {
-      (component as any).showTextBlocks.set(true);
+      (component as any).showCompositeBlocks.set(true);
       (component as any).showItemTables.set(true);
       (component as any).showSimpleBlock.set(true);
 
@@ -307,7 +310,7 @@ describe('BudgetEditorComponent', () => {
     });
 
     it('should exclude hidden sections from payload', () => {
-      (component as any).showTextBlocks.set(false);
+      (component as any).showCompositeBlocks.set(false);
       (component as any).showItemTables.set(false);
       (component as any).showSimpleBlock.set(false);
 
@@ -320,7 +323,7 @@ describe('BudgetEditorComponent', () => {
     });
 
     it('should calculate totals correctly with all sections visible', () => {
-      (component as any).showTextBlocks.set(true);
+      (component as any).showCompositeBlocks.set(true);
       (component as any).showItemTables.set(true);
       (component as any).showSimpleBlock.set(true);
 
@@ -343,7 +346,7 @@ describe('BudgetEditorComponent', () => {
     });
 
     it('should calculate totals correctly with some sections hidden', () => {
-      (component as any).showTextBlocks.set(true);   // 100
+      (component as any).showCompositeBlocks.set(true);   // 100
       (component as any).showItemTables.set(false);  // 0 (hidden)
       (component as any).showSimpleBlock.set(true);  // 300
 
@@ -374,7 +377,7 @@ describe('BudgetEditorComponent', () => {
     });
 
     it('should ignore "note" type additional lines in calculation', () => {
-      (component as any).showTextBlocks.set(true);
+      (component as any).showCompositeBlocks.set(true);
       (component as any).showItemTables.set(false);
       (component as any).showSimpleBlock.set(false);
 
@@ -400,13 +403,13 @@ describe('BudgetEditorComponent', () => {
     });
 
     it('should toggle print options', () => {
-      component.togglePrintOption('textBlocks');
+      component.togglePrintOption('compositeBlocks');
       expect((component as any).printTextBlocks()).toBe(false);
 
       component.togglePrintOption('itemTables');
       expect((component as any).printItemTables()).toBe(false);
 
-      component.togglePrintOption('textBlocks');
+      component.togglePrintOption('compositeBlocks');
       expect((component as any).printTextBlocks()).toBe(true);
     });
 
@@ -427,26 +430,27 @@ describe('BudgetEditorComponent', () => {
 
   describe('Section Reordering', () => {
     it('should initialize with default section order', () => {
-      const defaultOrder = ['textBlocks', 'itemTables', 'simpleBlock', 'conditions', 'summary', 'signature'];
+      const defaultOrder = ['compositeBlocks', 'itemTables', 'simpleBlock', 'conditions', 'summary', 'signature'];
       expect(component['sectionOrder']()).toEqual(defaultOrder);
     });
 
-    it('should load section order from budget', async () => {
-      const customOrder = ['summary', 'textBlocks', 'materials', 'simpleBlock', 'conditions', 'signature'];
-      const budgetWithOrder = { ...mockBudget, sectionOrder: customOrder };
+    it('should load section order from budget and migrate legacy keys', async () => {
+      const legacyOrder = ['summary', 'textBlocks', 'materials', 'simpleBlock', 'conditions', 'signature'];
+      const expectedOrder = ['summary', 'compositeBlocks', 'itemTables', 'simpleBlock', 'conditions', 'signature'];
+      const budgetWithOrder = { ...mockBudget, sectionOrder: legacyOrder };
       supabaseServiceSpy.getBudget.mockReturnValue(Promise.resolve(budgetWithOrder as any));
 
       // Re-initialize component to trigger loadBudget
       await component['loadBudget'](1);
 
-      expect(component['sectionOrder']()).toEqual(customOrder);
+      expect(component['sectionOrder']()).toEqual(expectedOrder);
     });
 
     it('should update section order on drop', () => {
-      const initialOrder = ['textBlocks', 'materials', 'simpleBlock', 'conditions', 'summary', 'signature'];
+      const initialOrder = ['compositeBlocks', 'itemTables', 'simpleBlock', 'conditions', 'summary', 'signature'];
       component['sectionOrder'].set(initialOrder);
 
-      // Simulate moving 'textBlocks' (index 0) to index 1
+      // Simulate moving 'compositeBlocks' (index 0) to index 1
       const event = {
         previousIndex: 0,
         currentIndex: 1
@@ -454,13 +458,13 @@ describe('BudgetEditorComponent', () => {
 
       component.drop(event);
 
-      const expectedOrder = ['materials', 'textBlocks', 'simpleBlock', 'conditions', 'summary', 'signature'];
+      const expectedOrder = ['itemTables', 'compositeBlocks', 'simpleBlock', 'conditions', 'summary', 'signature'];
       expect(component['sectionOrder']()).toEqual(expectedOrder);
       expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { sectionOrder: expectedOrder });
     });
 
     it('should include section order in PDF payload', () => {
-      const customOrder = ['summary', 'textBlocks', 'materials', 'simpleBlock', 'conditions', 'signature'];
+      const customOrder = ['summary', 'compositeBlocks', 'itemTables', 'simpleBlock', 'conditions', 'signature'];
       component['sectionOrder'].set(customOrder);
 
       const payload = (component as any).buildPdfPayload();

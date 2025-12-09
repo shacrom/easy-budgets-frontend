@@ -91,13 +91,13 @@
         <div class="flex flex-wrap gap-3" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">
           @for (section of sectionOrder(); track section) {
             @switch (section) {
-              @case ('textBlocks') {
+              @case ('compositeBlocks') {
                 <button
                   cdkDrag
                   type="button"
                   class="toggle-btn"
-                  [class.active]="showTextBlocks()"
-                  (click)="toggleSection('textBlocks')">
+                  [class.active]="showCompositeBlocks()"
+                  (click)="toggleSection('compositeBlocks')">
                   <span class="material-symbols-rounded">layers</span>
                   <span>Bloque compuesto</span>
                 </button>
@@ -268,8 +268,8 @@
 
       @for (section of sectionOrder(); track section) {
         @switch (section) {
-          @case ('textBlocks') {
-            @if (showTextBlocks()) {
+          @case ('compositeBlocks') {
+            @if (showCompositeBlocks()) {
               <section class="section-divider">
                 <app-composite-blocks
                   [budgetId]="currentBudgetId() ?? 0"
@@ -285,11 +285,11 @@
               <section class="section-divider">
                 <app-item-table
                   [tables]="itemTables()"
-                  [sectionTitle]="itemsSectionTitle()"
+                  [sectionTitle]="itemTablesSectionTitle()"
                   (totalChanged)="onTotalItemsChanged($event)"
                   (rowsChanged)="onItemsChanged($event)"
                   (tablesChanged)="onTablesChanged($event)"
-                  (sectionTitleChanged)="onItemsSectionTitleChanged($event)">
+                  (sectionTitleChanged)="onItemTablesSectionTitleChanged($event)">
                 </app-item-table>
               </section>
             }
@@ -312,12 +312,12 @@
                   [totalBlocks]="totalBlocks()"
                   [totalItems]="totalItems()"
                   [totalSimpleBlock]="totalSimpleBlock()"
-                  [showBlocks]="showTextBlocks()"
+                  [showBlocks]="showCompositeBlocks()"
                   [showItemTables]="showItemTables()"
                   [showSimpleBlock]="showSimpleBlock()"
                   [simpleBlockSectionTitle]="simpleBlockData()?.sectionTitle || 'Bloque Simple'"
                   [blocksSectionTitle]="blocksSectionTitle()"
-                  [itemsSectionTitle]="itemsSectionTitle()"
+                  [itemsSectionTitle]="itemTablesSectionTitle()"
                   [blocks]="blocks()"
                   [items]="items()"
                   [itemTables]="itemTables()"
@@ -354,9 +354,9 @@
             <div class="print-options">
               <h4>Páginas a incluir:</h4>
               <div class="print-toggles">
-                @if (showTextBlocks() && blocks().length > 0) {
+                @if (showCompositeBlocks() && blocks().length > 0) {
                   <label class="print-toggle" title="Incluir página de bloque compuesto">
-                    <input type="checkbox" [checked]="printTextBlocks()" (change)="togglePrintOption('textBlocks')">
+                    <input type="checkbox" [checked]="printTextBlocks()" (change)="togglePrintOption('compositeBlocks')">
                     <span>Bloque Compuesto</span>
                   </label>
                 }

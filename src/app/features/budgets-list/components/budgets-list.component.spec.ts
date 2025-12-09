@@ -127,13 +127,18 @@ describe('BudgetsListComponent', () => {
     expect((component as any).paginatedBudgets()[0].id).toBe(2);
   });
 
-  it('should create a new budget', async () => {
+  it('should create a new budget with correct default values', async () => {
     const newBudgetMock = { id: 123 };
     supabaseServiceMock.createBudget.mockResolvedValue(newBudgetMock as any);
 
     await (component as any).createBudget();
 
-    expect(supabaseServiceMock.createBudget).toHaveBeenCalled();
+    expect(supabaseServiceMock.createBudget).toHaveBeenCalledWith(expect.objectContaining({
+      showCompositeBlocks: false,
+      showItemTables: false,
+      showSimpleBlock: false,
+      showConditions: false
+    }));
     expect(routerMock.navigate).toHaveBeenCalledWith(['/presupuestos', '123']);
   });
 

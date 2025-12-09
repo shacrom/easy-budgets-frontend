@@ -452,12 +452,12 @@ describe('SupabaseService', () => {
         customerId: 10,
         status: 'completed',
         validUntil: '2025-12-31',
-        showTextBlocks: true,
-        showMaterials: true,
+        showCompositeBlocks: true,
+        showItemTables: true,
         showSimpleBlock: true,
         showConditions: true,
-        materialsSectionTitle: 'Materiales',
-        textBlocks: [
+        itemTablesSectionTitle: 'Materiales',
+        compositeBlocks: [
           { id: 10, heading: 'Bloque 1', orderIndex: 0, descriptions: [{ id: 100, title: 'Sección 1', text: 'Texto 1' }] }
         ],
         materialTables: [

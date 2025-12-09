@@ -300,7 +300,11 @@ export class SupabaseService {
     };
 
     const parseStatus = (value: unknown): BudgetStatus => {
-      return value === 'completed' ? 'completed' : 'not_completed';
+      const status = String(value);
+      if (['approved', 'rejected', 'pending', 'draft', 'not_completed'].includes(status)) {
+        return status as BudgetStatus;
+      }
+      return 'not_completed';
     };
 
     return (data ?? []).map((budget: any) => ({
@@ -353,11 +357,11 @@ export class SupabaseService {
       .select(`
         *,
         customer:Customers(*),
-        textBlocks:BudgetCompositeBlocks(
+        compositeBlocks:BudgetCompositeBlocks(
           *,
           descriptions:BudgetCompositeBlockSections(*)
         ),
-        materialTables:BudgetItemTables(
+        itemTables:BudgetItemTables(
           *,
           rows:BudgetItemTableRows(*)
         ),
@@ -371,8 +375,8 @@ export class SupabaseService {
     if (error) throw error;
 
     // Ordenar los bloques de texto y sus secciones
-    if (data.textBlocks) {
-      data.textBlocks = data.textBlocks
+    if (data.compositeBlocks) {
+      data.compositeBlocks = data.compositeBlocks
         .sort((a: any, b: any) => a.orderIndex - b.orderIndex)
         .map((block: any) => ({
           ...block,
@@ -393,8 +397,8 @@ export class SupabaseService {
       data.conditions = [];
     }
 
-    if (data.materialTables) {
-      data.materialTables = data.materialTables
+    if (data.itemTables) {
+      data.itemTables = data.itemTables
         .sort((a: any, b: any) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
         .map((table: any) => ({
           ...table,

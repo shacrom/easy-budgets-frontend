@@ -158,10 +158,10 @@ export class BudgetsListComponent implements OnInit {
         taxAmount: 0,
         total: 0,
         validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        showTextBlocks: true,
-        showMaterials: true,
+        showCompositeBlocks: false,
+        showItemTables: false,
         showSimpleBlock: false,
-        showConditions: true
+        showConditions: false
       });
 
       await this.router.navigate(['/presupuestos', String(newBudget.id)]);
@@ -257,7 +257,13 @@ export class BudgetsListComponent implements OnInit {
   }
 
   protected formatStatus(status: BudgetStatus): string {
-    return status === 'completed' ? 'Completado' : 'No completado';
+    switch (status) {
+      case 'approved': return 'Aprobado';
+      case 'rejected': return 'Rechazado';
+      case 'pending': return 'Pendiente';
+      case 'draft': return 'Borrador';
+      default: return 'No completado';
+    }
   }
 
   protected goToFirstPage(): void {

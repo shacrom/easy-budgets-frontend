@@ -235,14 +235,16 @@ export class PdfExportService {
 
     const sectionMap: { [key: string]: Content[] } = {
       'textBlocks': textBlocksContent.length > 0 ? textBlocksContent : [],
+      'compositeBlocks': textBlocksContent.length > 0 ? textBlocksContent : [],
       'materials': materialsContent.length > 0 ? materialsContent : [],
+      'itemTables': materialsContent.length > 0 ? materialsContent : [],
       'simpleBlock': simpleBlockContent ? [simpleBlockContent] : [],
       'summary': summaryContent ? [summaryContent] : [],
       'conditions': conditionsContent ? [conditionsContent] : [],
       'signature': signatureContent ? [signatureContent] : []
     };
 
-    const order = payload.sectionOrder || ['textBlocks', 'materials', 'simpleBlock', 'summary', 'conditions', 'signature'];
+    const order = payload.sectionOrder || ['compositeBlocks', 'itemTables', 'simpleBlock', 'summary', 'conditions', 'signature'];
 
     // Agrupar secciones con su contenido (solo las que tienen contenido)
     const sections: Content[][] = order
