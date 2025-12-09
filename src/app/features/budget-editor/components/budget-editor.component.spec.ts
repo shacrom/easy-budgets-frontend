@@ -18,11 +18,11 @@ describe('BudgetEditorComponent', () => {
     uploadPublicAsset: ReturnType<typeof vi.fn>;
     searchCustomers: ReturnType<typeof vi.fn>;
     getCustomer: ReturnType<typeof vi.fn>;
-    saveMaterialTables: ReturnType<typeof vi.fn>;
+    saveItemTables: ReturnType<typeof vi.fn>;
     saveAdditionalLines: ReturnType<typeof vi.fn>;
     updateBudgetTotals: ReturnType<typeof vi.fn>;
     getProducts: ReturnType<typeof vi.fn>;
-    getTextBlocksForBudget: ReturnType<typeof vi.fn>;
+    getCompositeBlocksForBudget: ReturnType<typeof vi.fn>;
     getSimpleBlockForBudget: ReturnType<typeof vi.fn>;
     getGeneralConditions: ReturnType<typeof vi.fn>;
   };
@@ -71,11 +71,11 @@ describe('BudgetEditorComponent', () => {
       uploadPublicAsset: vi.fn(),
       searchCustomers: vi.fn(),
       getCustomer: vi.fn(),
-      saveMaterialTables: vi.fn(),
+      saveItemTables: vi.fn(),
       saveAdditionalLines: vi.fn(),
       updateBudgetTotals: vi.fn(),
       getProducts: vi.fn(),
-      getTextBlocksForBudget: vi.fn(),
+      getCompositeBlocksForBudget: vi.fn(),
       getSimpleBlockForBudget: vi.fn(),
       getGeneralConditions: vi.fn()
     };
@@ -94,11 +94,11 @@ describe('BudgetEditorComponent', () => {
     supabaseServiceSpy.uploadPublicAsset.mockReturnValue(Promise.resolve({ publicUrl: 'new-logo.png', path: 'path/to/logo.png' }));
     supabaseServiceSpy.getCustomer.mockReturnValue(Promise.resolve({ id: 20, name: 'Jane Doe', address: '456 Ave' } as any));
     supabaseServiceSpy.searchCustomers.mockReturnValue(Promise.resolve([{ id: 20, name: 'Jane Doe', address: '456 Ave' } as any]));
-    supabaseServiceSpy.saveMaterialTables.mockReturnValue(Promise.resolve({ tables: [], rows: [] } as any));
+    supabaseServiceSpy.saveItemTables.mockReturnValue(Promise.resolve({ tables: [], rows: [] } as any));
     supabaseServiceSpy.saveAdditionalLines.mockReturnValue(Promise.resolve());
     supabaseServiceSpy.updateBudgetTotals.mockReturnValue(Promise.resolve());
     supabaseServiceSpy.getProducts.mockReturnValue(Promise.resolve([]));
-    supabaseServiceSpy.getTextBlocksForBudget.mockReturnValue(Promise.resolve([]));
+    supabaseServiceSpy.getCompositeBlocksForBudget.mockReturnValue(Promise.resolve([]));
     supabaseServiceSpy.getSimpleBlockForBudget.mockReturnValue(Promise.resolve(null));
     supabaseServiceSpy.getGeneralConditions.mockReturnValue(Promise.resolve([]));
 
