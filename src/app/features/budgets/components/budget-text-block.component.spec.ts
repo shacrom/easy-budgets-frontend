@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BudgetTextBlockComponent } from './budget-text-block.component';
 import { BudgetTextBlock } from '../../../models/budget-text-block.model';
 import { SupabaseService } from '../../../services/supabase.service';
@@ -6,7 +7,18 @@ import { SupabaseService } from '../../../services/supabase.service';
 describe('BudgetTextBlockComponent', () => {
   let component: BudgetTextBlockComponent;
   let fixture: ComponentFixture<BudgetTextBlockComponent>;
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
+  let supabaseServiceSpy: {
+    deleteBudgetTextBlock: ReturnType<typeof vi.fn>;
+    addSectionToTextBlock: ReturnType<typeof vi.fn>;
+    updateTextBlockSection: ReturnType<typeof vi.fn>;
+    deleteTextBlockSection: ReturnType<typeof vi.fn>;
+    updateBudgetTextBlock: ReturnType<typeof vi.fn>;
+    uploadPublicAsset: ReturnType<typeof vi.fn>;
+    getTextBlockTemplates: ReturnType<typeof vi.fn>;
+    getTextBlockTemplateWithSections: ReturnType<typeof vi.fn>;
+    createTextBlockTemplate: ReturnType<typeof vi.fn>;
+    deleteTextBlockTemplate: ReturnType<typeof vi.fn>;
+  };
 
   const mockBlock: BudgetTextBlock = {
     id: 1,
@@ -34,29 +46,29 @@ describe('BudgetTextBlockComponent', () => {
 
   beforeEach(async () => {
     // Mock completo de SupabaseService para evitar llamadas reales
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', [
-      'deleteBudgetTextBlock',
-      'addSectionToTextBlock',
-      'updateTextBlockSection',
-      'deleteTextBlockSection',
-      'updateBudgetTextBlock',
-      'uploadPublicAsset',
-      'getTextBlockTemplates',
-      'getTextBlockTemplateWithSections',
-      'createTextBlockTemplate',
-      'deleteTextBlockTemplate'
-    ]);
+    supabaseServiceSpy = {
+      deleteBudgetTextBlock: vi.fn(),
+      addSectionToTextBlock: vi.fn(),
+      updateTextBlockSection: vi.fn(),
+      deleteTextBlockSection: vi.fn(),
+      updateBudgetTextBlock: vi.fn(),
+      uploadPublicAsset: vi.fn(),
+      getTextBlockTemplates: vi.fn(),
+      getTextBlockTemplateWithSections: vi.fn(),
+      createTextBlockTemplate: vi.fn(),
+      deleteTextBlockTemplate: vi.fn()
+    };
 
-    supabaseServiceSpy.getTextBlockTemplates.and.returnValue(Promise.resolve(mockTemplates));
-    supabaseServiceSpy.getTextBlockTemplateWithSections.and.returnValue(Promise.resolve({
+    supabaseServiceSpy.getTextBlockTemplates.mockReturnValue(Promise.resolve(mockTemplates));
+    supabaseServiceSpy.getTextBlockTemplateWithSections.mockReturnValue(Promise.resolve({
       id: 1,
       name: 'Template 1',
       provider: 'Provider 1',
       heading: 'Heading 1',
       sections: mockTemplateSections
     }));
-    supabaseServiceSpy.createTextBlockTemplate.and.returnValue(Promise.resolve({ id: 3, name: 'New Template' }));
-    supabaseServiceSpy.deleteTextBlockTemplate.and.returnValue(Promise.resolve());
+    supabaseServiceSpy.createTextBlockTemplate.mockReturnValue(Promise.resolve({ id: 3, name: 'New Template' }));
+    supabaseServiceSpy.deleteTextBlockTemplate.mockReturnValue(Promise.resolve());
 
     await TestBed.configureTestingModule({
       imports: [BudgetTextBlockComponent],
@@ -88,8 +100,8 @@ describe('BudgetTextBlockComponent', () => {
   });
 
   it('should delete block when confirmed', async () => {
-    spyOn(window, 'confirm').and.returnValue(true);
-    supabaseServiceSpy.deleteBudgetTextBlock.and.returnValue(Promise.resolve());
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    supabaseServiceSpy.deleteBudgetTextBlock.mockReturnValue(Promise.resolve());
 
     let deletedId: number | undefined;
     component.blockDeleted.subscribe(id => deletedId = id);
@@ -101,7 +113,7 @@ describe('BudgetTextBlockComponent', () => {
   });
 
   it('should NOT delete block when cancelled', async () => {
-    spyOn(window, 'confirm').and.returnValue(false);
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
 
     await component['deleteBlock']();
 
@@ -110,7 +122,7 @@ describe('BudgetTextBlockComponent', () => {
 
   it('should add description section', async () => {
     const newSection = { id: 11, textBlockId: 1, orderIndex: 1, title: '', text: '' };
-    supabaseServiceSpy.addSectionToTextBlock.and.returnValue(Promise.resolve(newSection));
+    supabaseServiceSpy.addSectionToTextBlock.mockReturnValue(Promise.resolve(newSection));
 
     let updatedBlock: BudgetTextBlock | undefined;
     component.blockUpdated.subscribe(b => updatedBlock = b);
@@ -143,8 +155,8 @@ describe('BudgetTextBlockComponent', () => {
     expect(updatedBlock).toBeDefined();
     expect(updatedBlock?.descriptions?.[0].title).toBe('New Title');
   });  it('should delete description section', async () => {
-    spyOn(window, 'confirm').and.returnValue(true);
-    supabaseServiceSpy.deleteTextBlockSection.and.returnValue(Promise.resolve());
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    supabaseServiceSpy.deleteTextBlockSection.mockReturnValue(Promise.resolve());
 
     let updatedBlock: BudgetTextBlock | undefined;
     component.blockUpdated.subscribe(b => updatedBlock = b);
@@ -179,15 +191,15 @@ describe('BudgetTextBlockComponent', () => {
   });
 
   it('should apply selected template', async () => {
-    supabaseServiceSpy.deleteTextBlockSection.and.returnValue(Promise.resolve());
-    supabaseServiceSpy.addSectionToTextBlock.and.callFake((params: any) => Promise.resolve({
+    supabaseServiceSpy.deleteTextBlockSection.mockReturnValue(Promise.resolve());
+    supabaseServiceSpy.addSectionToTextBlock.mockImplementation((params: any) => Promise.resolve({
       id: 100 + params.orderIndex,
       textBlockId: params.textBlockId,
       orderIndex: params.orderIndex,
       title: params.title,
       text: params.text
     }));
-    spyOn(window, 'confirm').and.returnValue(true);
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     component['selectedTemplateId'].set(1);
 
@@ -211,13 +223,13 @@ describe('BudgetTextBlockComponent', () => {
       'My New Template',
       'Test Header',
       null,
-      jasmine.any(Array)
+      expect.any(Array)
     );
-    expect(component['isCreatingTemplate']()).toBeFalse();
+    expect(component['isCreatingTemplate']()).toBe(false);
   });
 
   it('should delete selected template', async () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
     component['selectedTemplateId'].set(1);
 
     await component['deleteSelectedTemplate']();

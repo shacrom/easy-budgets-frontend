@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NavbarComponent } from './navbar.component';
 import { provideRouter } from '@angular/router';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;

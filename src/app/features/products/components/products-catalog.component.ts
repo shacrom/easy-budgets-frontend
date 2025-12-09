@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal, inject, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Product, CreateProductDto } from '../../../models/product.model';
 import { SupabaseService } from '../../../services/supabase.service';
@@ -12,7 +12,7 @@ import { SupabaseService } from '../../../services/supabase.service';
   selector: 'app-products-catalog',
   templateUrl: './products-catalog.component.html',
   styleUrls: ['./products-catalog.component.css'],
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductsCatalogComponent {

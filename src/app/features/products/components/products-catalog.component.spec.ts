@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductsCatalogComponent } from './products-catalog.component';
 import { SupabaseService } from '../../../services/supabase.service';
 import { registerLocaleData } from '@angular/common';
@@ -8,7 +9,12 @@ import { Product } from '../../../models/product.model';
 describe('ProductsCatalogComponent', () => {
   let component: ProductsCatalogComponent;
   let fixture: ComponentFixture<ProductsCatalogComponent>;
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
+  let supabaseServiceSpy: {
+    getProducts: ReturnType<typeof vi.fn>;
+    createProduct: ReturnType<typeof vi.fn>;
+    updateProduct: ReturnType<typeof vi.fn>;
+    deleteProduct: ReturnType<typeof vi.fn>;
+  };
 
   const mockProducts: Product[] = [
     { id: 1, reference: 'P1', description: 'Product 1', manufacturer: 'M1', basePrice: 100, vatRate: 21, category: 'C1', active: true },
@@ -21,14 +27,14 @@ describe('ProductsCatalogComponent', () => {
   });
 
   beforeEach(async () => {
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', [
-      'getProducts',
-      'createProduct',
-      'updateProduct',
-      'deleteProduct'
-    ]);
+    supabaseServiceSpy = {
+      getProducts: vi.fn(),
+      createProduct: vi.fn(),
+      updateProduct: vi.fn(),
+      deleteProduct: vi.fn()
+    };
 
-    supabaseServiceSpy.getProducts.and.returnValue(Promise.resolve(mockProducts as any));
+    supabaseServiceSpy.getProducts.mockReturnValue(Promise.resolve(mockProducts as any));
 
     await TestBed.configureTestingModule({
       imports: [ProductsCatalogComponent],
@@ -50,16 +56,16 @@ describe('ProductsCatalogComponent', () => {
     await fixture.whenStable();
     expect(supabaseServiceSpy.getProducts).toHaveBeenCalled();
     expect(component['products']().length).toBe(3);
-    expect(component['isLoading']()).toBeFalse();
+    expect(component['isLoading']()).toBe(false);
   });
 
   it('should handle error loading products', async () => {
-    supabaseServiceSpy.getProducts.and.returnValue(Promise.reject('Error'));
+    supabaseServiceSpy.getProducts.mockReturnValue(Promise.reject('Error'));
     component['loadProducts']();
     await fixture.whenStable();
 
     expect(component['errorMessage']()).toBe('Error al cargar los productos');
-    expect(component['isLoading']()).toBeFalse();
+    expect(component['isLoading']()).toBe(false);
   });
 
   describe('Filtering and Pagination', () => {
@@ -96,7 +102,7 @@ describe('ProductsCatalogComponent', () => {
   describe('Form Management', () => {
     it('should open create form', () => {
       component['openCreateForm']();
-      expect(component['showForm']()).toBeTrue();
+      expect(component['showForm']()).toBe(true);
       expect(component['editingProduct']()).toBeNull();
       expect(component['newProduct']().reference).toBe('');
     });
@@ -105,7 +111,7 @@ describe('ProductsCatalogComponent', () => {
       const product = mockProducts[0];
       component['openEditForm'](product);
 
-      expect(component['showForm']()).toBeTrue();
+      expect(component['showForm']()).toBe(true);
       expect(component['editingProduct']()).toEqual(product);
     });
 
@@ -113,7 +119,7 @@ describe('ProductsCatalogComponent', () => {
       component['openCreateForm']();
       component['closeForm']();
 
-      expect(component['showForm']()).toBeFalse();
+      expect(component['showForm']()).toBe(false);
       expect(component['editingProduct']()).toBeNull();
     });
   });
@@ -121,7 +127,7 @@ describe('ProductsCatalogComponent', () => {
   describe('CRUD Operations', () => {
     it('should add a new product', async () => {
       const newProduct = { ...mockProducts[0], id: 4, reference: 'P4' };
-      supabaseServiceSpy.createProduct.and.returnValue(Promise.resolve(newProduct as any));
+      supabaseServiceSpy.createProduct.mockReturnValue(Promise.resolve(newProduct as any));
 
       component['openCreateForm']();
       component['newProduct'].set({
@@ -139,7 +145,7 @@ describe('ProductsCatalogComponent', () => {
       expect(supabaseServiceSpy.createProduct).toHaveBeenCalled();
       expect(component['products']().length).toBe(4);
       expect(component['successMessage']()).toBe('Producto añadido correctamente');
-      expect(component['showForm']()).toBeFalse();
+      expect(component['showForm']()).toBe(false);
     });
 
     it('should validate required fields before adding', async () => {
@@ -162,7 +168,7 @@ describe('ProductsCatalogComponent', () => {
 
     it('should update an existing product', async () => {
       const updatedProduct = { ...mockProducts[0], description: 'Updated Desc' };
-      supabaseServiceSpy.updateProduct.and.returnValue(Promise.resolve(updatedProduct as any));
+      supabaseServiceSpy.updateProduct.mockReturnValue(Promise.resolve(updatedProduct as any));
 
       component['openEditForm'](mockProducts[0]);
       component['editingProduct'].set(updatedProduct);
@@ -172,12 +178,12 @@ describe('ProductsCatalogComponent', () => {
       expect(supabaseServiceSpy.updateProduct).toHaveBeenCalled();
       expect(component['products']().find(p => p.id === 1)?.description).toBe('Updated Desc');
       expect(component['successMessage']()).toBe('Producto actualizado correctamente');
-      expect(component['showForm']()).toBeFalse();
+      expect(component['showForm']()).toBe(false);
     });
 
     it('should delete a product', async () => {
-      spyOn(window, 'confirm').and.returnValue(true);
-      supabaseServiceSpy.deleteProduct.and.returnValue(Promise.resolve());
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
+      supabaseServiceSpy.deleteProduct.mockReturnValue(Promise.resolve());
 
       await component['deleteProduct'](1);
 

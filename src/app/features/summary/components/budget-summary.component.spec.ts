@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
+import { vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BudgetSummaryComponent } from './budget-summary.component';
 import { registerLocaleData } from '@angular/common';
@@ -70,7 +72,7 @@ describe('BudgetSummaryComponent', () => {
     it('should add a new line', () => {
       component['addAdditionalLine']();
       expect(component['additionalLines']().length).toBe(1);
-      expect(component['hasUnsavedChanges']()).toBeTrue();
+      expect(component['hasUnsavedChanges']()).toBe(true);
     });
 
     it('should update an existing line', () => {
@@ -146,17 +148,17 @@ describe('BudgetSummaryComponent', () => {
 
   describe('Save and Discard', () => {
     it('should emit changes on save', () => {
-      spyOn(component.summaryChanged, 'emit');
-      spyOn(component.vatPercentageChanged, 'emit');
-      spyOn(component.additionalLinesChanged, 'emit');
+      vi.spyOn(component.summaryChanged, 'emit');
+      vi.spyOn(component.vatPercentageChanged, 'emit');
+      vi.spyOn(component.additionalLinesChanged, 'emit');
 
       component['saveChanges']();
 
       expect(component.summaryChanged.emit).toHaveBeenCalled();
       expect(component.vatPercentageChanged.emit).toHaveBeenCalled();
       expect(component.additionalLinesChanged.emit).toHaveBeenCalled();
-      expect(component['isSaving']()).toBeFalse();
-      expect(component['hasUnsavedChanges']()).toBeFalse();
+      expect(component['isSaving']()).toBe(false);
+      expect(component['hasUnsavedChanges']()).toBe(false);
     });
 
     it('should revert changes on discard', () => {
@@ -167,7 +169,7 @@ describe('BudgetSummaryComponent', () => {
       component['discardChanges']();
 
       expect(component['vatPercentage']()).toBe(initialVat);
-      expect(component['hasUnsavedChanges']()).toBeFalse();
+      expect(component['hasUnsavedChanges']()).toBe(false);
     });
   });
 });

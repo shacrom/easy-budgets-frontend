@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CustomersPageComponent } from './customers-page.component';
 import { SupabaseService } from '../../../services/supabase.service';
 import { Customer } from '../../../models/customer.model';
@@ -6,7 +7,12 @@ import { Customer } from '../../../models/customer.model';
 describe('CustomersPageComponent', () => {
   let component: CustomersPageComponent;
   let fixture: ComponentFixture<CustomersPageComponent>;
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
+  let supabaseServiceSpy: {
+    getCustomers: ReturnType<typeof vi.fn>;
+    createCustomer: ReturnType<typeof vi.fn>;
+    updateCustomer: ReturnType<typeof vi.fn>;
+    deleteCustomer: ReturnType<typeof vi.fn>;
+  };
 
   const mockCustomers: Customer[] = [
     { id: 1, name: 'John Doe', email: 'john@example.com', city: 'New York', createdAt: '2023-01-01T00:00:00Z' },
@@ -18,14 +24,14 @@ describe('CustomersPageComponent', () => {
   ];
 
   beforeEach(async () => {
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', [
-      'getCustomers',
-      'createCustomer',
-      'updateCustomer',
-      'deleteCustomer'
-    ]);
+    supabaseServiceSpy = {
+      getCustomers: vi.fn(),
+      createCustomer: vi.fn(),
+      updateCustomer: vi.fn(),
+      deleteCustomer: vi.fn()
+    };
 
-    supabaseServiceSpy.getCustomers.and.returnValue(Promise.resolve(mockCustomers));
+    supabaseServiceSpy.getCustomers.mockReturnValue(Promise.resolve(mockCustomers));
 
     await TestBed.configureTestingModule({
       imports: [CustomersPageComponent],
@@ -47,16 +53,16 @@ describe('CustomersPageComponent', () => {
     await fixture.whenStable();
     expect(supabaseServiceSpy.getCustomers).toHaveBeenCalled();
     expect(component['customers']().length).toBe(6);
-    expect(component['isLoading']()).toBeFalse();
+    expect(component['isLoading']()).toBe(false);
   });
 
   it('should handle error loading customers', async () => {
-    supabaseServiceSpy.getCustomers.and.returnValue(Promise.reject('Error'));
+    supabaseServiceSpy.getCustomers.mockReturnValue(Promise.reject('Error'));
     component.ngOnInit(); // Re-trigger init to hit the error
     await fixture.whenStable();
 
     expect(component['errorMessage']()).toBe('No se pudieron cargar los clientes.');
-    expect(component['isLoading']()).toBeFalse();
+    expect(component['isLoading']()).toBe(false);
   });
 
   describe('Filtering and Pagination', () => {
@@ -130,7 +136,7 @@ describe('CustomersPageComponent', () => {
   describe('Form Management', () => {
     it('should open create form', () => {
       component['openCreateForm']();
-      expect(component['showForm']()).toBeTrue();
+      expect(component['showForm']()).toBe(true);
       expect(component['editingCustomer']()).toBeNull();
       expect(component['formData']().name).toBe('');
     });
@@ -139,7 +145,7 @@ describe('CustomersPageComponent', () => {
       const customer = mockCustomers[0];
       component['openEditForm'](customer);
 
-      expect(component['showForm']()).toBeTrue();
+      expect(component['showForm']()).toBe(true);
       expect(component['editingCustomer']()).toBe(customer);
       expect(component['formData']().name).toBe(customer.name);
     });
@@ -148,7 +154,7 @@ describe('CustomersPageComponent', () => {
       component['openCreateForm']();
       component['cancelForm']();
 
-      expect(component['showForm']()).toBeFalse();
+      expect(component['showForm']()).toBe(false);
       expect(component['editingCustomer']()).toBeNull();
     });
 
@@ -164,7 +170,7 @@ describe('CustomersPageComponent', () => {
   describe('CRUD Operations', () => {
     it('should create a new customer', async () => {
       const newCustomer = { id: 7, name: 'New Guy' };
-      supabaseServiceSpy.createCustomer.and.returnValue(Promise.resolve(newCustomer as Customer));
+      supabaseServiceSpy.createCustomer.mockReturnValue(Promise.resolve(newCustomer as Customer));
 
       component['openCreateForm']();
       component['formData'].set({ name: 'New Guy' });
@@ -174,13 +180,13 @@ describe('CustomersPageComponent', () => {
       expect(supabaseServiceSpy.createCustomer).toHaveBeenCalled();
       expect(component['customers']().length).toBe(7);
       expect(component['customers']()[0]).toEqual(newCustomer as Customer);
-      expect(component['showForm']()).toBeFalse();
+      expect(component['showForm']()).toBe(false);
       expect(component['successMessage']()).toBe('Cliente creado correctamente.');
     });
 
     it('should update an existing customer', async () => {
       const updatedCustomer = { ...mockCustomers[0], name: 'Updated Name' };
-      supabaseServiceSpy.updateCustomer.and.returnValue(Promise.resolve(updatedCustomer));
+      supabaseServiceSpy.updateCustomer.mockReturnValue(Promise.resolve(updatedCustomer));
 
       component['openEditForm'](mockCustomers[0]);
       component['formData'].set({ name: 'Updated Name' });
@@ -189,7 +195,7 @@ describe('CustomersPageComponent', () => {
 
       expect(supabaseServiceSpy.updateCustomer).toHaveBeenCalled();
       expect(component['customers']().find(c => c.id === 1)?.name).toBe('Updated Name');
-      expect(component['showForm']()).toBeFalse();
+      expect(component['showForm']()).toBe(false);
       expect(component['successMessage']()).toBe('Cliente actualizado correctamente.');
     });
 
@@ -204,7 +210,7 @@ describe('CustomersPageComponent', () => {
     });
 
     it('should handle error saving customer', async () => {
-      supabaseServiceSpy.createCustomer.and.returnValue(Promise.reject('Error'));
+      supabaseServiceSpy.createCustomer.mockReturnValue(Promise.reject('Error'));
 
       component['openCreateForm']();
       component['formData'].set({ name: 'Fail Guy' });
@@ -212,12 +218,12 @@ describe('CustomersPageComponent', () => {
       await component['saveCustomer']();
 
       expect(component['errorMessage']()).toBe('No se pudo guardar el cliente.');
-      expect(component['isLoading']()).toBeFalse();
+      expect(component['isLoading']()).toBe(false);
     });
 
     it('should delete a customer', async () => {
-      spyOn(window, 'confirm').and.returnValue(true);
-      supabaseServiceSpy.deleteCustomer.and.returnValue(Promise.resolve());
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
+      supabaseServiceSpy.deleteCustomer.mockReturnValue(Promise.resolve());
 
       const customerToDelete = mockCustomers[0];
       await component['deleteCustomer'](customerToDelete);
@@ -228,7 +234,7 @@ describe('CustomersPageComponent', () => {
     });
 
     it('should not delete if not confirmed', async () => {
-      spyOn(window, 'confirm').and.returnValue(false);
+      vi.spyOn(window, 'confirm').mockReturnValue(false);
 
       await component['deleteCustomer'](mockCustomers[0]);
 
@@ -236,8 +242,8 @@ describe('CustomersPageComponent', () => {
     });
 
     it('should handle foreign key error when deleting', async () => {
-      spyOn(window, 'confirm').and.returnValue(true);
-      supabaseServiceSpy.deleteCustomer.and.returnValue(Promise.reject({ code: '23503' }));
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
+      supabaseServiceSpy.deleteCustomer.mockReturnValue(Promise.reject({ code: '23503' }));
 
       await component['deleteCustomer'](mockCustomers[0]);
 

@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { describe, it, expect, beforeEach, beforeAll, vi, afterEach } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MaterialsTableComponent } from './materials-table.component';
 import { SupabaseService } from '../../../services/supabase.service';
 import { registerLocaleData } from '@angular/common';
@@ -10,7 +11,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 describe('MaterialsTableComponent', () => {
   let component: MaterialsTableComponent;
   let fixture: ComponentFixture<MaterialsTableComponent>;
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
+  let supabaseServiceSpy: { getProducts: ReturnType<typeof vi.fn> };
 
   const mockProducts: Product[] = [
     { id: 1, reference: 'P1', description: 'Prod 1', manufacturer: 'M1', basePrice: 10, category: 'C1', vatRate: 21, active: true }
@@ -38,8 +39,8 @@ describe('MaterialsTableComponent', () => {
   });
 
   beforeEach(async () => {
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', ['getProducts']);
-    supabaseServiceSpy.getProducts.and.returnValue(Promise.resolve(mockProducts as any));
+    supabaseServiceSpy = { getProducts: vi.fn() };
+    supabaseServiceSpy.getProducts.mockReturnValue(Promise.resolve(mockProducts as any));
 
     await TestBed.configureTestingModule({
       imports: [MaterialsTableComponent, NoopAnimationsModule],
@@ -77,13 +78,13 @@ describe('MaterialsTableComponent', () => {
     component['updateSectionTitle'](event);
 
     expect(component['sectionTitle']()).toBe('New Section Title');
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should add a new table', () => {
     component['addTable']();
     expect(component['tables']().length).toBe(1); // Initially 0 + 1
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should delete a table', () => {
@@ -92,7 +93,7 @@ describe('MaterialsTableComponent', () => {
 
     component['deleteTable'](1);
     expect(component['tables']().length).toBe(0);
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should update table title', () => {
@@ -103,7 +104,7 @@ describe('MaterialsTableComponent', () => {
     component['updateTableTitle'](1, event);
 
     expect(component['tables']()[0].title).toBe('Updated Table Title');
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should add new material to table', () => {
@@ -112,7 +113,7 @@ describe('MaterialsTableComponent', () => {
 
     component['addNewMaterial'](1);
     expect(component['tables']()[0].rows.length).toBe(2);
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should delete material from table', () => {
@@ -121,7 +122,7 @@ describe('MaterialsTableComponent', () => {
 
     component['deleteMaterial'](1, 101);
     expect(component['tables']()[0].rows.length).toBe(0);
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should toggle column visibility', () => {
@@ -129,8 +130,8 @@ describe('MaterialsTableComponent', () => {
     fixture.detectChanges();
 
     component['toggleShowColumn'](1, 'showReference');
-    expect(component['tables']()[0].showReference).toBeFalse();
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['tables']()[0].showReference).toBe(false);
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should calculate total materials', () => {
@@ -140,10 +141,11 @@ describe('MaterialsTableComponent', () => {
     expect(component['totalMaterials']()).toBe(10);
   });
 
-  it('should save changes and emit events', fakeAsync(() => {
+  it('should save changes and emit events', async () => {
+    vi.useFakeTimers();
     fixture.componentRef.setInput('tables', mockTables);
     fixture.detectChanges();
-    tick(); // Allow view children to settle
+    await vi.advanceTimersByTimeAsync(0); // Allow view children to settle
 
     let emittedTotal: number | undefined;
     component.totalChanged.subscribe(val => emittedTotal = val);
@@ -153,15 +155,16 @@ describe('MaterialsTableComponent', () => {
 
     component['saveChanges']();
 
-    expect(component['isSaving']()).toBeTrue();
-    expect(component['hasUnsavedChanges']()).toBeFalse();
+    expect(component['isSaving']()).toBe(true);
+    expect(component['hasUnsavedChanges']()).toBe(false);
     expect(emittedTotal).toBe(10);
     expect(emittedTables).toBeDefined();
     expect(emittedTables![0].rows[0].reference).toBe('R1');
 
-    tick(300);
-    expect(component['isSaving']()).toBeFalse();
-  }));
+    await vi.advanceTimersByTimeAsync(300);
+    expect(component['isSaving']()).toBe(false);
+    vi.useRealTimers();
+  });
 
   it('should discard changes', () => {
     fixture.componentRef.setInput('tables', mockTables);
@@ -170,12 +173,12 @@ describe('MaterialsTableComponent', () => {
     // Make a change
     component['addTable']();
     expect(component['tables']().length).toBe(2);
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
 
     // Discard
     component['discardChanges']();
     expect(component['tables']().length).toBe(1);
-    expect(component['hasUnsavedChanges']()).toBeFalse();
+    expect(component['hasUnsavedChanges']()).toBe(false);
   });
 
   it('should handle drag and drop reordering', () => {
@@ -199,6 +202,6 @@ describe('MaterialsTableComponent', () => {
 
     expect(component['tables']()[0].rows[0].id).toBe(102);
     expect(component['tables']()[0].rows[1].id).toBe(101);
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 });

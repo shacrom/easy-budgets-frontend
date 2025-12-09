@@ -1,16 +1,22 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BudgetsListComponent } from './budgets-list.component';
 import { SupabaseService } from '../../../services/supabase.service';
 import { Router } from '@angular/router';
 import { BudgetStatus } from '../../../models/budget.model';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
+import { describe, it, expect, beforeEach, beforeAll, vi, type Mock } from 'vitest';
 
 describe('BudgetsListComponent', () => {
   let component: BudgetsListComponent;
   let fixture: ComponentFixture<BudgetsListComponent>;
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let supabaseServiceMock: {
+    getBudgets: Mock;
+    createBudget: Mock;
+    deleteBudget: Mock;
+    duplicateBudget: Mock;
+  };
+  let routerMock: { navigate: Mock };
 
   beforeAll(() => {
     registerLocaleData(localeEs);
@@ -59,16 +65,19 @@ describe('BudgetsListComponent', () => {
   ];
 
   beforeEach(async () => {
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', ['getBudgets', 'createBudget', 'deleteBudget', 'duplicateBudget']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-
-    supabaseServiceSpy.getBudgets.and.returnValue(Promise.resolve(mockBudgets));
+    supabaseServiceMock = {
+      getBudgets: vi.fn().mockResolvedValue(mockBudgets),
+      createBudget: vi.fn(),
+      deleteBudget: vi.fn(),
+      duplicateBudget: vi.fn()
+    };
+    routerMock = { navigate: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [BudgetsListComponent],
       providers: [
-        { provide: SupabaseService, useValue: supabaseServiceSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: SupabaseService, useValue: supabaseServiceMock },
+        { provide: Router, useValue: routerMock }
       ]
     }).compileComponents();
 
@@ -83,9 +92,9 @@ describe('BudgetsListComponent', () => {
 
   it('should load budgets on init', async () => {
     await fixture.whenStable();
-    expect(supabaseServiceSpy.getBudgets).toHaveBeenCalled();
+    expect(supabaseServiceMock.getBudgets).toHaveBeenCalled();
     expect((component as any).budgets().length).toBe(3);
-    expect((component as any).isLoading()).toBeFalse();
+    expect((component as any).isLoading()).toBe(false);
   });
 
   it('should filter budgets by customer name', async () => {
@@ -120,35 +129,35 @@ describe('BudgetsListComponent', () => {
 
   it('should create a new budget', async () => {
     const newBudgetMock = { id: 123 };
-    supabaseServiceSpy.createBudget.and.returnValue(Promise.resolve(newBudgetMock as any));
+    supabaseServiceMock.createBudget.mockResolvedValue(newBudgetMock as any);
 
     await (component as any).createBudget();
 
-    expect(supabaseServiceSpy.createBudget).toHaveBeenCalled();
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/presupuestos', '123']);
+    expect(supabaseServiceMock.createBudget).toHaveBeenCalled();
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/presupuestos', '123']);
   });
 
   it('should delete a budget', async () => {
     await fixture.whenStable();
-    spyOn(window, 'confirm').and.returnValue(true);
-    supabaseServiceSpy.deleteBudget.and.returnValue(Promise.resolve());
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    supabaseServiceMock.deleteBudget.mockResolvedValue(undefined);
 
     const budgetToDelete = mockBudgets[0];
     await (component as any).deleteBudget(budgetToDelete);
 
-    expect(supabaseServiceSpy.deleteBudget).toHaveBeenCalledWith(budgetToDelete.id);
+    expect(supabaseServiceMock.deleteBudget).toHaveBeenCalledWith(budgetToDelete.id);
     expect((component as any).budgets().find((b: any) => b.id === budgetToDelete.id)).toBeUndefined();
   });
 
   it('should duplicate a budget', async () => {
     await fixture.whenStable();
-    supabaseServiceSpy.duplicateBudget.and.returnValue(Promise.resolve({} as any));
+    supabaseServiceMock.duplicateBudget.mockResolvedValue({} as any);
 
     const budgetToDuplicate = mockBudgets[0];
     await (component as any).duplicateBudget(budgetToDuplicate);
 
-    expect(supabaseServiceSpy.duplicateBudget).toHaveBeenCalledWith(budgetToDuplicate.id);
-    expect(supabaseServiceSpy.getBudgets).toHaveBeenCalledTimes(2); // Initial load + reload after duplicate
+    expect(supabaseServiceMock.duplicateBudget).toHaveBeenCalledWith(budgetToDuplicate.id);
+    expect(supabaseServiceMock.getBudgets).toHaveBeenCalledTimes(2); // Initial load + reload after duplicate
   });
 
   it('should clear filters', async () => {

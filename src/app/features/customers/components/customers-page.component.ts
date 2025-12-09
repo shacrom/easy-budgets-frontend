@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../../services/supabase.service';
 import { Customer, CustomerPayload } from '../../../models/customer.model';
@@ -7,7 +7,7 @@ import { Customer, CustomerPayload } from '../../../models/customer.model';
 @Component({
   selector: 'app-customers-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './customers-page.component.html',
   styleUrls: ['./customers-page.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush

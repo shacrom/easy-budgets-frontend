@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal, effect, output, inject, input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Condition } from '../../../models/conditions.model';
 import { SupabaseService } from '../../../services/supabase.service';
@@ -12,7 +12,7 @@ import { SupabaseService } from '../../../services/supabase.service';
   selector: 'app-general-conditions',
   templateUrl: './general-conditions.component.html',
   styleUrls: ['./general-conditions.component.css'],
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GeneralConditionsComponent implements OnInit {

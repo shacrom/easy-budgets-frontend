@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
+import { describe, it, expect, beforeEach, beforeAll, vi, afterEach } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BudgetEditorComponent } from './budget-editor.component';
 import { SupabaseService } from '../../../services/supabase.service';
 import { PdfExportService } from '../../../services/pdf-export.service';
@@ -11,9 +12,28 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 describe('BudgetEditorComponent', () => {
   let component: BudgetEditorComponent;
   let fixture: ComponentFixture<BudgetEditorComponent>;
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
-  let pdfExportServiceSpy: jasmine.SpyObj<PdfExportService>;
-  let routerSpy: jasmine.SpyObj<Router>;
+  let supabaseServiceSpy: {
+    getBudget: ReturnType<typeof vi.fn>;
+    updateBudget: ReturnType<typeof vi.fn>;
+    uploadPublicAsset: ReturnType<typeof vi.fn>;
+    searchCustomers: ReturnType<typeof vi.fn>;
+    getCustomer: ReturnType<typeof vi.fn>;
+    saveMaterialTables: ReturnType<typeof vi.fn>;
+    saveAdditionalLines: ReturnType<typeof vi.fn>;
+    updateBudgetTotals: ReturnType<typeof vi.fn>;
+    getProducts: ReturnType<typeof vi.fn>;
+    getTextBlocksForBudget: ReturnType<typeof vi.fn>;
+    getSimpleBlockForBudget: ReturnType<typeof vi.fn>;
+    getGeneralConditions: ReturnType<typeof vi.fn>;
+  };
+  let pdfExportServiceSpy: {
+    getBudgetPdfBlobUrlWithPageCount: ReturnType<typeof vi.fn>;
+    generateBudgetPdf: ReturnType<typeof vi.fn>;
+    openBudgetPdf: ReturnType<typeof vi.fn>;
+  };
+  let routerSpy: {
+    navigate: ReturnType<typeof vi.fn>;
+  };
 
   const mockBudget = {
     id: 1,
@@ -45,40 +65,46 @@ describe('BudgetEditorComponent', () => {
   });
 
   beforeEach(async () => {
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', [
-      'getBudget',
-      'updateBudget',
-      'uploadPublicAsset',
-      'searchCustomers',
-      'getCustomer',
-      'saveMaterialTables',
-      'saveAdditionalLines',
-      'updateBudgetTotals',
-      'getProducts',
-      'getTextBlocksForBudget',
-      'getSimpleBlockForBudget',
-      'getGeneralConditions'
-    ]);
-    pdfExportServiceSpy = jasmine.createSpyObj('PdfExportService', ['getBudgetPdfBlobUrlWithPageCount', 'generateBudgetPdf', 'openBudgetPdf']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    supabaseServiceSpy = {
+      getBudget: vi.fn(),
+      updateBudget: vi.fn(),
+      uploadPublicAsset: vi.fn(),
+      searchCustomers: vi.fn(),
+      getCustomer: vi.fn(),
+      saveMaterialTables: vi.fn(),
+      saveAdditionalLines: vi.fn(),
+      updateBudgetTotals: vi.fn(),
+      getProducts: vi.fn(),
+      getTextBlocksForBudget: vi.fn(),
+      getSimpleBlockForBudget: vi.fn(),
+      getGeneralConditions: vi.fn()
+    };
+    pdfExportServiceSpy = {
+      getBudgetPdfBlobUrlWithPageCount: vi.fn(),
+      generateBudgetPdf: vi.fn(),
+      openBudgetPdf: vi.fn()
+    };
+    routerSpy = {
+      navigate: vi.fn()
+    };
 
     // Mock returns
-    supabaseServiceSpy.getBudget.and.returnValue(Promise.resolve(mockBudget as any));
-    supabaseServiceSpy.updateBudget.and.returnValue(Promise.resolve({ ...mockBudget } as any));
-    supabaseServiceSpy.uploadPublicAsset.and.returnValue(Promise.resolve({ publicUrl: 'new-logo.png', path: 'path/to/logo.png' }));
-    supabaseServiceSpy.getCustomer.and.returnValue(Promise.resolve({ id: 20, name: 'Jane Doe', address: '456 Ave' } as any));
-    supabaseServiceSpy.searchCustomers.and.returnValue(Promise.resolve([{ id: 20, name: 'Jane Doe', address: '456 Ave' } as any]));
-    supabaseServiceSpy.saveMaterialTables.and.returnValue(Promise.resolve({ tables: [], rows: [] } as any));
-    supabaseServiceSpy.saveAdditionalLines.and.returnValue(Promise.resolve());
-    supabaseServiceSpy.updateBudgetTotals.and.returnValue(Promise.resolve());
-    supabaseServiceSpy.getProducts.and.returnValue(Promise.resolve([]));
-    supabaseServiceSpy.getTextBlocksForBudget.and.returnValue(Promise.resolve([]));
-    supabaseServiceSpy.getSimpleBlockForBudget.and.returnValue(Promise.resolve(null));
-    supabaseServiceSpy.getGeneralConditions.and.returnValue(Promise.resolve([]));
+    supabaseServiceSpy.getBudget.mockReturnValue(Promise.resolve(mockBudget as any));
+    supabaseServiceSpy.updateBudget.mockReturnValue(Promise.resolve({ ...mockBudget } as any));
+    supabaseServiceSpy.uploadPublicAsset.mockReturnValue(Promise.resolve({ publicUrl: 'new-logo.png', path: 'path/to/logo.png' }));
+    supabaseServiceSpy.getCustomer.mockReturnValue(Promise.resolve({ id: 20, name: 'Jane Doe', address: '456 Ave' } as any));
+    supabaseServiceSpy.searchCustomers.mockReturnValue(Promise.resolve([{ id: 20, name: 'Jane Doe', address: '456 Ave' } as any]));
+    supabaseServiceSpy.saveMaterialTables.mockReturnValue(Promise.resolve({ tables: [], rows: [] } as any));
+    supabaseServiceSpy.saveAdditionalLines.mockReturnValue(Promise.resolve());
+    supabaseServiceSpy.updateBudgetTotals.mockReturnValue(Promise.resolve());
+    supabaseServiceSpy.getProducts.mockReturnValue(Promise.resolve([]));
+    supabaseServiceSpy.getTextBlocksForBudget.mockReturnValue(Promise.resolve([]));
+    supabaseServiceSpy.getSimpleBlockForBudget.mockReturnValue(Promise.resolve(null));
+    supabaseServiceSpy.getGeneralConditions.mockReturnValue(Promise.resolve([]));
 
-    pdfExportServiceSpy.getBudgetPdfBlobUrlWithPageCount.and.returnValue(Promise.resolve({ url: 'blob:url', pageCount: 1 }));
-    pdfExportServiceSpy.generateBudgetPdf.and.returnValue(Promise.resolve());
-    pdfExportServiceSpy.openBudgetPdf.and.returnValue(Promise.resolve());
+    pdfExportServiceSpy.getBudgetPdfBlobUrlWithPageCount.mockReturnValue(Promise.resolve({ url: 'blob:url', pageCount: 1 }));
+    pdfExportServiceSpy.generateBudgetPdf.mockReturnValue(Promise.resolve());
+    pdfExportServiceSpy.openBudgetPdf.mockReturnValue(Promise.resolve());
 
     await TestBed.configureTestingModule({
       imports: [BudgetEditorComponent],
@@ -122,14 +148,16 @@ describe('BudgetEditorComponent', () => {
     expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { title: 'New Title' });
   });
 
-  it('should search customers', fakeAsync(() => {
+  it('should search customers', async () => {
+    vi.useFakeTimers();
     component['onCustomerSearchChanged']('Jane');
-    tick(400); // Wait for debounce
+    await vi.advanceTimersByTimeAsync(400); // Wait for debounce
 
     expect(supabaseServiceSpy.searchCustomers).toHaveBeenCalledWith('Jane', 10);
     expect(component['customers']().length).toBe(1);
     expect(component['customers']()[0].name).toBe('Jane Doe');
-  }));
+    vi.useRealTimers();
+  });
 
   it('should update customer selection', async () => {
     await fixture.whenStable();
@@ -145,21 +173,21 @@ describe('BudgetEditorComponent', () => {
     await fixture.whenStable();
 
     // Initial state is draft (not completed)
-    expect(component['isBudgetCompleted']()).toBeFalse();
+    expect(component['isBudgetCompleted']()).toBe(false);
 
     // Toggle to completed
-    supabaseServiceSpy.updateBudget.and.returnValue(Promise.resolve({ ...mockBudget, status: 'completed' } as any));
+    supabaseServiceSpy.updateBudget.mockReturnValue(Promise.resolve({ ...mockBudget, status: 'completed' } as any));
     await component['toggleCompletionState']();
 
     expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { status: 'completed' });
-    expect(component['isBudgetCompleted']()).toBeTrue();
+    expect(component['isBudgetCompleted']()).toBe(true);
 
     // Toggle back to not completed
-    supabaseServiceSpy.updateBudget.and.returnValue(Promise.resolve({ ...mockBudget, status: 'not_completed' } as any));
+    supabaseServiceSpy.updateBudget.mockReturnValue(Promise.resolve({ ...mockBudget, status: 'not_completed' } as any));
     await component['toggleCompletionState']();
 
     expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { status: 'not_completed' });
-    expect(component['isBudgetCompleted']()).toBeFalse();
+    expect(component['isBudgetCompleted']()).toBe(false);
   });
 
   it('should upload company logo', async () => {
@@ -194,12 +222,12 @@ describe('BudgetEditorComponent', () => {
     // Toggle text blocks
     await component.toggleSection('textBlocks');
     expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { showTextBlocks: false });
-    expect(component['showTextBlocks']()).toBeFalse();
+    expect(component['showTextBlocks']()).toBe(false);
 
     // Toggle materials
     await component.toggleSection('materials');
     expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { showMaterials: false });
-    expect(component['showMaterials']()).toBeFalse();
+    expect(component['showMaterials']()).toBe(false);
   });
 
   it('should update materials section title', async () => {
@@ -211,17 +239,18 @@ describe('BudgetEditorComponent', () => {
     expect(component['materialsSectionTitle']()).toBe('New Materials Title');
   });
 
-  it('should handle PDF preview', fakeAsync(() => {
+  it('should handle PDF preview', async () => {
+    vi.useFakeTimers();
     component.togglePdfPreview();
-    expect(component['showPdfPreview']()).toBeTrue();
+    expect(component['showPdfPreview']()).toBe(true);
 
     // Trigger effect
     fixture.detectChanges();
-    tick(1000); // Wait for debounce
+    await vi.advanceTimersByTimeAsync(1000); // Wait for debounce
 
     expect(pdfExportServiceSpy.getBudgetPdfBlobUrlWithPageCount).toHaveBeenCalled();
-    flush();
-  }));
+    vi.useRealTimers();
+  });
 
   it('should export PDF', async () => {
     await fixture.whenStable();
@@ -363,22 +392,22 @@ describe('BudgetEditorComponent', () => {
 
   describe('PDF Print Options', () => {
     it('should initialize print options to true by default', () => {
-      expect((component as any).printTextBlocks()).toBeTrue();
-      expect((component as any).printMaterials()).toBeTrue();
-      expect((component as any).printSimpleBlock()).toBeTrue();
-      expect((component as any).printConditions()).toBeTrue();
-      expect((component as any).printSummary()).toBeTrue();
+      expect((component as any).printTextBlocks()).toBe(true);
+      expect((component as any).printMaterials()).toBe(true);
+      expect((component as any).printSimpleBlock()).toBe(true);
+      expect((component as any).printConditions()).toBe(true);
+      expect((component as any).printSummary()).toBe(true);
     });
 
     it('should toggle print options', () => {
       component.togglePrintOption('textBlocks');
-      expect((component as any).printTextBlocks()).toBeFalse();
+      expect((component as any).printTextBlocks()).toBe(false);
 
       component.togglePrintOption('materials');
-      expect((component as any).printMaterials()).toBeFalse();
+      expect((component as any).printMaterials()).toBe(false);
 
       component.togglePrintOption('textBlocks');
-      expect((component as any).printTextBlocks()).toBeTrue();
+      expect((component as any).printTextBlocks()).toBe(true);
     });
 
     it('should include print flags in PDF payload', () => {
@@ -388,11 +417,11 @@ describe('BudgetEditorComponent', () => {
 
       const payload = (component as any).buildPdfPayload();
 
-      expect(payload.printTextBlocks).toBeTrue();
-      expect(payload.printMaterials).toBeFalse();
-      expect(payload.printSimpleBlock).toBeTrue();
-      expect(payload.printConditions).toBeFalse();
-      expect(payload.printSummary).toBeTrue();
+      expect(payload.printTextBlocks).toBe(true);
+      expect(payload.printMaterials).toBe(false);
+      expect(payload.printSimpleBlock).toBe(true);
+      expect(payload.printConditions).toBe(false);
+      expect(payload.printSummary).toBe(true);
     });
   });
 
@@ -405,7 +434,7 @@ describe('BudgetEditorComponent', () => {
     it('should load section order from budget', async () => {
       const customOrder = ['summary', 'textBlocks', 'materials', 'simpleBlock', 'conditions', 'signature'];
       const budgetWithOrder = { ...mockBudget, sectionOrder: customOrder };
-      supabaseServiceSpy.getBudget.and.returnValue(Promise.resolve(budgetWithOrder as any));
+      supabaseServiceSpy.getBudget.mockReturnValue(Promise.resolve(budgetWithOrder as any));
 
       // Re-initialize component to trigger loadBudget
       await component['loadBudget'](1);
