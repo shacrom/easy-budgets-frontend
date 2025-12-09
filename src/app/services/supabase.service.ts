@@ -4,7 +4,7 @@ import { environment } from '../../environments/environment';
 import { Customer } from '../models/customer.model';
 import { BudgetSummary } from '../models/budget-summary.model';
 import { BudgetStatus } from '../models/budget.model';
-import { MaterialTable } from '../models/material.model';
+import { ItemTable } from '../models/item-table.model';
 
 @Injectable({
   providedIn: 'root'
@@ -300,7 +300,11 @@ export class SupabaseService {
     };
 
     const parseStatus = (value: unknown): BudgetStatus => {
-      return value === 'completed' ? 'completed' : 'not_completed';
+      const status = String(value);
+      if (['approved', 'rejected', 'pending', 'draft', 'not_completed'].includes(status)) {
+        return status as BudgetStatus;
+      }
+      return 'not_completed';
     };
 
     return (data ?? []).map((budget: any) => ({
@@ -353,13 +357,13 @@ export class SupabaseService {
       .select(`
         *,
         customer:Customers(*),
-        textBlocks:BudgetTextBlocks(
+        compositeBlocks:BudgetCompositeBlocks(
           *,
-          descriptions:BudgetTextBlockSections(*)
+          descriptions:BudgetCompositeBlockSections(*)
         ),
-        materialTables:BudgetMaterialTables(
+        itemTables:BudgetItemTables(
           *,
-          rows:BudgetMaterialTableRows(*)
+          rows:BudgetItemTableRows(*)
         ),
         additionalLines:BudgetAdditionalLines(*),
         conditions:BudgetConditions(*),
@@ -371,8 +375,8 @@ export class SupabaseService {
     if (error) throw error;
 
     // Ordenar los bloques de texto y sus secciones
-    if (data.textBlocks) {
-      data.textBlocks = data.textBlocks
+    if (data.compositeBlocks) {
+      data.compositeBlocks = data.compositeBlocks
         .sort((a: any, b: any) => a.orderIndex - b.orderIndex)
         .map((block: any) => ({
           ...block,
@@ -393,8 +397,8 @@ export class SupabaseService {
       data.conditions = [];
     }
 
-    if (data.materialTables) {
-      data.materialTables = data.materialTables
+    if (data.itemTables) {
+      data.itemTables = data.itemTables
         .sort((a: any, b: any) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
         .map((table: any) => ({
           ...table,
@@ -498,25 +502,25 @@ export class SupabaseService {
       };
 
       const { data: newBlock, error: blockError } = await this.supabase
-        .from('BudgetTextBlocks')
+        .from('BudgetCompositeBlocks')
         .insert([blockPayload])
         .select()
         .single();
 
       if (blockError || !newBlock) {
-        throw blockError ?? new Error('No se pudo clonar un bloque de texto');
+        throw blockError ?? new Error('No se pudo clonar un bloque compuesto');
       }
 
       if (block.descriptions?.length) {
         const sectionPayloads = block.descriptions.map((section: any) => ({
-          textBlockId: newBlock.id,
+          compositeBlockId: newBlock.id,
           orderIndex: section.orderIndex,
           title: section.title,
           text: section.text
         }));
 
         const { error: sectionsError } = await this.supabase
-          .from('BudgetTextBlockSections')
+          .from('BudgetCompositeBlockSections')
           .insert(sectionPayloads);
 
         if (sectionsError) {
@@ -526,7 +530,7 @@ export class SupabaseService {
     }
 
     if (materialTables?.length) {
-      await this.cloneMaterialTables(newBudgetId, materialTables);
+      await this.cloneItemTables(newBudgetId, materialTables);
     }
 
     if (additionalLines?.length) {
@@ -585,16 +589,16 @@ export class SupabaseService {
   }
 
   // ============================================
-  // TEXT BLOCKS
+  // COMPOSITE BLOCKS
   // ============================================
 
-  async getTextBlocksForBudget(budgetId: number) {
+  async getCompositeBlocksForBudget(budgetId: number) {
     if (!Number.isFinite(budgetId)) return [];
     const { data, error } = await this.supabase
-      .from('BudgetTextBlocks')
+      .from('BudgetCompositeBlocks')
       .select(`
         *,
-        descriptions:BudgetTextBlockSections(*)
+        descriptions:BudgetCompositeBlockSections(*)
       `)
       .eq('budgetId', budgetId)
       .order('orderIndex');
@@ -608,16 +612,16 @@ export class SupabaseService {
     }));
   }
 
-  async addTextBlockToBudget(textBlock: any) {
+  async addCompositeBlockToBudget(block: any) {
     const { data, error } = await this.supabase
-      .from('BudgetTextBlocks')
+      .from('BudgetCompositeBlocks')
       .insert([{
-        budgetId: textBlock.budgetId,
-        orderIndex: textBlock.orderIndex,
-        heading: textBlock.heading,
-        link: textBlock.link,
-        imageUrl: textBlock.imageUrl,
-        subtotal: textBlock.subtotal || 0
+        budgetId: block.budgetId,
+        orderIndex: block.orderIndex,
+        heading: block.heading,
+        link: block.link,
+        imageUrl: block.imageUrl,
+        subtotal: block.subtotal || 0
       }])
       .select()
       .single();
@@ -626,8 +630,8 @@ export class SupabaseService {
     return data;
   }
 
-  async updateBudgetTextBlock(id: number, updates: any) {
-    if (!Number.isFinite(id)) throw new Error('Invalid text block id');
+  async updateCompositeBlock(id: number, updates: any) {
+    if (!Number.isFinite(id)) throw new Error('Invalid composite block id');
 
     // Build update object conditionally to handle cases where sectionTitle column doesn't exist
     const updateData: any = {
@@ -644,7 +648,7 @@ export class SupabaseService {
     }
 
     const { data, error } = await this.supabase
-      .from('BudgetTextBlocks')
+      .from('BudgetCompositeBlocks')
       .update(updateData)
       .eq('id', id)
       .select()
@@ -654,11 +658,11 @@ export class SupabaseService {
     return data;
   }
 
-  async deleteBudgetTextBlock(id: number) {
+  async deleteCompositeBlock(id: number) {
     if (!Number.isFinite(id)) return;
     // Las secciones se eliminan automáticamente por CASCADE
     const { error } = await this.supabase
-      .from('BudgetTextBlocks')
+      .from('BudgetCompositeBlocks')
       .delete()
       .eq('id', id);
 
@@ -666,14 +670,14 @@ export class SupabaseService {
   }
 
   // ============================================
-  // TEXT BLOCK SECTIONS
+  // COMPOSITE BLOCK SECTIONS
   // ============================================
 
-  async addSectionToTextBlock(section: any) {
+  async addSectionToCompositeBlock(section: any) {
     const { data, error } = await this.supabase
-      .from('BudgetTextBlockSections')
+      .from('BudgetCompositeBlockSections')
       .insert([{
-        textBlockId: section.textBlockId,
+        compositeBlockId: section.compositeBlockId ?? section.textBlockId,
         orderIndex: section.orderIndex,
         title: section.title,
         text: section.text
@@ -685,10 +689,10 @@ export class SupabaseService {
     return data;
   }
 
-  async updateTextBlockSection(id: number, updates: any) {
+  async updateCompositeBlockSection(id: number, updates: any) {
     if (!Number.isFinite(id)) throw new Error('Invalid section id');
     const { data, error } = await this.supabase
-      .from('BudgetTextBlockSections')
+      .from('BudgetCompositeBlockSections')
       .update({
         orderIndex: updates.orderIndex,
         title: updates.title,
@@ -702,35 +706,35 @@ export class SupabaseService {
     return data;
   }
 
-  async deleteTextBlockSection(id: number) {
+  async deleteCompositeBlockSection(id: number) {
     if (!Number.isFinite(id)) return;
     const { error } = await this.supabase
-      .from('BudgetTextBlockSections')
+      .from('BudgetCompositeBlockSections')
       .delete()
       .eq('id', id);
 
     if (error) throw error;
   }
 
-  async reorderTextBlockSections(textBlockId: number, sectionIds: number[]) {
-    if (!Number.isFinite(textBlockId)) return;
+  async reorderCompositeBlockSections(compositeBlockId: number, sectionIds: number[]) {
+    if (!Number.isFinite(compositeBlockId)) return;
     // Actualizar el orderIndex de todas las secciones
     const updates = sectionIds.map((id: number, index: number) =>
-      this.updateTextBlockSection(id, { orderIndex: index })
+      this.updateCompositeBlockSection(id, { orderIndex: index })
     );
 
     await Promise.all(updates);
   }
 
   // ============================================
-  // MATERIALS
+  // ITEM TABLES
   // ============================================
 
-  async saveMaterialTables(budgetId: number, tables: MaterialTable[]): Promise<{ tables: any[]; rows: any[] } | void> {
+  async saveItemTables(budgetId: number, tables: ItemTable[]): Promise<{ tables: any[]; rows: any[] } | void> {
     if (!Number.isFinite(budgetId)) throw new Error('Budget ID is required');
     const normalizedBudgetId = budgetId;
     const { error: deleteError } = await this.supabase
-      .from('BudgetMaterialTables')
+      .from('BudgetItemTables')
       .delete()
       .eq('budgetId', normalizedBudgetId);
 
@@ -755,7 +759,7 @@ export class SupabaseService {
 
     // Insert tables and get the generated DB ids
     const { data: insertedTablesData, error: insertTablesError } = await this.supabase
-      .from('BudgetMaterialTables')
+      .from('BudgetItemTables')
       .insert(tablePayloads)
       .select();
 
@@ -782,7 +786,7 @@ export class SupabaseService {
     }
 
     const { data: insertedRowsData, error: insertRowsError } = await this.supabase
-      .from('BudgetMaterialTableRows')
+      .from('BudgetItemTableRows')
       .insert(rowsPayload)
       .select();
 
@@ -795,10 +799,10 @@ export class SupabaseService {
     };
   }
 
-  private async cloneMaterialTables(budgetId: number, tables: MaterialTable[]) {
+  private async cloneItemTables(budgetId: number, tables: ItemTable[]) {
     for (const [index, table] of tables.entries()) {
       const { data: insertedTable, error: tableError } = await this.supabase
-        .from('BudgetMaterialTables')
+        .from('BudgetItemTables')
         .insert([{
           budgetId,
           title: table.title ?? '',
@@ -815,11 +819,11 @@ export class SupabaseService {
         .single();
 
       if (tableError || !insertedTable) {
-        throw tableError ?? new Error('No se pudo clonar una tabla de materiales');
+        throw tableError ?? new Error('No se pudo clonar una tabla de elementos');
       }
 
       if (table.rows?.length) {
-        const rowsPayload = table.rows.map((row, rowIndex) => ({
+        const rowsPayload = table.rows.map((row: any, rowIndex: number) => ({
           tableId: insertedTable.id,
           productId: row.productId ?? null,
           reference: row.reference ?? '',
@@ -832,7 +836,7 @@ export class SupabaseService {
         }));
 
         const { error: rowsError } = await this.supabase
-          .from('BudgetMaterialTableRows')
+          .from('BudgetItemTableRows')
           .insert(rowsPayload);
 
         if (rowsError) {
@@ -1135,12 +1139,12 @@ export class SupabaseService {
   }
 
   // ============================================
-  // TEXT BLOCK TEMPLATES
+  // COMPOSITE BLOCK TEMPLATES
   // ============================================
 
-  async getTextBlockTemplates() {
+  async getCompositeBlockTemplates() {
     const { data, error } = await this.supabase
-      .from('TextBlockTemplates')
+      .from('CompositeBlockTemplates')
       .select('*')
       .order('name');
 
@@ -1148,9 +1152,9 @@ export class SupabaseService {
     return data;
   }
 
-  async getTextBlockTemplateSections(templateId: number) {
+  async getCompositeBlockTemplateSections(templateId: number) {
     const { data, error } = await this.supabase
-      .from('TextBlockTemplateSections')
+      .from('CompositeBlockTemplateSections')
       .select('*')
       .eq('templateId', templateId)
       .order('orderIndex');
@@ -1165,10 +1169,10 @@ export class SupabaseService {
     }));
   }
 
-  async getTextBlockTemplateWithSections(templateId: number) {
+  async getCompositeBlockTemplateWithSections(templateId: number) {
     // Get template info
     const { data: template, error: templateError } = await this.supabase
-      .from('TextBlockTemplates')
+      .from('CompositeBlockTemplates')
       .select('*')
       .eq('id', templateId)
       .single();
@@ -1176,7 +1180,7 @@ export class SupabaseService {
     if (templateError) throw templateError;
 
     // Get sections
-    const sections = await this.getTextBlockTemplateSections(templateId);
+    const sections = await this.getCompositeBlockTemplateSections(templateId);
 
     return {
       id: template.id,
@@ -1187,10 +1191,10 @@ export class SupabaseService {
     };
   }
 
-  async createTextBlockTemplate(name: string, heading: string | null, provider: string | null, sections: Array<{ title: string; text: string }>) {
+  async createCompositeBlockTemplate(name: string, heading: string | null, provider: string | null, sections: Array<{ title: string; text: string }>) {
     // 1. Create template
     const { data: template, error: templateError } = await this.supabase
-      .from('TextBlockTemplates')
+      .from('CompositeBlockTemplates')
       .insert([{ name, heading, provider }])
       .select()
       .single();
@@ -1208,7 +1212,7 @@ export class SupabaseService {
     }));
 
     const { error: sectionsError } = await this.supabase
-      .from('TextBlockTemplateSections')
+      .from('CompositeBlockTemplateSections')
       .insert(sectionsPayload);
 
     if (sectionsError) throw sectionsError;
@@ -1216,10 +1220,10 @@ export class SupabaseService {
     return template;
   }
 
-  async deleteTextBlockTemplate(id: number) {
+  async deleteCompositeBlockTemplate(id: number) {
     if (!Number.isFinite(id)) return;
     const { error } = await this.supabase
-      .from('TextBlockTemplates')
+      .from('CompositeBlockTemplates')
       .delete()
       .eq('id', id);
 

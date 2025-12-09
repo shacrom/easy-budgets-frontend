@@ -343,10 +343,10 @@ describe('SupabaseService', () => {
       supabaseMock.from.mockImplementation((table: string) => {
         switch (table) {
           case 'Budgets': return budgetBuilder;
-          case 'BudgetTextBlocks': return textBlockBuilder;
-          case 'BudgetTextBlockSections': return sectionBuilder;
-          case 'BudgetMaterialTables': return tableBuilder;
-          case 'BudgetMaterialTableRows': return rowBuilder;
+          case 'BudgetCompositeBlocks': return textBlockBuilder;
+          case 'BudgetCompositeBlockSections': return sectionBuilder;
+          case 'BudgetItemTables': return tableBuilder;
+          case 'BudgetItemRows': return rowBuilder;
           case 'BudgetAdditionalLines': return lineBuilder;
           case 'BudgetSimpleBlocks': return simpleBlockBuilder;
           default: return queryBuilderMock;
@@ -358,8 +358,8 @@ describe('SupabaseService', () => {
       expect(getBudgetSpy).toHaveBeenCalledWith(1);
       expect(supabaseMock.from).toHaveBeenCalledWith('Budgets');
       expect(budgetBuilder.insert).toHaveBeenCalled();
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetTextBlocks');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetMaterialTables');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlocks');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetItemTables');
       expect(result).toEqual(newBudget);
     });
 
@@ -452,12 +452,12 @@ describe('SupabaseService', () => {
         customerId: 10,
         status: 'completed',
         validUntil: '2025-12-31',
-        showTextBlocks: true,
-        showMaterials: true,
+        showCompositeBlocks: true,
+        showItemTables: true,
         showSimpleBlock: true,
         showConditions: true,
-        materialsSectionTitle: 'Materiales',
-        textBlocks: [
+        itemTablesSectionTitle: 'Materiales',
+        compositeBlocks: [
           { id: 10, heading: 'Bloque 1', orderIndex: 0, descriptions: [{ id: 100, title: 'Sección 1', text: 'Texto 1' }] }
         ],
         materialTables: [
@@ -512,10 +512,10 @@ describe('SupabaseService', () => {
       supabaseMock.from.mockImplementation((table: string) => {
         switch (table) {
           case 'Budgets': return budgetBuilder;
-          case 'BudgetTextBlocks': return textBlockBuilder;
-          case 'BudgetTextBlockSections': return sectionBuilder;
-          case 'BudgetMaterialTables': return tableBuilder;
-          case 'BudgetMaterialTableRows': return rowBuilder;
+          case 'BudgetCompositeBlocks': return textBlockBuilder;
+          case 'BudgetCompositeBlockSections': return sectionBuilder;
+          case 'BudgetItemTables': return tableBuilder;
+          case 'BudgetItemTableRows': return rowBuilder;
           case 'BudgetAdditionalLines': return lineBuilder;
           case 'BudgetSimpleBlocks': return simpleBlockBuilder;
           case 'BudgetConditions': return conditionsBuilder;
@@ -527,10 +527,10 @@ describe('SupabaseService', () => {
 
       // Verify all tables were called
       expect(supabaseMock.from).toHaveBeenCalledWith('Budgets');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetTextBlocks');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetTextBlockSections');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetMaterialTables');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetMaterialTableRows');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlocks');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlockSections');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetItemTables');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetItemTableRows');
       expect(supabaseMock.from).toHaveBeenCalledWith('BudgetAdditionalLines');
       expect(supabaseMock.from).toHaveBeenCalledWith('BudgetSimpleBlocks');
       expect(supabaseMock.from).toHaveBeenCalledWith('BudgetConditions');
@@ -617,77 +617,77 @@ describe('SupabaseService', () => {
       rowsBuilder.then = (resolve: any) => Promise.resolve({ data: [{ id: 100 }], error: null }).then(resolve);
 
       supabaseMock.from.mockImplementation((table: string) => {
-        if (table === 'BudgetMaterialTables') return tablesBuilder;
-        if (table === 'BudgetMaterialTableRows') return rowsBuilder;
+        if (table === 'BudgetItemTables') return tablesBuilder;
+        if (table === 'BudgetItemTableRows') return rowsBuilder;
         return queryBuilderMock;
       });
 
-      const result = await service.saveMaterialTables(1, tables as any);
+      const result = await service.saveItemTables(1, tables as any);
 
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetMaterialTables');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetItemTables');
       expect(tablesBuilder.delete).toHaveBeenCalled();
       expect(tablesBuilder.insert).toHaveBeenCalled();
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetMaterialTableRows');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetItemTableRows');
       expect(rowsBuilder.insert).toHaveBeenCalled();
       expect(result).toEqual({ tables: [{ id: 10 }], rows: [{ id: 100 }] });
     });
   });
 
-  describe('Text Blocks', () => {
-    it('should get text blocks for budget', async () => {
+  describe('Composite Blocks', () => {
+    it('should get composite blocks for budget', async () => {
       const mockBlocks = [{ id: 1, heading: 'Block 1', descriptions: [] }];
       queryBuilderMock._mockResponse = { data: mockBlocks, error: null };
 
-      const blocks = await service.getTextBlocksForBudget(1);
+      const blocks = await service.getCompositeBlocksForBudget(1);
 
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetTextBlocks');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlocks');
       expect(queryBuilderMock.eq).toHaveBeenCalledWith('budgetId', 1);
       expect(blocks.length).toBe(1);
     });
 
-    it('should add text block', async () => {
+    it('should add composite block', async () => {
       const newBlock = { budgetId: 1, heading: 'New Block' };
       const createdBlock = { id: 2, ...newBlock };
       queryBuilderMock.single.mockReturnValue(Promise.resolve({ data: createdBlock, error: null }));
 
-      const result = await service.addTextBlockToBudget(newBlock);
+      const result = await service.addCompositeBlockToBudget(newBlock);
 
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetTextBlocks');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlocks');
       expect(queryBuilderMock.insert).toHaveBeenCalled();
       expect(result).toEqual(createdBlock);
     });
 
-    it('should update text block', async () => {
+    it('should update composite block', async () => {
       const updates = { heading: 'Updated Block' };
       const updatedBlock = { id: 1, ...updates };
       queryBuilderMock.single.mockReturnValue(Promise.resolve({ data: updatedBlock, error: null }));
 
-      const result = await service.updateBudgetTextBlock(1, updates);
+      const result = await service.updateCompositeBlock(1, updates);
 
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetTextBlocks');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlocks');
       expect(queryBuilderMock.update).toHaveBeenCalled();
       expect(result).toEqual(updatedBlock);
     });
 
-    it('should delete text block', async () => {
+    it('should delete composite block', async () => {
       queryBuilderMock._mockResponse = { error: null };
 
-      await service.deleteBudgetTextBlock(1);
+      await service.deleteCompositeBlock(1);
 
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetTextBlocks');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlocks');
       expect(queryBuilderMock.delete).toHaveBeenCalled();
     });
   });
 
-  describe('Text Block Sections', () => {
+  describe('Composite Block Sections', () => {
     it('should add section', async () => {
-      const newSection = { textBlockId: 1, title: 'Section' };
+      const newSection = { compositeBlockId: 1, title: 'Section' };
       const createdSection = { id: 2, ...newSection };
       queryBuilderMock.single.mockReturnValue(Promise.resolve({ data: createdSection, error: null }));
 
-      const result = await service.addSectionToTextBlock(newSection);
+      const result = await service.addSectionToCompositeBlock(newSection);
 
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetTextBlockSections');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlockSections');
       expect(queryBuilderMock.insert).toHaveBeenCalled();
       expect(result).toEqual(createdSection);
     });
@@ -697,9 +697,9 @@ describe('SupabaseService', () => {
       const updatedSection = { id: 1, ...updates };
       queryBuilderMock.single.mockReturnValue(Promise.resolve({ data: updatedSection, error: null }));
 
-      const result = await service.updateTextBlockSection(1, updates);
+      const result = await service.updateCompositeBlockSection(1, updates);
 
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetTextBlockSections');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlockSections');
       expect(queryBuilderMock.update).toHaveBeenCalled();
       expect(result).toEqual(updatedSection);
     });
@@ -707,9 +707,9 @@ describe('SupabaseService', () => {
     it('should delete section', async () => {
       queryBuilderMock._mockResponse = { error: null };
 
-      await service.deleteTextBlockSection(1);
+      await service.deleteCompositeBlockSection(1);
 
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetTextBlockSections');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlockSections');
       expect(queryBuilderMock.delete).toHaveBeenCalled();
     });
 
@@ -717,9 +717,9 @@ describe('SupabaseService', () => {
       const sectionIds = [1, 2, 3];
       queryBuilderMock.single.mockReturnValue(Promise.resolve({ data: {}, error: null }));
 
-      await service.reorderTextBlockSections(1, sectionIds);
+      await service.reorderCompositeBlockSections(1, sectionIds);
 
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetTextBlockSections');
+      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlockSections');
       expect(queryBuilderMock.update).toHaveBeenCalledTimes(3);
     });
   });
@@ -921,16 +921,16 @@ describe('SupabaseService', () => {
       await expect(service.duplicateBudget(1)).rejects.toThrow('Presupuesto no encontrado');
     });
 
-    it('should throw error when updating text block with invalid id', async () => {
-      await expect(service.updateBudgetTextBlock(NaN, {})).rejects.toThrow('Invalid text block id');
+    it('should throw error when updating composite block with invalid id', async () => {
+      await expect(service.updateCompositeBlock(NaN, {})).rejects.toThrow('Invalid composite block id');
     });
 
-    it('should throw error when updating text block section with invalid id', async () => {
-      await expect(service.updateTextBlockSection(NaN, {})).rejects.toThrow('Invalid section id');
+    it('should throw error when updating composite block section with invalid id', async () => {
+      await expect(service.updateCompositeBlockSection(NaN, {})).rejects.toThrow('Invalid section id');
     });
 
-    it('should throw error when saving material tables without budget id', async () => {
-      await expect(service.saveMaterialTables(NaN, [])).rejects.toThrow('Budget ID is required');
+    it('should throw error when saving item tables without budget id', async () => {
+      await expect(service.saveItemTables(NaN, [])).rejects.toThrow('Budget ID is required');
     });
 
     it('should throw error when saving additional lines without budget id', async () => {

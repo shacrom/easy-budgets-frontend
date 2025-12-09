@@ -1,0 +1,191 @@
+<section class="item-tables-module">
+  <header class="module-header">
+    <div class="module-title">
+      <input
+        class="section-title-input"
+        type="text"
+        [value]="sectionTitle()"
+        placeholder="Título de la sección"
+        (input)="updateSectionTitle($event)">
+      @if (hasUnsavedChanges()) {
+        <span class="unsaved-indicator">
+          <span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
+          <span>Cambios sin guardar</span>
+        </span>
+      }
+    </div>
+    <div class="header-actions">
+      @if (hasUnsavedChanges()) {
+        <button
+          type="button"
+          class="btn ghost"
+          (click)="discardChanges()"
+          [disabled]="isSaving()">
+          <span class="material-symbols-rounded" aria-hidden="true">undo</span>
+          <span>Descartar</span>
+        </button>
+      }
+      <button
+        type="button"
+        [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
+        (click)="saveChanges()"
+        [disabled]="isSaving() || !hasUnsavedChanges()">
+        <span class="material-symbols-rounded" aria-hidden="true">save</span>
+        <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
+      </button>
+      <button type="button" class="btn solid" (click)="addTable()">
+        <span class="material-symbols-rounded" aria-hidden="true">post_add</span>
+        <span>Nueva tabla</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="tables-grid">
+    @if (tables().length === 0) {
+      <div class="tables-empty">
+        <span class="material-symbols-rounded" aria-hidden="true">grid_on</span>
+        <p>Añade tu primera tabla para empezar a desglosar elementos.</p>
+        <p class="hint">Utiliza "Nueva tabla" para crear el bloque inicial.</p>
+      </div>
+    } @else {
+      @for (table of tables(); track table.id; let index = $index) {
+      <article class="item-table-card">
+        <div class="card-header">
+          <div class="title-group">
+            <input
+              class="table-title-input"
+              [value]="table.title"
+              type="text"
+              placeholder="Título de la tabla"
+              (input)="updateTableTitle(table.id, $event)">
+            <p class="card-subtitle">Bloque {{ index + 1 }}</p>
+          </div>
+          <div class="card-actions">
+            <button type="button" class="btn icon" (click)="addNewRow(table.id)">
+              <span class="material-symbols-rounded" aria-hidden="true">add</span>
+              <span>Fila</span>
+            </button>
+            <button
+              type="button"
+              class="btn icon danger"
+              (click)="deleteTable(table.id)">
+              <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+              <span>Tabla</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="item-table">
+            <!-- colgroup removed: column widths are dynamic based on visible columns -->
+            <thead>
+              <tr>
+                <th>
+                  <div class="th-content">
+                    <span>Referencia</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showReference')" title="Mostrar/ocultar referencia">
+                      <span class="material-symbols-rounded">{{ table.showReference ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <span>Descripción</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showDescription')" title="Mostrar/ocultar descripción">
+                      <span class="material-symbols-rounded">{{ table.showDescription ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <span>Fabricante</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showManufacturer')" title="Mostrar/ocultar fabricante">
+                      <span class="material-symbols-rounded">{{ table.showManufacturer ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th class="text-center">
+                  <div class="th-content">
+                    <span>Cantidad</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showQuantity')" title="Mostrar/ocultar cantidad">
+                      <span class="material-symbols-rounded">{{ table.showQuantity ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th class="text-right">
+                  <div class="th-content">
+                    <span>Precio unit.</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showUnitPrice')" title="Mostrar/ocultar precio unitario">
+                      <span class="material-symbols-rounded">{{ table.showUnitPrice ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th class="text-right">
+                  <div class="th-content">
+                    <span>Precio total</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showTotalPrice')" title="Mostrar/ocultar precio total">
+                      <span class="material-symbols-rounded">{{ table.showTotalPrice ? 'visibility' : 'visibility_off' }}</span>
+                    </button>
+                  </div>
+                </th>
+                <th class="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody cdkDropList (cdkDropListDropped)="drop($event, table.id)">
+              @if (table.rows.length === 0) {
+                <tr>
+                  <td [attr.colspan]="6" class="empty-state">
+                    <span class="material-symbols-rounded" aria-hidden="true">table_rows_narrow</span>
+                    <p>Este bloque aún no tiene elementos.</p>
+                    <button type="button" class="btn ghost" (click)="addNewRow(table.id)">
+                      <span class="material-symbols-rounded" aria-hidden="true">add</span>
+                      <span>Añadir fila</span>
+                    </button>
+                  </td>
+                </tr>
+              } @else {
+                @for (row of table.rows; track row.id) {
+                  <tr cdkDrag class="draggable-row">
+                    <td colspan="7" class="drag-cell">
+                      <div class="drag-handle" cdkDragHandle>
+                        <span class="material-symbols-rounded">drag_indicator</span>
+                      </div>
+                      <app-item-row
+                        [row]="row"
+                        [products]="products()"
+                        [showReference]="table.showReference ?? true"
+                        [showDescription]="table.showDescription ?? true"
+                        [showManufacturer]="table.showManufacturer ?? true"
+                        [showQuantity]="table.showQuantity ?? true"
+                        [showUnitPrice]="table.showUnitPrice ?? true"
+                        [showTotalPrice]="table.showTotalPrice ?? true"
+                        (deleteRequested)="deleteRow(table.id, $event)"
+                        (localValuesChanged)="onRowLocalChange()">
+                      </app-item-row>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <td [attr.colspan]="6" class="footer-label">Subtotal</td>
+                <td class="footer-amount">
+                  {{ tableTotal(table) | currency:'EUR':'symbol':'1.2-2':'es' }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </article>
+      }
+    }
+  </div>
+
+  <footer class="module-footer">
+    <div>
+      <p class="module-kicker">Total acumulado</p>
+      <h3>{{ totalItems() | currency:'EUR':'symbol':'1.2-2':'es' }}</h3>
+    </div>
+  </footer>
+</section>

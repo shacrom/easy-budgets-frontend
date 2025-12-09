@@ -91,24 +91,24 @@
         <div class="flex flex-wrap gap-3" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">
           @for (section of sectionOrder(); track section) {
             @switch (section) {
-              @case ('textBlocks') {
+              @case ('compositeBlocks') {
                 <button
                   cdkDrag
                   type="button"
                   class="toggle-btn"
-                  [class.active]="showTextBlocks()"
-                  (click)="toggleSection('textBlocks')">
+                  [class.active]="showCompositeBlocks()"
+                  (click)="toggleSection('compositeBlocks')">
                   <span class="material-symbols-rounded">layers</span>
                   <span>Bloque compuesto</span>
                 </button>
               }
-              @case ('materials') {
+              @case ('itemTables') {
                 <button
                   cdkDrag
                   type="button"
                   class="toggle-btn"
-                  [class.active]="showMaterials()"
-                  (click)="toggleSection('materials')">
+                  [class.active]="showItemTables()"
+                  (click)="toggleSection('itemTables')">
                   <span class="material-symbols-rounded">table_chart</span>
                   <span>Tablas</span>
                 </button>
@@ -268,29 +268,29 @@
 
       @for (section of sectionOrder(); track section) {
         @switch (section) {
-          @case ('textBlocks') {
-            @if (showTextBlocks()) {
+          @case ('compositeBlocks') {
+            @if (showCompositeBlocks()) {
               <section class="section-divider">
-                <app-budget-text-blocks
+                <app-composite-blocks
                   [budgetId]="currentBudgetId() ?? 0"
                   (totalChanged)="onTotalBlocksChanged($event)"
                   (blocksChanged)="onBlocksChanged($event)"
                   (sectionTitleChanged)="blocksSectionTitle.set($event)">
-                </app-budget-text-blocks>
+                </app-composite-blocks>
               </section>
             }
           }
-          @case ('materials') {
-            @if (showMaterials()) {
+          @case ('itemTables') {
+            @if (showItemTables()) {
               <section class="section-divider">
-                <app-materials-table
-                  [tables]="materialTables()"
-                  [sectionTitle]="materialsSectionTitle()"
-                  (totalChanged)="onTotalMaterialsChanged($event)"
-                  (materialsChanged)="onMaterialsChanged($event)"
+                <app-item-table
+                  [tables]="itemTables()"
+                  [sectionTitle]="itemTablesSectionTitle()"
+                  (totalChanged)="onTotalItemsChanged($event)"
+                  (rowsChanged)="onItemsChanged($event)"
                   (tablesChanged)="onTablesChanged($event)"
-                  (sectionTitleChanged)="onMaterialsSectionTitleChanged($event)">
-                </app-materials-table>
+                  (sectionTitleChanged)="onItemTablesSectionTitleChanged($event)">
+                </app-item-table>
               </section>
             }
           }
@@ -310,17 +310,17 @@
               <section class="section-divider">
                 <app-budget-summary
                   [totalBlocks]="totalBlocks()"
-                  [totalMaterials]="totalMaterials()"
+                  [totalItems]="totalItems()"
                   [totalSimpleBlock]="totalSimpleBlock()"
-                  [showBlocks]="showTextBlocks()"
-                  [showMaterials]="showMaterials()"
+                  [showBlocks]="showCompositeBlocks()"
+                  [showItemTables]="showItemTables()"
                   [showSimpleBlock]="showSimpleBlock()"
                   [simpleBlockSectionTitle]="simpleBlockData()?.sectionTitle || 'Bloque Simple'"
                   [blocksSectionTitle]="blocksSectionTitle()"
-                  [materialsSectionTitle]="materialsSectionTitle()"
+                  [itemsSectionTitle]="itemTablesSectionTitle()"
                   [blocks]="blocks()"
-                  [materials]="materials()"
-                  [materialTables]="materialTables()"
+                  [items]="items()"
+                  [itemTables]="itemTables()"
                   [initialAdditionalLines]="additionalLines()"
                   [budgetId]="currentBudgetId() ?? 0"
                   (summaryChanged)="onSummaryChanged($event)">
@@ -354,15 +354,15 @@
             <div class="print-options">
               <h4>Páginas a incluir:</h4>
               <div class="print-toggles">
-                @if (showTextBlocks() && blocks().length > 0) {
+                @if (showCompositeBlocks() && blocks().length > 0) {
                   <label class="print-toggle" title="Incluir página de bloque compuesto">
-                    <input type="checkbox" [checked]="printTextBlocks()" (change)="togglePrintOption('textBlocks')">
+                    <input type="checkbox" [checked]="printTextBlocks()" (change)="togglePrintOption('compositeBlocks')">
                     <span>Bloque Compuesto</span>
                   </label>
                 }
-                @if (showMaterials() && (materialTables().length > 0 || materials().length > 0)) {
+                @if (showItemTables() && (itemTables().length > 0 || items().length > 0)) {
                   <label class="print-toggle" title="Incluir página de tabla">
-                    <input type="checkbox" [checked]="printMaterials()" (change)="togglePrintOption('materials')">
+                    <input type="checkbox" [checked]="printItemTables()" (change)="togglePrintOption('itemTables')">
                     <span>Tabla</span>
                   </label>
                 }

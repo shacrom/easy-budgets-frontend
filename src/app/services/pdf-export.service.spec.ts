@@ -32,7 +32,7 @@ describe('PdfExportService', () => {
         orderIndex: 0
       }
     ],
-    materials: [
+    items: [
       {
         id: 1,
         reference: 'MAT-001',
@@ -44,7 +44,7 @@ describe('PdfExportService', () => {
         orderIndex: 0
       }
     ],
-    materialTables: [
+    itemTables: [
         {
             id: 1,
             title: 'Tabla 1',
@@ -73,7 +73,7 @@ describe('PdfExportService', () => {
     },
     summary: {
       totalBlocks: 100,
-      totalMaterials: 120,
+      totalItems: 120,
       totalSimpleBlock: 200,
       taxableBase: 420,
       vatPercentage: 21,
@@ -412,7 +412,7 @@ describe('PdfExportService', () => {
     function makeSummary(overrides: Partial<any> = {}, additionalLines: any[] = []) {
       return {
         totalBlocks: 1000,
-        totalMaterials: 500,
+        totalItems: 500,
         totalSimpleBlock: 200,
         vatPercentage: 21,
         vat: 0,
