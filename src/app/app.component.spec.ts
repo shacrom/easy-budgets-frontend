@@ -1,18 +1,24 @@
 import { TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
+import { provideLocationMocks } from '@angular/common/testing';
 import { AppComponent } from './app.component';
 import { SupabaseService } from './services/supabase.service';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 describe('AppComponent', () => {
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
+  let supabaseServiceMock: Partial<SupabaseService>;
 
   beforeEach(async () => {
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', ['client']); // Mock whatever is needed
+    supabaseServiceMock = {
+      client: {} as any
+    };
 
     await TestBed.configureTestingModule({
-      imports: [AppComponent, RouterTestingModule],
+      imports: [AppComponent],
       providers: [
-        { provide: SupabaseService, useValue: supabaseServiceSpy }
+        provideRouter([]),
+        provideLocationMocks(),
+        { provide: SupabaseService, useValue: supabaseServiceMock }
       ]
     }).compileComponents();
   });

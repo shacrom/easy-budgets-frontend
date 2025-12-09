@@ -1,11 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { GeneralConditionsComponent } from './general-conditions.component';
 import { SupabaseService } from '../../../services/supabase.service';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 
 describe('GeneralConditionsComponent', () => {
   let component: GeneralConditionsComponent;
   let fixture: ComponentFixture<GeneralConditionsComponent>;
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
+  let supabaseServiceMock: {
+    getConditionTemplates: Mock;
+    getConditionTemplateSections: Mock;
+    createConditionTemplate: Mock;
+    deleteConditionTemplate: Mock;
+    saveBudgetConditions: Mock;
+  };
 
   const mockTemplates = [
     { id: 1, name: 'Template 1' },
@@ -18,23 +25,18 @@ describe('GeneralConditionsComponent', () => {
   ];
 
   beforeEach(async () => {
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', [
-      'getConditionTemplates',
-      'getConditionTemplateSections',
-      'createConditionTemplate',
-      'deleteConditionTemplate',
-      'saveBudgetConditions'
-    ]);
-    supabaseServiceSpy.getConditionTemplates.and.returnValue(Promise.resolve(mockTemplates));
-    supabaseServiceSpy.getConditionTemplateSections.and.returnValue(Promise.resolve(mockSections));
-    supabaseServiceSpy.createConditionTemplate.and.returnValue(Promise.resolve({ id: 3, name: 'New Template' }));
-    supabaseServiceSpy.deleteConditionTemplate.and.returnValue(Promise.resolve());
-    supabaseServiceSpy.saveBudgetConditions.and.returnValue(Promise.resolve());
+    supabaseServiceMock = {
+      getConditionTemplates: vi.fn().mockResolvedValue(mockTemplates),
+      getConditionTemplateSections: vi.fn().mockResolvedValue(mockSections),
+      createConditionTemplate: vi.fn().mockResolvedValue({ id: 3, name: 'New Template' }),
+      deleteConditionTemplate: vi.fn().mockResolvedValue(undefined),
+      saveBudgetConditions: vi.fn().mockResolvedValue(undefined)
+    };
 
     await TestBed.configureTestingModule({
       imports: [GeneralConditionsComponent],
       providers: [
-        { provide: SupabaseService, useValue: supabaseServiceSpy }
+        { provide: SupabaseService, useValue: supabaseServiceMock }
       ]
     }).compileComponents();
 
@@ -53,9 +55,9 @@ describe('GeneralConditionsComponent', () => {
   });
 
   it('should always be in edit mode', () => {
-    expect(component['editMode']()).toBeTrue();
+    expect(component['editMode']()).toBe(true);
     component['toggleEditMode']();
-    expect(component['editMode']()).toBeTrue(); // Should stay true
+    expect(component['editMode']()).toBe(true); // Should stay true
   });
 
   it('should update title', () => {
@@ -66,7 +68,7 @@ describe('GeneralConditionsComponent', () => {
     component['updateTitle'](event);
 
     expect(component['title']()).toBe('New Title');
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should change template and load sections', async () => {
@@ -75,9 +77,9 @@ describe('GeneralConditionsComponent', () => {
     await component['changeTemplate'](event);
 
     expect(component['selectedTemplateId']()).toBe(1);
-    expect(supabaseServiceSpy.getConditionTemplateSections).toHaveBeenCalledWith(1);
+    expect(supabaseServiceMock.getConditionTemplateSections).toHaveBeenCalledWith(1);
     expect(component['conditions']().length).toBe(2);
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should add condition', () => {
@@ -85,7 +87,7 @@ describe('GeneralConditionsComponent', () => {
     component['addCondition']();
 
     expect(component['conditions']().length).toBe(initialLength + 1);
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should update condition field', () => {
@@ -100,7 +102,7 @@ describe('GeneralConditionsComponent', () => {
 
     const updatedCondition = component['conditions']().find(c => c.id === condition.id);
     expect(updatedCondition?.text).toBe('Updated Text');
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should delete condition', () => {
@@ -112,7 +114,7 @@ describe('GeneralConditionsComponent', () => {
     component['deleteCondition'](conditionToDelete.id);
 
     expect(component['conditions']().length).toBe(initialLength - 1);
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should reset to template when template is selected', async () => {
@@ -121,20 +123,20 @@ describe('GeneralConditionsComponent', () => {
 
     await component['resetToTemplate']();
 
-    expect(supabaseServiceSpy.getConditionTemplateSections).toHaveBeenCalledWith(1);
+    expect(supabaseServiceMock.getConditionTemplateSections).toHaveBeenCalledWith(1);
     expect(component['conditions']().length).toBe(2);
   });
 
   it('should save changes', async () => {
-    spyOn(component.titleChanged, 'emit');
-    spyOn(component.conditionsChanged, 'emit');
+    const titleEmitSpy = vi.spyOn(component.titleChanged, 'emit');
+    const conditionsEmitSpy = vi.spyOn(component.conditionsChanged, 'emit');
 
     component['title'].set('Saved Title');
     await component['saveChanges']();
 
-    expect(component.titleChanged.emit).toHaveBeenCalledWith('Saved Title');
-    expect(component.conditionsChanged.emit).toHaveBeenCalled();
-    expect(component['hasUnsavedChanges']()).toBeFalse();
+    expect(titleEmitSpy).toHaveBeenCalledWith('Saved Title');
+    expect(conditionsEmitSpy).toHaveBeenCalled();
+    expect(component['hasUnsavedChanges']()).toBe(false);
     expect(component['originalTitle']()).toBe('Saved Title');
   });
 
@@ -146,6 +148,6 @@ describe('GeneralConditionsComponent', () => {
     component['discardChanges']();
 
     expect(component['title']()).toBe(originalTitle);
-    expect(component['hasUnsavedChanges']()).toBeFalse();
+    expect(component['hasUnsavedChanges']()).toBe(false);
   });
 });

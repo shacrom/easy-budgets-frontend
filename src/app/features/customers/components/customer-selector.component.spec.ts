@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CustomerSelectorComponent } from './customer-selector.component';
 import { Customer } from '../../../models/customer.model';
@@ -27,21 +28,21 @@ describe('CustomerSelectorComponent', () => {
   });
 
   it('should compute hasCustomers correctly', () => {
-    expect(component['hasCustomers']()).toBeTrue();
+    expect(component['hasCustomers']()).toBe(true);
 
     fixture.componentRef.setInput('customers', []);
     fixture.detectChanges();
-    expect(component['hasCustomers']()).toBeFalse();
+    expect(component['hasCustomers']()).toBe(false);
   });
 
   it('should compute meetsSearchThreshold correctly', () => {
     fixture.componentRef.setInput('searchTerm', 'a');
     fixture.detectChanges();
-    expect(component['meetsSearchThreshold']()).toBeFalse();
+    expect(component['meetsSearchThreshold']()).toBe(false);
 
     fixture.componentRef.setInput('searchTerm', 'ab');
     fixture.detectChanges();
-    expect(component['meetsSearchThreshold']()).toBeTrue();
+    expect(component['meetsSearchThreshold']()).toBe(true);
   });
 
   it('should emit searchChanged on updateSearch', () => {
@@ -60,7 +61,7 @@ describe('CustomerSelectorComponent', () => {
 
     component['retrySearch']();
 
-    expect(emitted).toBeTrue();
+    expect(emitted).toBe(true);
   });
 
   it('should emit searchChanged with empty string on clearSearch', () => {
@@ -81,7 +82,7 @@ describe('CustomerSelectorComponent', () => {
 
     component['clearSearch']();
 
-    expect(emitted).toBeFalse();
+    expect(emitted).toBe(false);
   });
 
   it('should emit customerSelected on selectCustomer', () => {
@@ -102,7 +103,7 @@ describe('CustomerSelectorComponent', () => {
 
     component['selectCustomer'](1);
 
-    expect(emitted).toBeFalse();
+    expect(emitted).toBe(false);
   });
 
   it('should emit null on clearSelection', () => {

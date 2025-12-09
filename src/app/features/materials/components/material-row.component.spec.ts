@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MaterialRowComponent } from './material-row.component';
 import { Material } from '../../../models/material.model';
 import { Product } from '../../../models/product.model';
@@ -62,8 +63,8 @@ describe('MaterialRowComponent', () => {
 
     expect(component['localReference']()).toBe('NEWREF');
     expect(component['referenceSearchTerm']()).toBe('NEWREF');
-    expect(component['referenceDropdownOpen']()).toBeTrue();
-    expect(emitted).toBeTrue();
+    expect(component['referenceDropdownOpen']()).toBe(true);
+    expect(emitted).toBe(true);
   });
 
   it('should update local manufacturer and emit change', () => {
@@ -73,7 +74,7 @@ describe('MaterialRowComponent', () => {
     component['onManufacturerChange']('New Manuf');
 
     expect(component['localManufacturer']()).toBe('New Manuf');
-    expect(emitted).toBeTrue();
+    expect(emitted).toBe(true);
   });
 
   it('should update local quantity and emit change', () => {
@@ -84,7 +85,7 @@ describe('MaterialRowComponent', () => {
 
     expect(component['localQuantity']()).toBe(5);
     expect(component['totalPrice']()).toBe(50); // 5 * 10
-    expect(emitted).toBeTrue();
+    expect(emitted).toBe(true);
   });
 
   it('should update local unit price and emit change', () => {
@@ -95,7 +96,7 @@ describe('MaterialRowComponent', () => {
 
     expect(component['localUnitPrice']()).toBe(20);
     expect(component['totalPrice']()).toBe(40); // 2 * 20
-    expect(emitted).toBeTrue();
+    expect(emitted).toBe(true);
   });
 
   it('should update local description and emit change', () => {
@@ -105,7 +106,7 @@ describe('MaterialRowComponent', () => {
     component['onDescriptionChange']('New Desc');
 
     expect(component['localDescription']()).toBe('New Desc');
-    expect(emitted).toBeTrue();
+    expect(emitted).toBe(true);
   });
 
   it('should filter reference matches', () => {
@@ -121,7 +122,7 @@ describe('MaterialRowComponent', () => {
 
   it('should apply product from suggestion', () => {
     const event = new MouseEvent('click');
-    spyOn(event, 'preventDefault');
+    vi.spyOn(event, 'preventDefault');
 
     let emitted = false;
     component.localValuesChanged.subscribe(() => emitted = true);
@@ -132,20 +133,22 @@ describe('MaterialRowComponent', () => {
     expect(component['localDescription']()).toBe('Product 1');
     expect(component['localManufacturer']()).toBe('M1');
     expect(component['localUnitPrice']()).toBe(50);
-    expect(component['referenceDropdownOpen']()).toBeFalse();
-    expect(emitted).toBeTrue();
+    expect(component['referenceDropdownOpen']()).toBe(false);
+    expect(emitted).toBe(true);
   });
 
-  it('should close dropdown with delay', fakeAsync(() => {
+  it('should close dropdown with delay', async () => {
+    vi.useFakeTimers();
     component['openReferenceDropdown']();
-    expect(component['referenceDropdownOpen']()).toBeTrue();
+    expect(component['referenceDropdownOpen']()).toBe(true);
 
     component['closeReferenceDropdown']();
-    expect(component['referenceDropdownOpen']()).toBeTrue(); // Still open immediately
+    expect(component['referenceDropdownOpen']()).toBe(true); // Still open immediately
 
-    tick(120);
-    expect(component['referenceDropdownOpen']()).toBeFalse();
-  }));
+    await vi.advanceTimersByTimeAsync(120);
+    expect(component['referenceDropdownOpen']()).toBe(false);
+    vi.useRealTimers();
+  });
 
   it('should emit deleteRequested', () => {
     let emittedId: number | undefined;

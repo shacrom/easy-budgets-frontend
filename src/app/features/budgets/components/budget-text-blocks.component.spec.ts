@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import { BudgetTextBlocksComponent } from './budget-text-blocks.component';
 import { SupabaseService } from '../../../services/supabase.service';
 import { registerLocaleData } from '@angular/common';
@@ -8,7 +9,12 @@ import { BudgetTextBlock } from '../../../models/budget-text-block.model';
 describe('BudgetTextBlocksComponent', () => {
   let component: BudgetTextBlocksComponent;
   let fixture: ComponentFixture<BudgetTextBlocksComponent>;
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
+  let supabaseServiceSpy: {
+    getTextBlocksForBudget: ReturnType<typeof vi.fn>;
+    addTextBlockToBudget: ReturnType<typeof vi.fn>;
+    updateBudgetTextBlock: ReturnType<typeof vi.fn>;
+    updateTextBlockSection: ReturnType<typeof vi.fn>;
+  };
 
   const mockBlocks: BudgetTextBlock[] = [
     {
@@ -38,15 +44,15 @@ describe('BudgetTextBlocksComponent', () => {
   });
 
   beforeEach(async () => {
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', [
-      'getTextBlocksForBudget',
-      'addTextBlockToBudget',
-      'updateBudgetTextBlock',
-      'updateTextBlockSection'
-    ]);
+    supabaseServiceSpy = {
+      getTextBlocksForBudget: vi.fn(),
+      addTextBlockToBudget: vi.fn(),
+      updateBudgetTextBlock: vi.fn(),
+      updateTextBlockSection: vi.fn()
+    };
 
     // Default behavior
-    supabaseServiceSpy.getTextBlocksForBudget.and.returnValue(Promise.resolve([...mockBlocks]));
+    supabaseServiceSpy.getTextBlocksForBudget.mockReturnValue(Promise.resolve([...mockBlocks]));
 
     await TestBed.configureTestingModule({
       imports: [BudgetTextBlocksComponent],
@@ -80,9 +86,9 @@ describe('BudgetTextBlocksComponent', () => {
 
   it('should add new block', async () => {
     const newBlock = { id: 3, budgetId: 100, orderIndex: 2, heading: '', subtotal: 0 };
-    supabaseServiceSpy.addTextBlockToBudget.and.returnValue(Promise.resolve(newBlock));
+    supabaseServiceSpy.addTextBlockToBudget.mockReturnValue(Promise.resolve(newBlock));
     // Mock reload to return new list
-    supabaseServiceSpy.getTextBlocksForBudget.and.returnValue(Promise.resolve([...mockBlocks, newBlock]));
+    supabaseServiceSpy.getTextBlocksForBudget.mockReturnValue(Promise.resolve([...mockBlocks, newBlock]));
 
     await component['addNewBlock']();
 
@@ -98,7 +104,7 @@ describe('BudgetTextBlocksComponent', () => {
 
     const blocks = component['blocks']();
     expect(blocks[0].heading).toBe('Updated Heading');
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should delete block locally and set unsaved changes', () => {
@@ -107,7 +113,7 @@ describe('BudgetTextBlocksComponent', () => {
     const blocks = component['blocks']();
     expect(blocks.length).toBe(1);
     expect(blocks[0].id).toBe(2);
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should update section title and set unsaved changes', () => {
@@ -116,7 +122,7 @@ describe('BudgetTextBlocksComponent', () => {
     component['updateSectionTitle'](event);
 
     expect(component['sectionTitle']()).toBe('New Section Title');
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should save changes (blocks and sections)', async () => {
@@ -124,8 +130,8 @@ describe('BudgetTextBlocksComponent', () => {
     const event = { target: { value: 'Updated Title' } } as any;
     component['updateSectionTitle'](event);
 
-    supabaseServiceSpy.updateBudgetTextBlock.and.returnValue(Promise.resolve({} as any));
-    supabaseServiceSpy.updateTextBlockSection.and.returnValue(Promise.resolve({} as any));
+    supabaseServiceSpy.updateBudgetTextBlock.mockReturnValue(Promise.resolve({} as any));
+    supabaseServiceSpy.updateTextBlockSection.mockReturnValue(Promise.resolve({} as any));
 
     await component.saveChanges();
 
@@ -137,6 +143,6 @@ describe('BudgetTextBlocksComponent', () => {
     // Should reload
     expect(supabaseServiceSpy.getTextBlocksForBudget).toHaveBeenCalledTimes(2);
     // Should clear unsaved changes
-    expect(component['hasUnsavedChanges']()).toBeFalse();
+    expect(component['hasUnsavedChanges']()).toBe(false);
   });
 });

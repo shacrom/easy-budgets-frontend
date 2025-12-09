@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SimpleBlockEditorComponent } from './simple-block-editor.component';
 import { SupabaseService } from '../../../services/supabase.service';
@@ -8,7 +9,11 @@ import { SimpleBlock } from '../../../models/simple-block.model';
 describe('SimpleBlockEditorComponent', () => {
   let component: SimpleBlockEditorComponent;
   let fixture: ComponentFixture<SimpleBlockEditorComponent>;
-  let supabaseServiceSpy: jasmine.SpyObj<SupabaseService>;
+  let supabaseServiceSpy: {
+    getSimpleBlockForBudget: ReturnType<typeof vi.fn>;
+    upsertSimpleBlock: ReturnType<typeof vi.fn>;
+    uploadPublicAsset: ReturnType<typeof vi.fn>;
+  };
 
   const mockSimpleBlock: SimpleBlock = {
     budgetId: 1,
@@ -24,15 +29,15 @@ describe('SimpleBlockEditorComponent', () => {
   });
 
   beforeEach(async () => {
-    supabaseServiceSpy = jasmine.createSpyObj('SupabaseService', [
-      'getSimpleBlockForBudget',
-      'upsertSimpleBlock',
-      'uploadPublicAsset'
-    ]);
+    supabaseServiceSpy = {
+      getSimpleBlockForBudget: vi.fn(),
+      upsertSimpleBlock: vi.fn(),
+      uploadPublicAsset: vi.fn()
+    };
 
-    supabaseServiceSpy.getSimpleBlockForBudget.and.returnValue(Promise.resolve(mockSimpleBlock));
-    supabaseServiceSpy.upsertSimpleBlock.and.returnValue(Promise.resolve(mockSimpleBlock));
-    supabaseServiceSpy.uploadPublicAsset.and.returnValue(Promise.resolve({
+    supabaseServiceSpy.getSimpleBlockForBudget.mockReturnValue(Promise.resolve(mockSimpleBlock));
+    supabaseServiceSpy.upsertSimpleBlock.mockReturnValue(Promise.resolve(mockSimpleBlock));
+    supabaseServiceSpy.uploadPublicAsset.mockReturnValue(Promise.resolve({
       publicUrl: 'http://new-image.com/img.jpg',
       path: 'simple-blocks/1/test.jpg'
     }));
@@ -61,11 +66,11 @@ describe('SimpleBlockEditorComponent', () => {
     expect(supabaseServiceSpy.getSimpleBlockForBudget).toHaveBeenCalledWith(1);
     expect(component['simpleBlock']()).toEqual(mockSimpleBlock);
     expect(component['sectionTitle']()).toBe('Bloque Simple Test');
-    expect(component['hasUnsavedChanges']()).toBeFalse();
+    expect(component['hasUnsavedChanges']()).toBe(false);
   });
 
   it('should handle loading empty simple block', async () => {
-    supabaseServiceSpy.getSimpleBlockForBudget.and.returnValue(Promise.resolve(null));
+    supabaseServiceSpy.getSimpleBlockForBudget.mockReturnValue(Promise.resolve(null));
     fixture.componentRef.setInput('budgetId', 2);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -81,7 +86,7 @@ describe('SimpleBlockEditorComponent', () => {
 
     component.updateModel('New Model');
     expect(component['simpleBlock']().model).toBe('New Model');
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
 
     component.updateDescription('New Desc');
     expect(component['simpleBlock']().description).toBe('New Desc');
@@ -95,7 +100,7 @@ describe('SimpleBlockEditorComponent', () => {
     component['updateSectionTitle'](event);
 
     expect(component['sectionTitle']()).toBe('New Title');
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should save changes', async () => {
@@ -106,7 +111,7 @@ describe('SimpleBlockEditorComponent', () => {
     component.updateModel('Updated Model');
 
     const savedSimpleBlock = { ...mockSimpleBlock, model: 'Updated Model' };
-    supabaseServiceSpy.upsertSimpleBlock.and.returnValue(Promise.resolve(savedSimpleBlock));
+    supabaseServiceSpy.upsertSimpleBlock.mockReturnValue(Promise.resolve(savedSimpleBlock));
 
     let emittedTotal: number | undefined;
     component.totalChanged.subscribe(val => emittedTotal = val);
@@ -114,7 +119,7 @@ describe('SimpleBlockEditorComponent', () => {
     await component.saveChanges();
 
     expect(supabaseServiceSpy.upsertSimpleBlock).toHaveBeenCalled();
-    expect(component['hasUnsavedChanges']()).toBeFalse();
+    expect(component['hasUnsavedChanges']()).toBe(false);
     expect(emittedTotal).toBe(100);
   });
 
@@ -124,12 +129,12 @@ describe('SimpleBlockEditorComponent', () => {
     await fixture.whenStable();
 
     component.updateModel('Changed Model');
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
 
     component.discardChanges();
 
     expect(component['simpleBlock']().model).toBe('Test Model');
-    expect(component['hasUnsavedChanges']()).toBeFalse();
+    expect(component['hasUnsavedChanges']()).toBe(false);
   });
 
   it('should handle image upload', async () => {
@@ -143,32 +148,32 @@ describe('SimpleBlockEditorComponent', () => {
 
     expect(supabaseServiceSpy.uploadPublicAsset).toHaveBeenCalled();
     expect(component['simpleBlock']().imageUrl).toBe('http://new-image.com/img.jpg');
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should handle image upload error', async () => {
     fixture.componentRef.setInput('budgetId', 1);
     fixture.detectChanges();
 
-    supabaseServiceSpy.uploadPublicAsset.and.returnValue(Promise.reject('Error'));
+    supabaseServiceSpy.uploadPublicAsset.mockReturnValue(Promise.reject('Error'));
     const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
     const event = { target: { files: [file] } } as any;
 
     await component['onImageFileSelected'](event);
 
     expect(component['imageUploadError']()).toBeTruthy();
-    expect(component['isUploadingImage']()).toBeFalse();
+    expect(component['isUploadingImage']()).toBe(false);
   });
 
   it('should clear image url', () => {
     component.clearImageUrl();
     expect(component['simpleBlock']().imageUrl).toBeNull();
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 
   it('should set image url manually', () => {
     component.setImageUrl('http://manual.com/img.jpg');
     expect(component['simpleBlock']().imageUrl).toBe('http://manual.com/img.jpg');
-    expect(component['hasUnsavedChanges']()).toBeTrue();
+    expect(component['hasUnsavedChanges']()).toBe(true);
   });
 });
