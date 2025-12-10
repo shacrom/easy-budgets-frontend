@@ -38,22 +38,22 @@ export class EmailService {
           context: error.context,
           name: error.name
         });
-        
+
         // Try to extract more details from the error context (Response object)
         let errorMessage = 'Error al conectar con el servicio de email';
-        
+
         if (error.context && error.context instanceof Response) {
           try {
             // Clone the response to avoid consuming it
             const responseClone = error.context.clone();
             const responseText = await responseClone.text();
             console.error('Response body:', responseText);
-            
+
             // Try to parse as JSON
             try {
               const responseJson = JSON.parse(responseText);
               console.error('Response JSON:', responseJson);
-              
+
               if (responseJson.error) {
                 errorMessage = responseJson.error;
                 if (responseJson.details) {
@@ -72,7 +72,7 @@ export class EmailService {
         } else if (error.message) {
           errorMessage = error.message;
         }
-        
+
         throw new Error(errorMessage);
       }
 

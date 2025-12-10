@@ -363,7 +363,7 @@ export class SendEmailDialogComponent {
         budgetNumber: this.data.budgetNumber,
         budgetId: this.data.budgetId
       };
-      
+
       console.log('Sending email with payload:', {
         ...payload,
         pdfBase64: `${base64.substring(0, 50)}... (${base64.length} chars)`

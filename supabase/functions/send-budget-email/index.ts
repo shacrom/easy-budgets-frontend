@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
     if (!resendApiKey) {
       console.error("RESEND_API_KEY is not set");
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: "El servicio de email no está configurado. Por favor, configura RESEND_API_KEY en los secrets de Supabase.",
           details: "Missing RESEND_API_KEY environment variable"
         }),
@@ -74,7 +74,7 @@ Deno.serve(async (req: Request) => {
     if (!supabaseUrl || !supabaseServiceRoleKey) {
       console.error("Supabase environment variables not set");
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: "El servicio de base de datos no está configurado",
           details: "Missing Supabase environment variables"
         }),
@@ -162,13 +162,13 @@ Deno.serve(async (req: Request) => {
 
       if (emailError) {
         console.error("Resend error:", emailError);
-        
+
         // Enhanced error message for API key issues
         let errorMessage = emailError.message || "Unknown email error";
         if (emailError.message?.includes("API key") || emailError.message?.includes("401") || emailError.message?.includes("Unauthorized")) {
           errorMessage = "La API key de Resend no es válida. Por favor, verifica que RESEND_API_KEY esté configurado correctamente.";
         }
-        
+
         emailLog.status = "failed";
         emailLog.errorMessage = errorMessage;
       } else {
