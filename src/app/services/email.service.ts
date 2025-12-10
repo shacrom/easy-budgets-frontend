@@ -94,25 +94,29 @@ export class EmailService {
   }
 
   /**
-   * Retrieves email logs for a specific budget with pagination and optional filters.
+   * Gets email logs, optionally filtered by budget ID.
    *
-   * @param budgetId The budget ID to get email logs for
    * @param limit Maximum number of logs to return (default: 50)
    * @param offset Number of logs to skip for pagination (default: 0)
    * @param filters Optional filters for status and email search
+   * @param budgetId Optional budget ID to filter by
    * @returns Paginated response with logs array and total count
    */
-  async getEmailLogsByBudgetId(
-    budgetId: number,
+  async getEmailLogs(
     limit = 50,
     offset = 0,
-    filters?: EmailLogFilters
+    filters?: EmailLogFilters,
+    budgetId?: number
   ): Promise<EmailLogsPaginatedResponse> {
     // Build the query
     let query = this.supabase.client
       .from('EmailLogs')
-      .select('*', { count: 'exact' })
-      .eq('budgetId', budgetId);
+      .select('*', { count: 'exact' });
+
+    // Apply budget filter if provided
+    if (budgetId) {
+      query = query.eq('budgetId', budgetId);
+    }
 
     // Apply status filter if provided
     if (filters?.status) {

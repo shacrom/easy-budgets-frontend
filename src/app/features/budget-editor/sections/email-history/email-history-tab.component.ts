@@ -93,10 +93,15 @@ import { EmailService } from '../../../../services/email.service';
             <thead>
               <tr>
                 <th>Fecha</th>
+                @if (!budgetId()) {
+                  <th>Presupuesto</th>
+                }
                 <th>Destinatario</th>
                 <th>Asunto</th>
                 <th>Estado</th>
-                <th>Acciones</th>
+                @if (budgetId()) {
+                  <th>Acciones</th>
+                }
               </tr>
             </thead>
             <tbody>
@@ -105,6 +110,11 @@ import { EmailService } from '../../../../services/email.service';
                   <td class="cell-date">
                     {{ log.createdAt | date:'dd/MM/yyyy HH:mm' }}
                   </td>
+                  @if (!budgetId()) {
+                    <td class="cell-budget">
+                      #{{ log.budgetId }}
+                    </td>
+                  }
                   <td class="cell-email">
                     <span class="email-address">{{ log.recipientEmail }}</span>
                     @if (log.recipientName) {
@@ -135,19 +145,21 @@ import { EmailService } from '../../../../services/email.service';
                       </span>
                     }
                   </td>
-                  <td class="cell-actions">
-                    <button
-                      type="button"
-                      class="btn-retry"
-                      (click)="onRetry(log)"
-                      [title]="log.status === 'failed' ? 'Reintentar envío' : 'Reenviar email'"
-                    >
-                      <span class="material-symbols-rounded">
-                        {{ log.status === 'failed' ? 'refresh' : 'forward_to_inbox' }}
-                      </span>
-                      {{ log.status === 'failed' ? 'Reintentar' : 'Reenviar' }}
-                    </button>
-                  </td>
+                  @if (budgetId()) {
+                    <td class="cell-actions">
+                      <button
+                        type="button"
+                        class="btn-retry"
+                        (click)="onRetry(log)"
+                        [title]="log.status === 'failed' ? 'Reintentar envío' : 'Reenviar email'"
+                      >
+                        <span class="material-symbols-rounded">
+                          {{ log.status === 'failed' ? 'refresh' : 'forward_to_inbox' }}
+                        </span>
+                        {{ log.status === 'failed' ? 'Reintentar' : 'Reenviar' }}
+                      </button>
+                    </td>
+                  }
                 </tr>
               }
             </tbody>
@@ -566,7 +578,7 @@ import { EmailService } from '../../../../services/email.service';
   `]
 })
 export class EmailHistoryTabComponent implements OnInit {
-  readonly budgetId = input.required<number>();
+  readonly budgetId = input<number>();
   readonly retryEmail = output<EmailLog>();
 
   private readonly emailService = inject(EmailService);
@@ -630,11 +642,11 @@ export class EmailHistoryTabComponent implements OnInit {
 
     try {
       const filters = this.buildFilters();
-      const response = await this.emailService.getEmailLogsByBudgetId(
-        this.budgetId(),
+      const response = await this.emailService.getEmailLogs(
         this.pageSize,
         0,
-        filters
+        filters,
+        this.budgetId()
       );
 
       this.emailLogs.set(response.logs);
@@ -656,11 +668,11 @@ export class EmailHistoryTabComponent implements OnInit {
 
     try {
       const filters = this.buildFilters();
-      const response = await this.emailService.getEmailLogsByBudgetId(
-        this.budgetId(),
+      const response = await this.emailService.getEmailLogs(
         this.pageSize,
         this.currentOffset,
-        filters
+        filters,
+        this.budgetId()
       );
 
       this.emailLogs.update(current => [...current, ...response.logs]);

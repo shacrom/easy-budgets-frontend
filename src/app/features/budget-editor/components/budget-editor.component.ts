@@ -7,7 +7,6 @@ import { ItemTableComponent } from '../sections/item-tables/item-table.component
 import { BudgetSummaryComponent } from '../sections/summary/budget-summary.component';
 import { GeneralConditionsComponent } from '../sections/conditions/general-conditions.component';
 import { CustomerSelectorComponent } from '../../customers/components/customer-selector.component';
-import { EmailHistoryTabComponent } from '../sections/email-history/email-history-tab.component';
 import { SendEmailDialogComponent } from './send-email-dialog.component';
 import { CompositeBlock } from '../../../models/composite-block.model';
 import { ItemRow, ItemTable } from '../../../models/item-table.model';
@@ -26,8 +25,6 @@ import { SimpleBlock } from '../../../models/simple-block.model';
 import { BudgetStatus } from '../../../models/budget.model';
 import { environment } from '../../../../environments/environment';
 
-export type EditorTab = 'editor' | 'emailHistory';
-
 @Component({
   selector: 'app-budget-editor',
   imports: [
@@ -37,8 +34,7 @@ export type EditorTab = 'editor' | 'emailHistory';
     ItemTableComponent,
     SimpleBlockEditorComponent,
     BudgetSummaryComponent,
-    GeneralConditionsComponent,
-    EmailHistoryTabComponent
+    GeneralConditionsComponent
   ],
   templateUrl: './budget-editor.component.html',
   styleUrl: './budget-editor.component.css'
@@ -54,10 +50,6 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   private readonly routeParams = toSignal(this.route.paramMap);
 
   @ViewChild('pdfIframe') pdfIframeRef!: ElementRef<HTMLIFrameElement>;
-  @ViewChild('emailHistoryTab') emailHistoryTabRef!: EmailHistoryTabComponent;
-
-  // Tab navigation
-  protected readonly activeTab = signal<EditorTab>('editor');
 
   // Budget ID - will be initialized on component creation
   protected readonly currentBudgetId = signal<number | null>(null);
@@ -1096,12 +1088,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   // TAB NAVIGATION
   // ============================================
 
-  /**
-   * Switch between editor and email history tabs
-   */
-  switchTab(tab: EditorTab): void {
-    this.activeTab.set(tab);
-  }
+
 
   // ============================================
   // EMAIL FUNCTIONALITY
@@ -1139,27 +1126,12 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     dialogRef.afterClosed().subscribe((result: SendEmailDialogResult | undefined) => {
       if (result?.success) {
         this.notification.showSuccess('Email enviado correctamente');
-        // Switch to email history tab and refresh
-        this.activeTab.set('emailHistory');
-        // Wait a tick for the tab to render, then refresh
-        setTimeout(() => {
-          this.emailHistoryTabRef?.refreshHistory();
-        }, 100);
       } else if (result && !result.success && result.error) {
         this.notification.showError(result.error);
       }
     });
   }
 
-  /**
-   * Handles retry request from email history tab
-   */
-  handleRetryEmail(log: EmailLog): void {
-    this.openSendEmailDialog({
-      email: log.recipientEmail,
-      subject: log.subject,
-      bodyText: log.bodyText
-    });
-  }
+
 }
 

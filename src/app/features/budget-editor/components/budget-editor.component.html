@@ -70,39 +70,7 @@
     </div>
   </header>
 
-  <!-- Tab Navigation -->
-  <nav class="tab-navigation">
-    <button
-      type="button"
-      class="tab-btn"
-      [class.active]="activeTab() === 'editor'"
-      (click)="switchTab('editor')">
-      <span class="material-symbols-rounded">edit_document</span>
-      Editor
-    </button>
-    <button
-      type="button"
-      class="tab-btn"
-      [class.active]="activeTab() === 'emailHistory'"
-      (click)="switchTab('emailHistory')">
-      <span class="material-symbols-rounded">history</span>
-      Historial de Emails
-    </button>
-  </nav>
-
-  <div class="editor-layout" [class.split-view]="showPdfPreview() && activeTab() === 'editor'">
-    <!-- Email History Tab -->
-    @if (activeTab() === 'emailHistory') {
-      <main class="app-main">
-        @if (currentBudgetId()) {
-          <app-email-history-tab
-            #emailHistoryTab
-            [budgetId]="currentBudgetId()!"
-            (retryEmail)="handleRetryEmail($event)"
-          />
-        }
-      </main>
-    } @else {
+  <div class="editor-layout" [class.split-view]="showPdfPreview()">
     <!-- Editor Tab -->
     <main class="app-main">
     @if (!isInitialized()) {
@@ -389,9 +357,8 @@
       }
     }
     </main>
-    }
 
-    @if (showPdfPreview() && activeTab() === 'editor') {
+    @if (showPdfPreview()) {
       <aside class="preview-sidebar">
         <div class="preview-sticky">
           <div class="preview-header">
