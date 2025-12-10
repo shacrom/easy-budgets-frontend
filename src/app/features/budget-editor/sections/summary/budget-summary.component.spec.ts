@@ -5,6 +5,7 @@ import { BudgetSummaryComponent } from './budget-summary.component';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { SummaryLine } from '../../../../models/budget-summary.model';
+import { BudgetSection, CONTENT_SECTIONS } from '../../../../models/budget-section.model';
 
 describe('BudgetSummaryComponent', () => {
   let component: BudgetSummaryComponent;
@@ -174,7 +175,7 @@ describe('BudgetSummaryComponent', () => {
   });
 
   describe('Section Ordering', () => {
-    it('should render sections in default order (simpleBlock, compositeBlocks, itemTables)', () => {
+    it('should render sections in default order (compositeBlocks, itemTables, simpleBlock)', () => {
       // Setup data for all sections
       fixture.componentRef.setInput('totalBlocks', 100);
       fixture.componentRef.setInput('totalItems', 50);
@@ -189,14 +190,15 @@ describe('BudgetSummaryComponent', () => {
       const orderedSections = component['orderedSections']();
 
       expect(orderedSections.length).toBe(3);
-      expect(orderedSections[0].key).toBe('simpleBlock');
-      expect(orderedSections[1].key).toBe('compositeBlocks');
-      expect(orderedSections[2].key).toBe('itemTables');
+      // Default order from CONTENT_SECTIONS: compositeBlocks, itemTables, simpleBlock
+      expect(orderedSections[0].key).toBe(BudgetSection.CompositeBlocks);
+      expect(orderedSections[1].key).toBe(BudgetSection.ItemTables);
+      expect(orderedSections[2].key).toBe(BudgetSection.SimpleBlock);
     });
 
     it('should render sections in custom order', () => {
       // Setup custom order: itemTables, simpleBlock, compositeBlocks
-      fixture.componentRef.setInput('sectionOrder', ['itemTables', 'simpleBlock', 'compositeBlocks']);
+      fixture.componentRef.setInput('sectionOrder', [BudgetSection.ItemTables, BudgetSection.SimpleBlock, BudgetSection.CompositeBlocks]);
       fixture.componentRef.setInput('totalBlocks', 100);
       fixture.componentRef.setInput('totalItems', 50);
       fixture.componentRef.setInput('totalSimpleBlock', 25);
@@ -210,13 +212,13 @@ describe('BudgetSummaryComponent', () => {
       const orderedSections = component['orderedSections']();
 
       expect(orderedSections.length).toBe(3);
-      expect(orderedSections[0].key).toBe('itemTables');
-      expect(orderedSections[1].key).toBe('simpleBlock');
-      expect(orderedSections[2].key).toBe('compositeBlocks');
+      expect(orderedSections[0].key).toBe(BudgetSection.ItemTables);
+      expect(orderedSections[1].key).toBe(BudgetSection.SimpleBlock);
+      expect(orderedSections[2].key).toBe(BudgetSection.CompositeBlocks);
     });
 
     it('should only include visible sections in ordered list', () => {
-      fixture.componentRef.setInput('sectionOrder', ['compositeBlocks', 'itemTables', 'simpleBlock']);
+      fixture.componentRef.setInput('sectionOrder', [BudgetSection.CompositeBlocks, BudgetSection.ItemTables, BudgetSection.SimpleBlock]);
       fixture.componentRef.setInput('totalBlocks', 100);
       fixture.componentRef.setInput('totalItems', 50);
       fixture.componentRef.setInput('totalSimpleBlock', 25);
@@ -230,9 +232,9 @@ describe('BudgetSummaryComponent', () => {
 
       // Only 2 sections should be visible (itemTables is hidden)
       expect(orderedSections.length).toBe(2);
-      expect(orderedSections[0].key).toBe('compositeBlocks');
-      expect(orderedSections[1].key).toBe('simpleBlock');
-      expect(orderedSections.find(s => s.key === 'itemTables')).toBeUndefined();
+      expect(orderedSections[0].key).toBe(BudgetSection.CompositeBlocks);
+      expect(orderedSections[1].key).toBe(BudgetSection.SimpleBlock);
+      expect(orderedSections.find(s => s.key === BudgetSection.ItemTables)).toBeUndefined();
     });
 
     it('should handle empty section order gracefully', () => {
@@ -248,8 +250,10 @@ describe('BudgetSummaryComponent', () => {
       expect(orderedSections.length).toBe(0);
     });
 
-    it('should handle unknown section keys in order', () => {
-      fixture.componentRef.setInput('sectionOrder', ['unknownSection', 'compositeBlocks', 'itemTables']);
+    it('should only include valid BudgetSection values in order', () => {
+      // When using BudgetSection enum, invalid values won't be accepted by TypeScript
+      // This test verifies only valid sections appear in the ordered list
+      fixture.componentRef.setInput('sectionOrder', [BudgetSection.CompositeBlocks, BudgetSection.ItemTables]);
       fixture.componentRef.setInput('totalBlocks', 100);
       fixture.componentRef.setInput('totalItems', 50);
       fixture.componentRef.setInput('showBlocks', true);
@@ -262,8 +266,8 @@ describe('BudgetSummaryComponent', () => {
 
       // Only valid sections should be included
       expect(orderedSections.length).toBe(2);
-      expect(orderedSections[0].key).toBe('compositeBlocks');
-      expect(orderedSections[1].key).toBe('itemTables');
+      expect(orderedSections[0].key).toBe(BudgetSection.CompositeBlocks);
+      expect(orderedSections[1].key).toBe(BudgetSection.ItemTables);
     });
   });
 });

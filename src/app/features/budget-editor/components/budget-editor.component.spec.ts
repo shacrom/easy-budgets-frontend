@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { BudgetSection, DEFAULT_SECTION_ORDER } from '../../../models/budget-section.model';
 
 describe('BudgetEditorComponent', () => {
   let component: BudgetEditorComponent;
@@ -56,7 +57,7 @@ describe('BudgetEditorComponent', () => {
     showConditions: true,
     showSummary: true,
     showSignature: true,
-    sectionOrder: ['compositeBlocks', 'itemTables', 'simpleBlock', 'conditions', 'summary', 'signature'],
+    sectionOrder: [...DEFAULT_SECTION_ORDER] as string[], // Cast to string[] for DB compatibility
     itemTablesSectionTitle: 'Elementos',
     conditionsTitle: 'Condiciones'
   };
@@ -223,12 +224,12 @@ describe('BudgetEditorComponent', () => {
     await fixture.whenStable();
 
     // Toggle text blocks
-    await component.toggleSection('compositeBlocks');
+    await component.toggleSection(BudgetSection.CompositeBlocks);
     expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { showCompositeBlocks: false });
     expect(component['showCompositeBlocks']()).toBe(false);
 
     // Toggle item tables (formerly materials)
-    await component.toggleSection('itemTables');
+    await component.toggleSection(BudgetSection.ItemTables);
     expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { showItemTables: false });
     expect(component['showItemTables']()).toBe(false);
   });
@@ -403,20 +404,20 @@ describe('BudgetEditorComponent', () => {
     });
 
     it('should toggle print options', () => {
-      component.togglePrintOption('compositeBlocks');
+      component.togglePrintOption(BudgetSection.CompositeBlocks);
       expect((component as any).printCompositeBlocks()).toBe(false);
 
-      component.togglePrintOption('itemTables');
+      component.togglePrintOption(BudgetSection.ItemTables);
       expect((component as any).printItemTables()).toBe(false);
 
-      component.togglePrintOption('compositeBlocks');
+      component.togglePrintOption(BudgetSection.CompositeBlocks);
       expect((component as any).printCompositeBlocks()).toBe(true);
     });
 
     it('should include print flags in PDF payload', () => {
       // Set some options to false
-      component.togglePrintOption('itemTables');
-      component.togglePrintOption('conditions');
+      component.togglePrintOption(BudgetSection.ItemTables);
+      component.togglePrintOption(BudgetSection.Conditions);
 
       const payload = (component as any).buildPdfPayload();
 
@@ -430,13 +431,12 @@ describe('BudgetEditorComponent', () => {
 
   describe('Section Reordering', () => {
     it('should initialize with default section order', () => {
-      const defaultOrder = ['compositeBlocks', 'itemTables', 'simpleBlock', 'conditions', 'summary', 'signature'];
-      expect(component['sectionOrder']()).toEqual(defaultOrder);
+      expect(component['sectionOrder']()).toEqual(DEFAULT_SECTION_ORDER);
     });
 
     it('should load section order from budget and migrate legacy keys', async () => {
       const legacyOrder = ['summary', 'textBlocks', 'materials', 'simpleBlock', 'conditions', 'signature'];
-      const expectedOrder = ['summary', 'compositeBlocks', 'itemTables', 'simpleBlock', 'conditions', 'signature'];
+      const expectedOrder: BudgetSection[] = [BudgetSection.Summary, BudgetSection.CompositeBlocks, BudgetSection.ItemTables, BudgetSection.SimpleBlock, BudgetSection.Conditions, BudgetSection.Signature];
       const budgetWithOrder = { ...mockBudget, sectionOrder: legacyOrder };
       supabaseServiceSpy.getBudget.mockReturnValue(Promise.resolve(budgetWithOrder as any));
 
@@ -447,7 +447,7 @@ describe('BudgetEditorComponent', () => {
     });
 
     it('should update section order on drop', () => {
-      const initialOrder = ['compositeBlocks', 'itemTables', 'simpleBlock', 'conditions', 'summary', 'signature'];
+      const initialOrder: BudgetSection[] = [BudgetSection.CompositeBlocks, BudgetSection.ItemTables, BudgetSection.SimpleBlock, BudgetSection.Conditions, BudgetSection.Summary, BudgetSection.Signature];
       component['sectionOrder'].set(initialOrder);
 
       // Simulate moving 'compositeBlocks' (index 0) to index 1
@@ -458,13 +458,13 @@ describe('BudgetEditorComponent', () => {
 
       component.drop(event);
 
-      const expectedOrder = ['itemTables', 'compositeBlocks', 'simpleBlock', 'conditions', 'summary', 'signature'];
+      const expectedOrder: BudgetSection[] = [BudgetSection.ItemTables, BudgetSection.CompositeBlocks, BudgetSection.SimpleBlock, BudgetSection.Conditions, BudgetSection.Summary, BudgetSection.Signature];
       expect(component['sectionOrder']()).toEqual(expectedOrder);
       expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { sectionOrder: expectedOrder });
     });
 
     it('should include section order in PDF payload', () => {
-      const customOrder = ['summary', 'compositeBlocks', 'itemTables', 'simpleBlock', 'conditions', 'signature'];
+      const customOrder: BudgetSection[] = [BudgetSection.Summary, BudgetSection.CompositeBlocks, BudgetSection.ItemTables, BudgetSection.SimpleBlock, BudgetSection.Conditions, BudgetSection.Signature];
       component['sectionOrder'].set(customOrder);
 
       const payload = (component as any).buildPdfPayload();

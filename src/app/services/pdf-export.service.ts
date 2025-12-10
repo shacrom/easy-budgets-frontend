@@ -8,6 +8,7 @@ import { ItemRow, ItemTable } from '../models/item-table.model';
 import { BudgetSummary, SummaryLine, SummaryLineType } from '../models/budget-summary.model';
 import { Condition } from '../models/conditions.model';
 import { SimpleBlock } from '../models/simple-block.model';
+import { BudgetSection, CONTENT_SECTIONS, DEFAULT_SECTION_ORDER } from '../models/budget-section.model';
 
 export interface BudgetPdfMetadata {
   id: number;
@@ -28,7 +29,7 @@ export interface BudgetPdfPayload {
   summary: BudgetSummary | null;
   itemsSectionTitle?: string;
   conditionsTitle?: string;
-  sectionOrder?: string[];
+  sectionOrder?: BudgetSection[];
   conditions?: Condition[];
   companyLogoUrl?: string;
   supplierLogoUrl?: string;
@@ -217,7 +218,7 @@ export class PdfExportService {
     const simpleBlockSectionTitle = simpleBlock?.sectionTitle || 'Bloque Simple';
 
     // Obtener el orden de secciones para el desglose del summary
-    const sectionOrder = payload.sectionOrder || ['compositeBlocks', 'itemTables', 'simpleBlock', 'summary', 'conditions', 'signature'];
+    const sectionOrder = payload.sectionOrder || DEFAULT_SECTION_ORDER;
 
     const summaryContent = (payload.printSummary !== false) ? this.buildSummarySection(
       payload.summary,
@@ -231,21 +232,23 @@ export class PdfExportService {
     const conditionsContent = (payload.printConditions !== false) ? this.buildConditionsSection(payload.conditionsTitle, payload.conditions) : null;
     const signatureContent = payload.showSignature !== false ? this.buildSignatureSection(payload.customer) : null;
 
-    const sectionMap: { [key: string]: Content[] } = {
-      'compositeBlocks': compositeBlocksContent.length > 0 ? compositeBlocksContent : [],
-      'itemTables': itemTablesContent.length > 0 ? itemTablesContent : [],
-      'simpleBlock': simpleBlockContent ? [simpleBlockContent] : [],
-      'summary': summaryContent ? [summaryContent] : [],
-      'conditions': conditionsContent ? [conditionsContent] : [],
-      'signature': signatureContent ? [signatureContent] : []
+    const sectionMap: { [key in BudgetSection]?: Content[] } = {
+      [BudgetSection.CompositeBlocks]: compositeBlocksContent.length > 0 ? compositeBlocksContent : [],
+      [BudgetSection.ItemTables]: itemTablesContent.length > 0 ? itemTablesContent : [],
+      [BudgetSection.SimpleBlock]: simpleBlockContent ? [simpleBlockContent] : [],
+      [BudgetSection.Summary]: summaryContent ? [summaryContent] : [],
+      [BudgetSection.Conditions]: conditionsContent ? [conditionsContent] : [],
+      [BudgetSection.Signature]: signatureContent ? [signatureContent] : []
     };
 
-    const order = payload.sectionOrder || ['compositeBlocks', 'itemTables', 'simpleBlock', 'summary', 'conditions', 'signature'];
+    const order = payload.sectionOrder || DEFAULT_SECTION_ORDER;
 
     // Agrupar secciones con su contenido (solo las que tienen contenido)
     const sectionsWithKeys = order
       .map(key => ({ key, content: sectionMap[key] }))
-      .filter(item => item.content && item.content.length > 0);
+      .filter((item): item is { key: BudgetSection; content: Content[] } =>
+        item.content !== undefined && item.content.length > 0
+      );
 
     const sections: Content[][] = sectionsWithKeys.map(s => s.content);
 
@@ -1156,7 +1159,7 @@ export class PdfExportService {
     itemsSectionTitle?: string,
     blocksSectionTitle?: string,
     simpleBlockSectionTitle?: string,
-    sectionOrder?: string[]
+    sectionOrder?: BudgetSection[]
   ): Content | null {
     if (!summary) {
       return null;
@@ -1219,19 +1222,19 @@ export class PdfExportService {
     };
 
     // Crear un mapa de categorías para poder ordenarlas según sectionOrder
-    const categoryMap: { [key: string]: () => void } = {
-      'compositeBlocks': () => {
+    const categoryMap: { [key in BudgetSection]?: () => void } = {
+      [BudgetSection.CompositeBlocks]: () => {
         if (summary.totalBlocks > 0) {
           pushCategory(`Total ${blocksSectionTitle || 'bloque compuesto'}`, summary.totalBlocks, blockBreakdown);
         }
       },
-      'itemTables': () => {
+      [BudgetSection.ItemTables]: () => {
         const totalItems = summary.totalItems ?? 0;
         if (totalItems > 0) {
           pushCategory(itemsSectionTitle || 'Partidas y equipamiento', totalItems, itemTablesBreakdown);
         }
       },
-      'simpleBlock': () => {
+      [BudgetSection.SimpleBlock]: () => {
         if (simpleBlockTotal > 0) {
           pushCategory(`Total ${simpleBlockSectionTitle || 'bloque simple'}`, simpleBlockTotal);
         }
@@ -1239,13 +1242,13 @@ export class PdfExportService {
     };
 
     // Usar sectionOrder para determinar el orden de las categorías en el desglose
-    const defaultOrder = ['compositeBlocks', 'itemTables', 'simpleBlock'];
-    const orderToUse = sectionOrder || defaultOrder;
+    const orderToUse = sectionOrder || CONTENT_SECTIONS;
 
     // Añadir categorías en el orden especificado
     orderToUse.forEach(key => {
-      if (categoryMap[key]) {
-        categoryMap[key]();
+      const categoryFn = categoryMap[key];
+      if (categoryFn) {
+        categoryFn();
       }
     });
 

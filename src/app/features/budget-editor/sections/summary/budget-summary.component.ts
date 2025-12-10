@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { BudgetSummary, SummaryLine, SummaryLineType } from '../../../../models/budget-summary.model';
 import { CompositeBlock } from '../../../../models/composite-block.model';
 import { ItemRow, ItemTable } from '../../../../models/item-table.model';
+import { BudgetSection, CONTENT_SECTIONS } from '../../../../models/budget-section.model';
 
 /**
  * Component to display the budget summary
@@ -38,7 +39,10 @@ export class BudgetSummaryComponent {
   itemTables = input<ItemTable[]>([]);
 
   // Input: section order from parent
-  sectionOrder = input<string[]>(['simpleBlock', 'compositeBlocks', 'itemTables']);
+  sectionOrder = input<BudgetSection[]>([...CONTENT_SECTIONS]);
+
+  // Expose BudgetSection enum to template
+  protected readonly BudgetSection = BudgetSection;
 
   // Inputs
   budgetId = input<number | null>(null);
@@ -124,15 +128,15 @@ export class BudgetSummaryComponent {
   // Computed: ordered sections for rendering
   protected readonly orderedSections = computed(() => {
     const order = this.sectionOrder();
-    const sections: Array<{ key: string; visible: boolean }> = [];
+    const sections: Array<{ key: BudgetSection; visible: boolean }> = [];
 
     for (const sectionKey of order) {
-      if (sectionKey === 'compositeBlocks' && this.hasBlocks()) {
-        sections.push({ key: 'compositeBlocks', visible: true });
-      } else if (sectionKey === 'itemTables' && this.hasItemTables()) {
-        sections.push({ key: 'itemTables', visible: true });
-      } else if (sectionKey === 'simpleBlock' && this.hasSimpleBlock()) {
-        sections.push({ key: 'simpleBlock', visible: true });
+      if (sectionKey === BudgetSection.CompositeBlocks && this.hasBlocks()) {
+        sections.push({ key: BudgetSection.CompositeBlocks, visible: true });
+      } else if (sectionKey === BudgetSection.ItemTables && this.hasItemTables()) {
+        sections.push({ key: BudgetSection.ItemTables, visible: true });
+      } else if (sectionKey === BudgetSection.SimpleBlock && this.hasSimpleBlock()) {
+        sections.push({ key: BudgetSection.SimpleBlock, visible: true });
       }
     }
 

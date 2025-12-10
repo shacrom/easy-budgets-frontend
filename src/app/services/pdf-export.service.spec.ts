@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { PdfExportService, BudgetPdfPayload } from './pdf-export.service';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
+import { BudgetSection, DEFAULT_SECTION_ORDER, CONTENT_SECTIONS } from '../models/budget-section.model';
 
 describe('PdfExportService', () => {
   let service: PdfExportService;
@@ -534,7 +535,7 @@ describe('PdfExportService', () => {
     it('should accept sectionOrder parameter', async () => {
       const payload = {
         ...mockPayload,
-        sectionOrder: ['simpleBlock', 'itemTables', 'compositeBlocks', 'summary', 'conditions', 'signature']
+        sectionOrder: [BudgetSection.SimpleBlock, BudgetSection.ItemTables, BudgetSection.CompositeBlocks, BudgetSection.Summary, BudgetSection.Conditions, BudgetSection.Signature]
       };
 
       pdfDocSpy.download.mockImplementation((fileName: string, cb: () => void) => {
@@ -559,14 +560,20 @@ describe('PdfExportService', () => {
     it.skip('should skip sections with no content even if in sectionOrder', async () => {
       // This test is complex to implement correctly due to how the PDF service
       // handles summary generation. Skipping for now.
-      const payload = {
+      const payload: BudgetPdfPayload = {
         ...mockPayload,
         blocks: [],
         summary: {
-          ...mockPayload.summary,
-          totalBlocks: 0
+          totalBlocks: 0,
+          totalItems: 200,
+          totalSimpleBlock: 200,
+          taxableBase: 400,
+          vatPercentage: 21,
+          vat: 84,
+          grandTotal: 484,
+          additionalLines: []
         },
-        sectionOrder: ['compositeBlocks', 'itemTables', 'simpleBlock']
+        sectionOrder: [BudgetSection.CompositeBlocks, BudgetSection.ItemTables, BudgetSection.SimpleBlock]
       };
 
       pdfDocSpy.download.mockImplementation((fileName: string, cb: () => void) => {
@@ -593,7 +600,7 @@ describe('PdfExportService', () => {
       const payload = {
         ...mockPayload,
         // Usar nombres nuevos en sectionOrder
-        sectionOrder: ['compositeBlocks', 'itemTables', 'simpleBlock']
+        sectionOrder: [BudgetSection.CompositeBlocks, BudgetSection.ItemTables, BudgetSection.SimpleBlock]
       };
 
       pdfDocSpy.download.mockImplementation((fileName: string, cb: () => void) => {
@@ -639,7 +646,7 @@ describe('PdfExportService', () => {
       const itemTables = [{ id: 1, title: 'Tabla Test', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
 
       // Orden personalizado: simpleBlock primero, luego itemTables, luego compositeBlocks
-      const customOrder = ['simpleBlock', 'itemTables', 'compositeBlocks'];
+      const customOrder: BudgetSection[] = [BudgetSection.SimpleBlock, BudgetSection.ItemTables, BudgetSection.CompositeBlocks];
 
       // @ts-ignore (private method)
       const section = service.buildSummarySection(
@@ -728,7 +735,7 @@ describe('PdfExportService', () => {
         'Partidas',
         'Bloque Compuesto',
         'Bloque Simple',
-        ['compositeBlocks', 'itemTables', 'simpleBlock']
+        [BudgetSection.CompositeBlocks, BudgetSection.ItemTables, BudgetSection.SimpleBlock]
       );
 
       const sectionStr = JSON.stringify(section);
@@ -756,7 +763,7 @@ describe('PdfExportService', () => {
       const itemTables = [{ id: 1, title: 'Mis Partidas', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 250, totalPrice: 250, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
 
       // itemTables antes de compositeBlocks
-      const customOrder = ['itemTables', 'compositeBlocks', 'simpleBlock'];
+      const customOrder: BudgetSection[] = [BudgetSection.ItemTables, BudgetSection.CompositeBlocks, BudgetSection.SimpleBlock];
 
       // @ts-ignore (private method)
       const section = service.buildSummarySection(
@@ -778,11 +785,11 @@ describe('PdfExportService', () => {
       expect(itemTablesIndex).toBeLessThan(compositeBlocksIndex);
     });
 
-    it('should ignore unknown keys in sectionOrder', () => {
+    it('should only render breakdown for sections with values in given order', () => {
       const summary = {
         totalBlocks: 100,
         totalItems: 200,
-        totalSimpleBlock: 0,
+        totalSimpleBlock: 0, // Sin bloque simple
         taxableBase: 300,
         vatPercentage: 21,
         vat: 63,
@@ -793,8 +800,8 @@ describe('PdfExportService', () => {
       const blocks = [{ id: 1, budgetId: 1, heading: 'Bloque', subtotal: 100, descriptions: [], orderIndex: 0 }];
       const itemTables = [{ id: 1, title: 'Tabla', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
 
-      // Incluye keys desconocidas que deben ser ignoradas
-      const orderWithUnknown = ['unknownSection', 'itemTables', 'anotherUnknown', 'compositeBlocks'];
+      // Orden: itemTables antes de compositeBlocks, simpleBlock sin valor no aparece
+      const customOrder: BudgetSection[] = [BudgetSection.ItemTables, BudgetSection.CompositeBlocks, BudgetSection.SimpleBlock];
 
       // @ts-ignore (private method)
       const section = service.buildSummarySection(
@@ -804,7 +811,7 @@ describe('PdfExportService', () => {
         'Partidas',
         'Bloques',
         'Simple',
-        orderWithUnknown
+        customOrder
       );
 
       const sectionStr = JSON.stringify(section);
@@ -816,8 +823,9 @@ describe('PdfExportService', () => {
       expect(itemTablesIndex).toBeGreaterThan(-1);
       expect(compositeBlocksIndex).toBeGreaterThan(-1);
       expect(itemTablesIndex).toBeLessThan(compositeBlocksIndex);
+      // Simple block no debe aparecer porque totalSimpleBlock es 0
+      expect(sectionStr).not.toContain('Total Simple');
     });
   });
 });
-
 

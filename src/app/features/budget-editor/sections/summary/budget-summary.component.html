@@ -36,7 +36,7 @@
       <!-- Ordered sections -->
       @for (section of orderedSections(); track section.key) {
         @switch (section.key) {
-          @case ('compositeBlocks') {
+          @case (BudgetSection.CompositeBlocks) {
             <!-- Blocks accordion -->
             <div class="accordion-item">
               <button type="button" class="accordion-trigger" (click)="toggleBlocksExpanded()">
@@ -73,7 +73,7 @@
               }
             </div>
           }
-          @case ('itemTables') {
+          @case (BudgetSection.ItemTables) {
             <!-- Item Tables accordion -->
             <div class="accordion-item">
               <button type="button" class="accordion-trigger" (click)="toggleItemTablesExpanded()">
@@ -130,7 +130,7 @@
               }
             </div>
           }
-          @case ('simpleBlock') {
+          @case (BudgetSection.SimpleBlock) {
             <!-- Simple Block section -->
             <div class="accordion-item">
               <div class="accordion-trigger" style="cursor: default;">
