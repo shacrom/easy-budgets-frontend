@@ -1,34 +1,11 @@
-.material-cell.description .input-field {
-  min-width: 220px;
-  width: 100%;
-  flex-grow: 2;
-}
-
-/* Keep description top-aligned so multi-line content starts at the same height */
-.material-cell.description {
-  @apply align-top;
-}
 @import "tailwindcss";
 
 :host {
   display: contents;
 }
-.material-row {
-  @apply border-b border-gray-200 hover:bg-gray-50 transition-colors;
-  position: relative;
-}
-
-.material-row.edit-mode {
-  @apply bg-gray-50;
-  z-index: 10;
-}
-
-.material-row.dropdown-active {
-  z-index: 100000 !important;
-}
 
 .material-cell {
-  @apply px-4 py-3 text-sm font-light align-middle; /* vertical center in table rows */
+  @apply px-4 py-3 text-sm font-light align-middle;
 }
 
 .material-cell.descripcion,
@@ -44,12 +21,8 @@
   z-index: 1;
 }
 
-.edit-mode .material-cell.reference {
-  z-index: 10;
-}
-
-.dropdown-active .material-cell.reference {
-  z-index: 100001 !important;
+.material-cell.reference:focus-within {
+  z-index: 10000;
 }
 
 .material-cell.cantidad {
@@ -87,6 +60,22 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.reference-dropdown-portal {
+  position: fixed;
+  width: max-content;
+  min-width: 450px;
+  max-width: 600px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  z-index: 99999;
+  padding: 0.5rem;
 }
 
 .reference-dropdown {

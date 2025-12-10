@@ -80,6 +80,7 @@
             <!-- colgroup removed: column widths are dynamic based on visible columns -->
             <thead>
               <tr>
+                <th class="drag-header"></th>
                 <th>
                   <div class="th-content">
                     <span>Referencia</span>
@@ -134,7 +135,7 @@
             <tbody cdkDropList (cdkDropListDropped)="drop($event, table.id)">
               @if (table.rows.length === 0) {
                 <tr>
-                  <td [attr.colspan]="6" class="empty-state">
+                  <td [attr.colspan]="8" class="empty-state">
                     <span class="material-symbols-rounded" aria-hidden="true">table_rows_narrow</span>
                     <p>Este bloque aún no tiene elementos.</p>
                     <button type="button" class="btn ghost" (click)="addNewRow(table.id)">
@@ -145,31 +146,31 @@
                 </tr>
               } @else {
                 @for (row of table.rows; track row.id) {
-                  <tr cdkDrag class="draggable-row">
-                    <td colspan="7" class="drag-cell">
+                  <tr cdkDrag class="material-row edit-mode draggable-row">
+                    <td class="drag-cell">
                       <div class="drag-handle" cdkDragHandle>
                         <span class="material-symbols-rounded">drag_indicator</span>
                       </div>
-                      <app-item-row
-                        [row]="row"
-                        [products]="products()"
-                        [showReference]="table.showReference ?? true"
-                        [showDescription]="table.showDescription ?? true"
-                        [showManufacturer]="table.showManufacturer ?? true"
-                        [showQuantity]="table.showQuantity ?? true"
-                        [showUnitPrice]="table.showUnitPrice ?? true"
-                        [showTotalPrice]="table.showTotalPrice ?? true"
-                        (deleteRequested)="deleteRow(table.id, $event)"
-                        (localValuesChanged)="onRowLocalChange()">
-                      </app-item-row>
                     </td>
+                    <app-item-row
+                      [row]="row"
+                      [products]="products()"
+                      [showReference]="table.showReference ?? true"
+                      [showDescription]="table.showDescription ?? true"
+                      [showManufacturer]="table.showManufacturer ?? true"
+                      [showQuantity]="table.showQuantity ?? true"
+                      [showUnitPrice]="table.showUnitPrice ?? true"
+                      [showTotalPrice]="table.showTotalPrice ?? true"
+                      (deleteRequested)="deleteRow(table.id, $event)"
+                      (localValuesChanged)="onRowLocalChange()">
+                    </app-item-row>
                   </tr>
                 }
               }
             </tbody>
             <tfoot>
               <tr>
-                <td [attr.colspan]="6" class="footer-label">Subtotal</td>
+                <td [attr.colspan]="7" class="footer-label">Subtotal</td>
                 <td class="footer-amount">
                   {{ tableTotal(table) | currency:'EUR':'symbol':'1.2-2':'es' }}
                 </td>

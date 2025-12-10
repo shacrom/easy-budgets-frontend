@@ -145,17 +145,21 @@
 }
 
 .table-wrapper {
-  @apply w-full overflow-x-auto;
+  @apply w-full;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 .item-table {
   @apply w-full border border-gray-200 text-sm;
   border-spacing: 0;
   border-collapse: separate;
+  overflow: visible;
 }
 
 .item-table tbody {
   isolation: auto;
+  overflow: visible;
 }
 
 .item-table thead {
@@ -218,20 +222,29 @@
 }
 
 /* Drag & Drop Styles */
+.drag-header {
+  @apply bg-gray-50 w-12;
+  padding: 0 !important;
+}
+
 .draggable-row {
-  @apply cursor-move;
+  @apply cursor-move border-b border-gray-200 hover:bg-gray-50 transition-colors;
   position: relative;
 }
 
+.material-row {
+  @apply bg-gray-50;
+}
+
 .drag-cell {
-  @apply p-0;
+  @apply p-0 w-12 align-middle;
   position: relative;
 }
 
 .drag-handle {
-  @apply absolute left-0 top-0 h-full flex items-center justify-center bg-gray-100 border-r border-gray-200 cursor-grab;
-  width: 2rem;
-  z-index: 1;
+  @apply flex items-center justify-center cursor-grab h-full;
+  width: 100%;
+  padding: 0.75rem 0;
 }
 
 .drag-handle:active {
@@ -243,18 +256,9 @@
   font-size: 1.25rem;
 }
 
-.draggable-row app-material-row {
-  @apply block;
-  margin-left: 2rem;
-}
-
 .cdk-drag-preview {
   @apply opacity-80 shadow-lg bg-white border border-gray-300;
   z-index: 1000;
-}
-
-.cdk-drag-preview app-material-row {
-  margin-left: 2rem;
 }
 
 .cdk-drag-animating {

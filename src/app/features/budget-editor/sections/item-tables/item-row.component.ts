@@ -35,6 +35,9 @@ export class ItemRowComponent implements OnInit {
   // Output: event when local values change (not saved yet)
   localValuesChanged = output<void>();
 
+  // Output: event when dropdown state changes
+  dropdownStateChanged = output<boolean>();
+
   // Local signals for form values
   protected readonly localReference = signal('');
   protected readonly localDescription = signal('');
@@ -53,6 +56,7 @@ export class ItemRowComponent implements OnInit {
   // Reference search helpers
   private readonly referenceSearchTerm = signal('');
   protected readonly referenceDropdownOpen = signal(false);
+  protected readonly dropdownPosition = signal({ top: 0, left: 0 });
   protected readonly referenceMatches = computed(() => {
     const catalog = this.products() ?? [];
     if (!catalog.length) {
@@ -73,6 +77,7 @@ export class ItemRowComponent implements OnInit {
   });
 
   private referenceDropdownTimeout: ReturnType<typeof setTimeout> | null = null;
+  @ViewChild('referenceInput') protected referenceInputRef?: ElementRef<HTMLInputElement>;
   @ViewChild('descTextarea') protected descTextareaRef?: ElementRef<HTMLTextAreaElement>;
 
   ngOnInit(): void {
@@ -127,14 +132,28 @@ export class ItemRowComponent implements OnInit {
   protected onUnitPriceChange(value: number): void {
     this.localUnitPrice.set(value ?? 0);
     this.localValuesChanged.emit();
-  }  protected openReferenceDropdown(): void {
+  }  protected openReferenceDropdown(event?: FocusEvent): void {
     this.clearDropdownTimeout();
+
+    // Calculate position for fixed dropdown
+    if (event && event.target instanceof HTMLElement) {
+      const rect = event.target.getBoundingClientRect();
+      this.dropdownPosition.set({
+        top: rect.bottom + 4,
+        left: rect.left
+      });
+    }
+
     this.referenceDropdownOpen.set(true);
+    this.dropdownStateChanged.emit(true);
   }
 
   protected closeReferenceDropdown(): void {
     this.clearDropdownTimeout();
-    this.referenceDropdownTimeout = setTimeout(() => this.referenceDropdownOpen.set(false), 120);
+    this.referenceDropdownTimeout = setTimeout(() => {
+      this.referenceDropdownOpen.set(false);
+      this.dropdownStateChanged.emit(false);
+    }, 120);
   }
 
   protected applyProductFromSuggestion(event: MouseEvent, product: Product): void {
