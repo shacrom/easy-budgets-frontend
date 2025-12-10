@@ -216,13 +216,17 @@ export class PdfExportService {
     const blocksSectionTitle = blocks[0]?.sectionTitle || 'Bloque Compuesto';
     const simpleBlockSectionTitle = simpleBlock?.sectionTitle || 'Bloque Simple';
 
+    // Obtener el orden de secciones para el desglose del summary
+    const sectionOrder = payload.sectionOrder || ['compositeBlocks', 'itemTables', 'simpleBlock', 'summary', 'conditions', 'signature'];
+
     const summaryContent = (payload.printSummary !== false) ? this.buildSummarySection(
       payload.summary,
       blocks,
       itemTables,
       itemsSectionTitle,
       blocksSectionTitle,
-      simpleBlockSectionTitle
+      simpleBlockSectionTitle,
+      sectionOrder
     ) : null;
     const conditionsContent = (payload.printConditions !== false) ? this.buildConditionsSection(payload.conditionsTitle, payload.conditions) : null;
     const signatureContent = payload.showSignature !== false ? this.buildSignatureSection(payload.customer) : null;
@@ -239,9 +243,11 @@ export class PdfExportService {
     const order = payload.sectionOrder || ['compositeBlocks', 'itemTables', 'simpleBlock', 'summary', 'conditions', 'signature'];
 
     // Agrupar secciones con su contenido (solo las que tienen contenido)
-    const sections: Content[][] = order
-      .map(key => sectionMap[key])
-      .filter(section => section && section.length > 0);
+    const sectionsWithKeys = order
+      .map(key => ({ key, content: sectionMap[key] }))
+      .filter(item => item.content && item.content.length > 0);
+
+    const sections: Content[][] = sectionsWithKeys.map(s => s.content);
 
     // Construir contenido con saltos de página solo entre secciones que existen
     const content: Content[] = [];
@@ -1149,7 +1155,8 @@ export class PdfExportService {
     itemTables: ItemTable[],
     itemsSectionTitle?: string,
     blocksSectionTitle?: string,
-    simpleBlockSectionTitle?: string
+    simpleBlockSectionTitle?: string,
+    sectionOrder?: string[]
   ): Content | null {
     if (!summary) {
       return null;
@@ -1211,18 +1218,36 @@ export class PdfExportService {
       });
     };
 
-    if (summary.totalBlocks > 0) {
-      pushCategory(`Total ${blocksSectionTitle || 'bloque compuesto'}`, summary.totalBlocks, blockBreakdown);
-    }
+    // Crear un mapa de categorías para poder ordenarlas según sectionOrder
+    const categoryMap: { [key: string]: () => void } = {
+      'compositeBlocks': () => {
+        if (summary.totalBlocks > 0) {
+          pushCategory(`Total ${blocksSectionTitle || 'bloque compuesto'}`, summary.totalBlocks, blockBreakdown);
+        }
+      },
+      'itemTables': () => {
+        const totalItems = summary.totalItems ?? 0;
+        if (totalItems > 0) {
+          pushCategory(itemsSectionTitle || 'Partidas y equipamiento', totalItems, itemTablesBreakdown);
+        }
+      },
+      'simpleBlock': () => {
+        if (simpleBlockTotal > 0) {
+          pushCategory(`Total ${simpleBlockSectionTitle || 'bloque simple'}`, simpleBlockTotal);
+        }
+      }
+    };
 
-    const totalItems = summary.totalItems ?? 0;
-    if (totalItems > 0) {
-      pushCategory(itemsSectionTitle || 'Partidas y equipamiento', totalItems, itemTablesBreakdown);
-    }
+    // Usar sectionOrder para determinar el orden de las categorías en el desglose
+    const defaultOrder = ['compositeBlocks', 'itemTables', 'simpleBlock'];
+    const orderToUse = sectionOrder || defaultOrder;
 
-    if (simpleBlockTotal > 0) {
-      pushCategory(`Total ${simpleBlockSectionTitle || 'bloque simple'}`, simpleBlockTotal);
-    }
+    // Añadir categorías en el orden especificado
+    orderToUse.forEach(key => {
+      if (categoryMap[key]) {
+        categoryMap[key]();
+      }
+    });
 
     if (summary.additionalLines?.length) {
       // Add an explicit header for additional lines so they don't appear visually
