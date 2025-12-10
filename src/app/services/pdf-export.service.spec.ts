@@ -614,5 +614,210 @@ describe('PdfExportService', () => {
       expect(itemsIndex).toBeLessThan(simpleBlockIndex);
     });
   });
+
+  // --- TESTS PARA ORDENAMIENTO DEL DESGLOSE EN EL SUMMARY ---
+  describe('Summary Breakdown Ordering', () => {
+    // Helper para encontrar el índice de aparición de un texto en el contenido del summary
+    function findBreakdownLabelIndex(section: any, labelText: string): number {
+      const sectionStr = JSON.stringify(section);
+      return sectionStr.indexOf(labelText);
+    }
+
+    it('should order summary breakdown categories according to sectionOrder', () => {
+      const summary = {
+        totalBlocks: 100,
+        totalItems: 200,
+        totalSimpleBlock: 300,
+        taxableBase: 600,
+        vatPercentage: 21,
+        vat: 126,
+        grandTotal: 726,
+        additionalLines: []
+      };
+
+      const blocks = [{ id: 1, budgetId: 1, heading: 'Bloque Test', subtotal: 100, descriptions: [], orderIndex: 0 }];
+      const itemTables = [{ id: 1, title: 'Tabla Test', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
+
+      // Orden personalizado: simpleBlock primero, luego itemTables, luego compositeBlocks
+      const customOrder = ['simpleBlock', 'itemTables', 'compositeBlocks'];
+
+      // @ts-ignore (private method)
+      const section = service.buildSummarySection(
+        summary,
+        blocks,
+        itemTables,
+        'Partidas',
+        'Bloque Compuesto',
+        'Bloque Simple',
+        customOrder
+      );
+
+      // Buscar las posiciones de cada categoría en el desglose
+      const simpleBlockIndex = findBreakdownLabelIndex(section, 'Total Bloque Simple');
+      const itemTablesIndex = findBreakdownLabelIndex(section, 'Partidas');
+      const compositeBlocksIndex = findBreakdownLabelIndex(section, 'Total Bloque Compuesto');
+
+      // Verificar que el orden sea: simpleBlock < itemTables < compositeBlocks
+      expect(simpleBlockIndex).toBeGreaterThan(-1);
+      expect(itemTablesIndex).toBeGreaterThan(-1);
+      expect(compositeBlocksIndex).toBeGreaterThan(-1);
+      expect(simpleBlockIndex).toBeLessThan(itemTablesIndex);
+      expect(itemTablesIndex).toBeLessThan(compositeBlocksIndex);
+    });
+
+    it('should use default order when sectionOrder is not provided', () => {
+      const summary = {
+        totalBlocks: 100,
+        totalItems: 200,
+        totalSimpleBlock: 300,
+        taxableBase: 600,
+        vatPercentage: 21,
+        vat: 126,
+        grandTotal: 726,
+        additionalLines: []
+      };
+
+      const blocks = [{ id: 1, budgetId: 1, heading: 'Bloque Test', subtotal: 100, descriptions: [], orderIndex: 0 }];
+      const itemTables = [{ id: 1, title: 'Tabla Test', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
+
+      // Sin sectionOrder (undefined)
+      // @ts-ignore (private method)
+      const section = service.buildSummarySection(
+        summary,
+        blocks,
+        itemTables,
+        'Partidas',
+        'Bloque Compuesto',
+        'Bloque Simple',
+        undefined
+      );
+
+      // Buscar las posiciones de cada categoría en el desglose
+      const compositeBlocksIndex = findBreakdownLabelIndex(section, 'Total Bloque Compuesto');
+      const itemTablesIndex = findBreakdownLabelIndex(section, 'Partidas');
+      const simpleBlockIndex = findBreakdownLabelIndex(section, 'Total Bloque Simple');
+
+      // Verificar que el orden por defecto sea: compositeBlocks < itemTables < simpleBlock
+      expect(compositeBlocksIndex).toBeGreaterThan(-1);
+      expect(itemTablesIndex).toBeGreaterThan(-1);
+      expect(simpleBlockIndex).toBeGreaterThan(-1);
+      expect(compositeBlocksIndex).toBeLessThan(itemTablesIndex);
+      expect(itemTablesIndex).toBeLessThan(simpleBlockIndex);
+    });
+
+    it('should only show categories with values greater than zero', () => {
+      const summary = {
+        totalBlocks: 0, // Sin bloques
+        totalItems: 200,
+        totalSimpleBlock: 300,
+        taxableBase: 500,
+        vatPercentage: 21,
+        vat: 105,
+        grandTotal: 605,
+        additionalLines: []
+      };
+
+      const blocks: any[] = [];
+      const itemTables = [{ id: 1, title: 'Tabla Test', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
+
+      // @ts-ignore (private method)
+      const section = service.buildSummarySection(
+        summary,
+        blocks,
+        itemTables,
+        'Partidas',
+        'Bloque Compuesto',
+        'Bloque Simple',
+        ['compositeBlocks', 'itemTables', 'simpleBlock']
+      );
+
+      const sectionStr = JSON.stringify(section);
+
+      // No debe aparecer la categoría de bloques compuestos
+      expect(sectionStr).not.toContain('Total Bloque Compuesto');
+      // Pero sí deben aparecer las otras categorías
+      expect(sectionStr).toContain('Partidas');
+      expect(sectionStr).toContain('Total Bloque Simple');
+    });
+
+    it('should handle itemTables before compositeBlocks in custom order', () => {
+      const summary = {
+        totalBlocks: 150,
+        totalItems: 250,
+        totalSimpleBlock: 0, // Sin bloque simple
+        taxableBase: 400,
+        vatPercentage: 21,
+        vat: 84,
+        grandTotal: 484,
+        additionalLines: []
+      };
+
+      const blocks = [{ id: 1, budgetId: 1, heading: 'Mi Bloque', subtotal: 150, descriptions: [], orderIndex: 0 }];
+      const itemTables = [{ id: 1, title: 'Mis Partidas', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 250, totalPrice: 250, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
+
+      // itemTables antes de compositeBlocks
+      const customOrder = ['itemTables', 'compositeBlocks', 'simpleBlock'];
+
+      // @ts-ignore (private method)
+      const section = service.buildSummarySection(
+        summary,
+        blocks,
+        itemTables,
+        'Partidas Custom',
+        'Bloques Custom',
+        'Simple Custom',
+        customOrder
+      );
+
+      const itemTablesIndex = findBreakdownLabelIndex(section, 'Partidas Custom');
+      const compositeBlocksIndex = findBreakdownLabelIndex(section, 'Total Bloques Custom');
+
+      // itemTables debe aparecer antes que compositeBlocks
+      expect(itemTablesIndex).toBeGreaterThan(-1);
+      expect(compositeBlocksIndex).toBeGreaterThan(-1);
+      expect(itemTablesIndex).toBeLessThan(compositeBlocksIndex);
+    });
+
+    it('should ignore unknown keys in sectionOrder', () => {
+      const summary = {
+        totalBlocks: 100,
+        totalItems: 200,
+        totalSimpleBlock: 0,
+        taxableBase: 300,
+        vatPercentage: 21,
+        vat: 63,
+        grandTotal: 363,
+        additionalLines: []
+      };
+
+      const blocks = [{ id: 1, budgetId: 1, heading: 'Bloque', subtotal: 100, descriptions: [], orderIndex: 0 }];
+      const itemTables = [{ id: 1, title: 'Tabla', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
+
+      // Incluye keys desconocidas que deben ser ignoradas
+      const orderWithUnknown = ['unknownSection', 'itemTables', 'anotherUnknown', 'compositeBlocks'];
+
+      // @ts-ignore (private method)
+      const section = service.buildSummarySection(
+        summary,
+        blocks,
+        itemTables,
+        'Partidas',
+        'Bloques',
+        'Simple',
+        orderWithUnknown
+      );
+
+      const sectionStr = JSON.stringify(section);
+
+      // Las categorías conocidas deben seguir apareciendo en el orden especificado
+      const itemTablesIndex = findBreakdownLabelIndex(section, 'Partidas');
+      const compositeBlocksIndex = findBreakdownLabelIndex(section, 'Total Bloques');
+
+      expect(itemTablesIndex).toBeGreaterThan(-1);
+      expect(compositeBlocksIndex).toBeGreaterThan(-1);
+      expect(itemTablesIndex).toBeLessThan(compositeBlocksIndex);
+    });
+  });
 });
+
 
