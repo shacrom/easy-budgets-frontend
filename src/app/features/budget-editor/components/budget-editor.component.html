@@ -52,6 +52,14 @@
       </button>
       <button
         type="button"
+        class="email-btn"
+        (click)="openSendEmailDialog()"
+        [disabled]="!isInitialized()">
+        <span class="material-symbols-rounded" aria-hidden="true">mail</span>
+        <span>Enviar por Email</span>
+      </button>
+      <button
+        type="button"
         class="export-btn"
         (click)="exportBudgetPdf()"
         [disabled]="!isInitialized() || pdfGenerating()">
@@ -62,7 +70,40 @@
     </div>
   </header>
 
-  <div class="editor-layout" [class.split-view]="showPdfPreview()">
+  <!-- Tab Navigation -->
+  <nav class="tab-navigation">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'editor'"
+      (click)="switchTab('editor')">
+      <span class="material-symbols-rounded">edit_document</span>
+      Editor
+    </button>
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'emailHistory'"
+      (click)="switchTab('emailHistory')">
+      <span class="material-symbols-rounded">history</span>
+      Historial de Emails
+    </button>
+  </nav>
+
+  <div class="editor-layout" [class.split-view]="showPdfPreview() && activeTab() === 'editor'">
+    <!-- Email History Tab -->
+    @if (activeTab() === 'emailHistory') {
+      <main class="app-main">
+        @if (currentBudgetId()) {
+          <app-email-history-tab
+            #emailHistoryTab
+            [budgetId]="currentBudgetId()!"
+            (retryEmail)="handleRetryEmail($event)"
+          />
+        }
+      </main>
+    } @else {
+    <!-- Editor Tab -->
     <main class="app-main">
     @if (!isInitialized()) {
       <div class="loading-container">
@@ -348,8 +389,9 @@
       }
     }
     </main>
+    }
 
-    @if (showPdfPreview()) {
+    @if (showPdfPreview() && activeTab() === 'editor') {
       <aside class="preview-sidebar">
         <div class="preview-sticky">
           <div class="preview-header">

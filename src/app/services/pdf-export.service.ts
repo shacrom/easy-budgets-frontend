@@ -153,6 +153,38 @@ export class PdfExportService {
     });
   }
 
+  /**
+   * Generates a PDF and returns it as a base64 string along with the size in MB.
+   * Useful for sending PDFs via email attachments.
+   * @param payload The budget data to generate the PDF from
+   * @returns Object with base64 string and size in MB for validation
+   */
+  async getBudgetPdfBase64(payload: BudgetPdfPayload): Promise<{ base64: string; sizeInMB: number }> {
+    if (typeof window === 'undefined') {
+      return { base64: '', sizeInMB: 0 };
+    }
+
+    this.ensureFontsRegistered();
+    const definition = await this.buildDocumentDefinition(payload);
+
+    return new Promise((resolve, reject) => {
+      try {
+        const pdfDocGenerator = pdfMake.createPdf(definition);
+
+        pdfDocGenerator.getBase64((base64) => {
+          // Calculate size in MB: base64 is ~33% larger than binary
+          // Actual binary size = base64.length * 0.75
+          const binarySize = base64.length * 0.75;
+          const sizeInMB = binarySize / (1024 * 1024);
+
+          resolve({ base64, sizeInMB });
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
   private ensureFontsRegistered(): void {
     if (this.fontsRegistered) {
       return;

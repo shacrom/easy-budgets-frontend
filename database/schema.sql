@@ -16,6 +16,9 @@ CREATE TYPE "BudgetAdditionalLineType" AS ENUM ('adjustment', 'discount', 'surch
 -- Estados de un presupuesto
 CREATE TYPE "BudgetStatus" AS ENUM ('not_completed', 'draft', 'pending', 'approved', 'rejected');
 
+-- Estados de envío de email
+CREATE TYPE "EmailStatus" AS ENUM ('pending', 'sent', 'failed');
+
 -- FUNCTIONS
 -- =============================================================================
 
@@ -247,6 +250,23 @@ CREATE TABLE "CompositeBlockTemplateSections" (
   CONSTRAINT "CompositeBlockTemplateSections_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "CompositeBlockTemplates"("id") ON DELETE CASCADE
 );
 
+-- Tabla: EmailLogs
+-- Registro de todos los emails enviados desde la aplicación
+CREATE TABLE "EmailLogs" (
+  "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "budgetId" bigint,
+  "recipientEmail" character varying NOT NULL,
+  "recipientName" character varying,
+  "subject" character varying NOT NULL,
+  "bodyText" text NOT NULL,
+  "status" "EmailStatus" NOT NULL DEFAULT 'pending'::"EmailStatus",
+  "errorMessage" text,
+  "sentAt" timestamp with time zone,
+  "createdAt" timestamp with time zone DEFAULT now(),
+  CONSTRAINT "EmailLogs_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "EmailLogs_budgetId_fkey" FOREIGN KEY ("budgetId") REFERENCES "Budgets"("id") ON DELETE CASCADE
+);
+
 -- TRIGGERS
 -- =============================================================================
 
@@ -298,6 +318,11 @@ CREATE INDEX "BudgetConditions_budgetId_idx" ON "BudgetConditions"("budgetId");
 CREATE INDEX "BudgetItemTables_budgetId_idx" ON "BudgetItemTables"("budgetId");
 CREATE INDEX "BudgetCompositeBlocks_budgetId_idx" ON "BudgetCompositeBlocks"("budgetId");
 
+-- Indexes for EmailLogs
+CREATE INDEX "EmailLogs_budgetId_createdAt_idx" ON "EmailLogs" ("budgetId", "createdAt" DESC);
+CREATE INDEX "EmailLogs_budgetId_status_idx" ON "EmailLogs" ("budgetId", "status");
+CREATE INDEX "EmailLogs_recipientEmail_idx" ON "EmailLogs" ("recipientEmail");
+
 -- NOTES
 -- =============================================================================
 --
@@ -309,6 +334,7 @@ CREATE INDEX "BudgetCompositeBlocks_budgetId_idx" ON "BudgetCompositeBlocks"("bu
 -- ENUMS:
 -- - BudgetAdditionalLineType: 'adjustment', 'discount', 'surcharge', 'tax'
 -- - BudgetStatus: 'not_completed', 'draft', 'pending', 'approved', 'rejected'
+-- - EmailStatus: 'pending', 'sent', 'failed'
 --
 -- SECTION TYPES:
 -- - compositeBlocks: Bloques compuestos con múltiples secciones de texto (antes textBlocks)
@@ -330,6 +356,7 @@ CREATE INDEX "BudgetCompositeBlocks_budgetId_idx" ON "BudgetCompositeBlocks"("bu
 -- - BudgetCompositeBlockSections → BudgetCompositeBlocks (many-to-one, CASCADE on delete)
 -- - ConditionTemplateSections → ConditionTemplates (many-to-one, CASCADE on delete)
 -- - CompositeBlockTemplateSections → CompositeBlockTemplates (many-to-one, CASCADE on delete)
+-- - EmailLogs → Budgets (many-to-one, optional, CASCADE on delete)
 --
 -- AUTO-UPDATE TRIGGERS:
 -- - Customers, Budgets, Products, BudgetSimpleBlocks, BudgetCompositeBlocks,
@@ -339,5 +366,6 @@ CREATE INDEX "BudgetCompositeBlocks_budgetId_idx" ON "BudgetCompositeBlocks"("bu
 -- MIGRATION HISTORY:
 -- - 20251201220651: Initial schema
 -- - 20251209174703: Renamed TextBlocks -> CompositeBlocks, Materials -> Items
+-- - 20251210161248: Added EmailLogs table for email tracking
 --
 
