@@ -4,9 +4,12 @@ on:
   push:
     branches:
       - develop
+  pull_request:
+    branches:
+      - develop
 
 concurrency:
-  group: dev-ci-${{ github.ref }}
+  group: dev-ci-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 permissions:
