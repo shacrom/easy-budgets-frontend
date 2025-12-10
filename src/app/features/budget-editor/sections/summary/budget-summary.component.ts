@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BudgetSummary, SummaryLine, SummaryLineType } from '../../../../models/budget-summary.model';
 import { CompositeBlock } from '../../../../models/composite-block.model';
-import { ItemRow, ItemTable, MaterialTable } from '../../../../models/item-table.model';
+import { ItemRow, ItemTable } from '../../../../models/item-table.model';
 
 /**
  * Component to display the budget summary
@@ -379,11 +379,11 @@ export class BudgetSummaryComponent {
     return this.nextClientId--;
   }
 
-  protected tableSubtotal(table: MaterialTable): number {
-    return table.rows.reduce((sum, material) => sum + material.totalPrice, 0);
+  protected tableSubtotal(table: ItemTable): number {
+    return table.rows.reduce((sum, item) => sum + item.totalPrice, 0);
   }
 
-  protected tableRowsLabel(table: MaterialTable): string {
+  protected tableRowsLabel(table: ItemTable): string {
     const count = table.rows.length;
     if (count === 0) {
       return 'Sin partidas';

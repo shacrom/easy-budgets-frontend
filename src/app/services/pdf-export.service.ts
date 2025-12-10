@@ -22,15 +22,11 @@ export interface BudgetPdfPayload {
   metadata: BudgetPdfMetadata | null;
   customer: Customer | null;
   blocks: CompositeBlock[];
-  // Support both old and new naming for backward compatibility
   items?: ItemRow[];
-  materials?: ItemRow[];
   itemTables?: ItemTable[];
-  materialTables?: ItemTable[];
   simpleBlock: SimpleBlock | null;
   summary: BudgetSummary | null;
   itemsSectionTitle?: string;
-  materialsSectionTitle?: string;
   conditionsTitle?: string;
   sectionOrder?: string[];
   conditions?: Condition[];
@@ -39,7 +35,6 @@ export interface BudgetPdfPayload {
   showSignature?: boolean;
   printCompositeBlocks?: boolean;
   printItemTables?: boolean;
-  printMaterials?: boolean;
   printSimpleBlock?: boolean;
   printConditions?: boolean;
   printSummary?: boolean;
@@ -208,14 +203,13 @@ export class PdfExportService {
 
 
     // Construir secciones individuales
-    // Usar nuevas propiedades con fallback a las antiguas para retrocompatibilidad
-    const itemTables = payload.itemTables ?? payload.materialTables ?? [];
-    const items = payload.items ?? payload.materials ?? [];
-    const itemsSectionTitle = payload.itemsSectionTitle ?? payload.materialsSectionTitle;
-    const printItemTables = payload.printItemTables ?? payload.printMaterials ?? true;
+    const itemTables = payload.itemTables ?? [];
+    const items = payload.items ?? [];
+    const itemsSectionTitle = payload.itemsSectionTitle;
+    const printItemTables = payload.printItemTables ?? true;
 
     const compositeBlocksContent = (payload.printCompositeBlocks !== false) ? this.buildCompositeBlocksSection(blocks) : [];
-    const materialsContent = (printItemTables !== false) ? this.buildMaterialsSection(itemTables, items, itemsSectionTitle) : [];
+    const itemTablesContent = (printItemTables !== false) ? this.buildItemTablesSection(itemTables, items, itemsSectionTitle) : [];
     const simpleBlockContent = (payload.printSimpleBlock !== false) ? this.buildSimpleBlockSection(simpleBlock) : null;
 
     // Obtener títulos personalizados
@@ -235,8 +229,7 @@ export class PdfExportService {
 
     const sectionMap: { [key: string]: Content[] } = {
       'compositeBlocks': compositeBlocksContent.length > 0 ? compositeBlocksContent : [],
-      'materials': materialsContent.length > 0 ? materialsContent : [],
-      'itemTables': materialsContent.length > 0 ? materialsContent : [],
+      'itemTables': itemTablesContent.length > 0 ? itemTablesContent : [],
       'simpleBlock': simpleBlockContent ? [simpleBlockContent] : [],
       'summary': summaryContent ? [summaryContent] : [],
       'conditions': conditionsContent ? [conditionsContent] : [],
@@ -751,9 +744,9 @@ export class PdfExportService {
     };
   }
 
-  private buildMaterialsSection(tables: ItemTable[], standaloneMaterials: ItemRow[], sectionTitle?: string): Content[] {
+  private buildItemTablesSection(tables: ItemTable[], standaloneItems: ItemRow[], sectionTitle?: string): Content[] {
     const groupedTables = tables ?? [];
-    const filteredStandalone = standaloneMaterials?.filter(material => !groupedTables.some(table => table.rows?.some(row => row.id === material.id))) ?? [];
+    const filteredStandalone = standaloneItems?.filter(item => !groupedTables.some(table => table.rows?.some(row => row.id === item.id))) ?? [];
 
     const allRows = [
       ...groupedTables.flatMap(table => table.rows ?? []),
@@ -769,7 +762,7 @@ export class PdfExportService {
 
     content.push(
       this.buildSectionHero({
-      title: sectionTitle || 'Materiales y equipamiento',
+      title: sectionTitle || 'Partidas y equipamiento',
       background: '#cbb39a'
       })
     );
@@ -784,7 +777,7 @@ export class PdfExportService {
         unitPrice: table.showUnitPrice ?? true,
         totalPrice: table.showTotalPrice ?? true
       } as const;
-      content.push(this.buildMaterialGroupCard(table.title, rows, visibility));
+      content.push(this.buildItemTableCard(table.title, rows, visibility));
     }
 
     if (filteredStandalone.length) {
@@ -796,7 +789,7 @@ export class PdfExportService {
         unitPrice: true,
         totalPrice: true
       } as const;
-      content.push(this.buildMaterialGroupCard('Materiales adicionales', filteredStandalone, defaultVisibility));
+      content.push(this.buildItemTableCard('Partidas adicionales', filteredStandalone, defaultVisibility));
     }
 
     content.push(this.buildCard([
@@ -811,7 +804,7 @@ export class PdfExportService {
     return content;
   }
 
-  private buildMaterialsTable(materials: ItemRow[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
+  private buildItemsTable(items: ItemRow[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
     const v = visibility ?? { reference: true, description: true, manufacturer: true, quantity: true, unitPrice: true, totalPrice: true };
     const headers: TableCell[] = [];
     const widths: (string | number)[] = [];
@@ -841,14 +834,14 @@ export class PdfExportService {
       widths.push('auto');
     }
 
-    const rows = materials.map(material => {
+    const rows = items.map(item => {
       const r: TableCell[] = [];
-      if (v.reference) r.push({ text: material.reference || '—', color: '#4b5563', fontSize: 9 } as TableCell);
-      if (v.description) r.push({ text: material.description || '—', fontSize: 10 } as TableCell);
-      if (v.manufacturer) r.push({ text: material.manufacturer || '—', color: '#6b7280', fontSize: 9 } as TableCell);
-      if (v.quantity) r.push({ text: this.formatQuantity(material.quantity), alignment: 'center' } as TableCell);
-      if (v.unitPrice) r.push({ text: this.formatCurrency(material.unitPrice), alignment: 'right' } as TableCell);
-      if (v.totalPrice) r.push({ text: this.formatCurrency(material.totalPrice), alignment: 'right', bold: true } as TableCell);
+      if (v.reference) r.push({ text: item.reference || '—', color: '#4b5563', fontSize: 9 } as TableCell);
+      if (v.description) r.push({ text: item.description || '—', fontSize: 10 } as TableCell);
+      if (v.manufacturer) r.push({ text: item.manufacturer || '—', color: '#6b7280', fontSize: 9 } as TableCell);
+      if (v.quantity) r.push({ text: this.formatQuantity(item.quantity), alignment: 'center' } as TableCell);
+      if (v.unitPrice) r.push({ text: this.formatCurrency(item.unitPrice), alignment: 'right' } as TableCell);
+      if (v.totalPrice) r.push({ text: this.formatCurrency(item.totalPrice), alignment: 'right', bold: true } as TableCell);
       return r;
     });
 
@@ -859,11 +852,11 @@ export class PdfExportService {
         widths,
         body
       },
-      layout: this.materialsTableLayout()
+      layout: this.itemsTableLayout()
     };
   }
 
-  private buildMaterialGroupCard(title: string, rows: ItemRow[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
+  private buildItemTableCard(title: string, rows: ItemRow[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
     const countLabel = rows.length === 1 ? '1 partida' : `${rows.length} partidas`;
     const subtotal = rows.reduce((sum, row) => sum + (row.totalPrice ?? 0), 0);
 
@@ -872,7 +865,7 @@ export class PdfExportService {
         {
           width: '*',
           stack: [
-            { text: title.toUpperCase(), style: 'materialsCardTitle' },
+            { text: title.toUpperCase(), style: 'itemsCardTitle' },
           ]
         }
       ],
@@ -881,9 +874,9 @@ export class PdfExportService {
     };
 
     const tableContent = rows.length
-      ? this.buildMaterialsTable(rows, visibility)
+      ? this.buildItemsTable(rows, visibility)
       : {
-          text: 'No hay materiales en este bloque.',
+          text: 'No hay partidas en esta tabla.',
           style: 'muted',
           italics: true
         };
@@ -930,7 +923,7 @@ export class PdfExportService {
     };
   }
 
-  private materialsTableLayout(): TableLayout {
+  private itemsTableLayout(): TableLayout {
     const borderColor = '#e5d5c2';
 
     return {
@@ -1053,9 +1046,9 @@ export class PdfExportService {
     ];
   }
 
-  private calculateMaterialTableTotal(table: ItemTable): number {
-    return table.rows.reduce((sum: number, material: ItemRow) => {
-      const total = material.totalPrice ?? (material.quantity ?? 0) * (material.unitPrice ?? 0);
+  private calculateItemTableTotal(table: ItemTable): number {
+    return table.rows.reduce((sum: number, item: ItemRow) => {
+      const total = item.totalPrice ?? (item.quantity ?? 0) * (item.unitPrice ?? 0);
       return sum + total;
     }, 0);
   }
@@ -1169,18 +1162,18 @@ export class PdfExportService {
       }))
       .filter(line => Number.isFinite(line.value));
 
-    const materialBreakdown = itemTables
+    const itemTablesBreakdown = itemTables
       .map(table => ({
         label: table.title?.trim() || 'Tabla sin título',
-        value: this.calculateMaterialTableTotal(table)
+        value: this.calculateItemTableTotal(table)
       }))
       .filter(line => Number.isFinite(line.value));
 
     // Use totalSimpleBlock with fallback to totalCountertop for backward compatibility
     const simpleBlockTotal = summary.totalSimpleBlock ?? 0;
 
-    // Calcular el subtotal base (use totalItems with fallback to totalMaterials for backward compatibility)
-    const itemsTotal = summary.totalItems ?? summary.totalMaterials ?? 0;
+    // Calcular el subtotal base
+    const itemsTotal = summary.totalItems ?? 0;
     const baseSubtotal = (summary.totalBlocks ?? 0) + itemsTotal + simpleBlockTotal;
 
     // Filtrar líneas opcionales para el cálculo de totales
@@ -1222,10 +1215,9 @@ export class PdfExportService {
       pushCategory(`Total ${blocksSectionTitle || 'bloque compuesto'}`, summary.totalBlocks, blockBreakdown);
     }
 
-    // Use totalItems with fallback to totalMaterials for backward compatibility
-    const totalItems = summary.totalItems ?? summary.totalMaterials ?? 0;
+    const totalItems = summary.totalItems ?? 0;
     if (totalItems > 0) {
-      pushCategory(itemsSectionTitle || 'Materiales y equipamiento', totalItems, materialBreakdown);
+      pushCategory(itemsSectionTitle || 'Partidas y equipamiento', totalItems, itemTablesBreakdown);
     }
 
     if (simpleBlockTotal > 0) {

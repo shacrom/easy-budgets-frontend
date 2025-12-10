@@ -169,6 +169,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
         this.printSummary();
         this.budgetMeta();
         this.conditionsTitle();
+        this.sectionOrder();
 
         // Update preview
         untracked(() => {

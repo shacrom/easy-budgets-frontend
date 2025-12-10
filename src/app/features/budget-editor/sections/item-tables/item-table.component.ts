@@ -7,8 +7,8 @@ import { Product } from '../../../../models/product.model';
 import { SupabaseService } from '../../../../services/supabase.service';
 
 /**
- * Container component for the materials table
- * Manages the complete list of budget materials
+ * Container component for the item tables section
+ * Manages the complete list of budget item tables
  */
 @Component({
   selector: 'app-item-table',
@@ -19,7 +19,7 @@ import { SupabaseService } from '../../../../services/supabase.service';
 })
 export class ItemTableComponent {
   private readonly defaultTableTitle = 'Título';
-  private readonly defaultSectionTitle = 'Materiales y equipamiento';
+  private readonly defaultSectionTitle = 'Partidas y equipamiento';
   private readonly supabase = inject(SupabaseService);
 
   // Section title (editable)

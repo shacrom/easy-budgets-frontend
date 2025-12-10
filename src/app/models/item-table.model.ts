@@ -1,6 +1,6 @@
 /**
  * Modelo para un elemento (fila) en una tabla de elementos
- * Puede representar materiales, iluminación, electrónicos, etc.
+ * Puede representar partidas de obra, iluminación, electrónicos, etc.
  * Mapea a la tabla BudgetItemTableRows en Supabase
  */
 export interface ItemTableRow {
@@ -36,9 +36,6 @@ export interface ItemTable {
   showTotalPrice?: boolean;
 }
 
-// Re-export with old names for backward compatibility during migration
-export type Material = ItemTableRow;
-export type MaterialTable = ItemTable;
 // Alias for cleaner naming
 export type ItemRow = ItemTableRow;
 

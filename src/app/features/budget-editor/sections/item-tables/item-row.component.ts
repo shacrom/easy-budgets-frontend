@@ -5,7 +5,7 @@ import { ItemRow } from '../../../../models/item-table.model';
 import { Product } from '../../../../models/product.model';
 
 /**
- * Component to display and edit a material row in the table
+ * Component to display and edit an item row in the table
  */
 @Component({
   selector: 'app-item-row',
@@ -29,7 +29,7 @@ export class ItemRowComponent implements OnInit {
   showUnitPrice = input<boolean>(true);
   showTotalPrice = input<boolean>(true);
 
-  // Output: event when user requests to delete material
+  // Output: event when user requests to delete item
   deleteRequested = output<number>();
 
   // Output: event when local values change (not saved yet)

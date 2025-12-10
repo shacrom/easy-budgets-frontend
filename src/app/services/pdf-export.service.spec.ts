@@ -35,8 +35,8 @@ describe('PdfExportService', () => {
     items: [
       {
         id: 1,
-        reference: 'MAT-001',
-        description: 'Material 1',
+        reference: 'ITEM-001',
+        description: 'Partida 1',
         quantity: 2,
         unitPrice: 50,
         totalPrice: 100,
@@ -51,8 +51,8 @@ describe('PdfExportService', () => {
             rows: [
                  {
                     id: 2,
-                    reference: 'MAT-002',
-                    description: 'Material 2',
+                    reference: 'ITEM-002',
+                    description: 'Partida 2',
                     quantity: 1,
                     unitPrice: 20,
                     totalPrice: 20,
@@ -523,7 +523,7 @@ describe('PdfExportService', () => {
       // Buscar índices de aparición de los hero titles de cada sección
       // El orden por defecto es: compositeBlocks, itemTables, simpleBlock, summary, conditions, signature
       const blocksIndex = findSectionHeroIndex(content, 'BLOQUE COMPUESTO');
-      const itemsIndex = findSectionHeroIndex(content, 'MATERIALES Y EQUIPAMIENTO');
+      const itemsIndex = findSectionHeroIndex(content, 'PARTIDAS Y EQUIPAMIENTO');
       const simpleBlockIndex = findSectionHeroIndex(content, 'BLOQUE SIMPLE');
 
       // En el orden por defecto, compositeBlocks debe aparecer primero
@@ -547,7 +547,7 @@ describe('PdfExportService', () => {
       const content = docDefinition.content;
 
       const simpleBlockIndex = findSectionHeroIndex(content, 'BLOQUE SIMPLE');
-      const itemsIndex = findSectionHeroIndex(content, 'MATERIALES Y EQUIPAMIENTO');
+      const itemsIndex = findSectionHeroIndex(content, 'PARTIDAS Y EQUIPAMIENTO');
       const blocksIndex = findSectionHeroIndex(content, 'BLOQUE COMPUESTO');
 
       // Verify all sections are present in the PDF
@@ -579,7 +579,7 @@ describe('PdfExportService', () => {
       const content = docDefinition.content;
       const contentStr = JSON.stringify(content);
 
-      const itemsHeroIndex = findSectionHeroIndex(content, 'MATERIALES Y EQUIPAMIENTO');
+      const itemsHeroIndex = findSectionHeroIndex(content, 'PARTIDAS Y EQUIPAMIENTO');
       const simpleBlockHeroIndex = findSectionHeroIndex(content, 'BLOQUE SIMPLE');
 
       expect(contentStr).not.toContain('Total bloque compuesto');
@@ -589,11 +589,11 @@ describe('PdfExportService', () => {
       expect(simpleBlockHeroIndex).toBeGreaterThan(-1);
     });
 
-    it('should handle legacy section keys (textBlocks, materials) and map them correctly', async () => {
+    it('should respect custom section order with new naming (compositeBlocks, itemTables)', async () => {
       const payload = {
         ...mockPayload,
-        // Usar nombres legacy en sectionOrder
-        sectionOrder: ['textBlocks', 'materials', 'simpleBlock']
+        // Usar nombres nuevos en sectionOrder
+        sectionOrder: ['compositeBlocks', 'itemTables', 'simpleBlock']
       };
 
       pdfDocSpy.download.mockImplementation((fileName: string, cb: () => void) => {
@@ -606,12 +606,10 @@ describe('PdfExportService', () => {
       const content = docDefinition.content;
 
       const blocksIndex = findSectionHeroIndex(content, 'BLOQUE COMPUESTO');
-      const itemsIndex = findSectionHeroIndex(content, 'MATERIALES Y EQUIPAMIENTO');
+      const itemsIndex = findSectionHeroIndex(content, 'PARTIDAS Y EQUIPAMIENTO');
       const simpleBlockIndex = findSectionHeroIndex(content, 'BLOQUE SIMPLE');
 
-      // 'textBlocks' debería mapearse a compositeBlocks
-      // 'materials' debería mapearse a itemTables
-      // El orden debe ser: compositeBlocks < itemTables < simpleBlock
+      // Verificar que el orden sea correcto: compositeBlocks < itemTables < simpleBlock
       expect(blocksIndex).toBeLessThan(itemsIndex);
       expect(itemsIndex).toBeLessThan(simpleBlockIndex);
     });
