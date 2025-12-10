@@ -37,6 +37,9 @@ export class BudgetSummaryComponent {
   items = input<ItemRow[]>([]);
   itemTables = input<ItemTable[]>([]);
 
+  // Input: section order from parent
+  sectionOrder = input<string[]>(['simpleBlock', 'compositeBlocks', 'itemTables']);
+
   // Inputs
   budgetId = input<number | null>(null);
 
@@ -117,6 +120,24 @@ export class BudgetSummaryComponent {
   protected readonly hasItemTables = computed(() => this.showItemTables() && (this.items().length > 0 || this.itemTables().length > 0));
   protected readonly hasItemTablesData = computed(() => this.itemTables().length > 0);
   protected readonly hasSimpleBlock = computed(() => this.showSimpleBlock());
+
+  // Computed: ordered sections for rendering
+  protected readonly orderedSections = computed(() => {
+    const order = this.sectionOrder();
+    const sections: Array<{ key: string; visible: boolean }> = [];
+
+    for (const sectionKey of order) {
+      if (sectionKey === 'compositeBlocks' && this.hasBlocks()) {
+        sections.push({ key: 'compositeBlocks', visible: true });
+      } else if (sectionKey === 'itemTables' && this.hasItemTables()) {
+        sections.push({ key: 'itemTables', visible: true });
+      } else if (sectionKey === 'simpleBlock' && this.hasSimpleBlock()) {
+        sections.push({ key: 'simpleBlock', visible: true });
+      }
+    }
+
+    return sections;
+  });
 
   // Computed values
   // Computed: effective totals based on visibility

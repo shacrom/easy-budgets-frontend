@@ -33,117 +33,120 @@
 
   <div class="summary-card">
     <div class="accordion">
-      <!-- Blocks accordion -->
-      @if (hasBlocks()) {
-        <div class="accordion-item">
-          <button type="button" class="accordion-trigger" (click)="toggleBlocksExpanded()">
-            <div class="trigger-label">
-              <span class="material-symbols-rounded" aria-hidden="true">layers</span>
-              <div>
-                <span class="trigger-title">{{ blocksSectionTitle() }}</span>
-                <small>{{ blocks().length === 1 ? '1 bloque' : blocks().length + ' bloques' }}</small>
-              </div>
-            </div>
-            <div class="trigger-value">
-              <span>{{ effectiveTotalBlocks() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-              <span class="material-symbols-rounded" aria-hidden="true">
-                {{ blocksExpanded() ? 'expand_less' : 'expand_more' }}
-              </span>
-            </div>
-          </button>
-          @if (blocksExpanded() && blocks().length > 0) {
-            <div class="accordion-panel">
-              @for (block of blocks(); track block.id) {
-                <div class="detail-row">
+      <!-- Ordered sections -->
+      @for (section of orderedSections(); track section.key) {
+        @switch (section.key) {
+          @case ('compositeBlocks') {
+            <!-- Blocks accordion -->
+            <div class="accordion-item">
+              <button type="button" class="accordion-trigger" (click)="toggleBlocksExpanded()">
+                <div class="trigger-label">
+                  <span class="material-symbols-rounded" aria-hidden="true">layers</span>
                   <div>
-                    <p class="detail-title">{{ block.heading || 'Bloque sin título' }}</p>
-                    <p class="detail-subtitle">
-                      {{ (block.descriptions?.length ?? 0) > 0 ? (block.descriptions?.length ?? 0) + ' secciones' : 'Sin secciones adicionales' }}
-                    </p>
+                    <span class="trigger-title">{{ blocksSectionTitle() }}</span>
+                    <small>{{ blocks().length === 1 ? '1 bloque' : blocks().length + ' bloques' }}</small>
                   </div>
-                  <span class="detail-value">
-                    {{ block.subtotal | currency:'EUR':'symbol':'1.2-2':'es' }}
+                </div>
+                <div class="trigger-value">
+                  <span>{{ effectiveTotalBlocks() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+                  <span class="material-symbols-rounded" aria-hidden="true">
+                    {{ blocksExpanded() ? 'expand_less' : 'expand_more' }}
                   </span>
+                </div>
+              </button>
+              @if (blocksExpanded() && blocks().length > 0) {
+                <div class="accordion-panel">
+                  @for (block of blocks(); track block.id) {
+                    <div class="detail-row">
+                      <div>
+                        <p class="detail-title">{{ block.heading || 'Bloque sin título' }}</p>
+                        <p class="detail-subtitle">
+                          {{ (block.descriptions?.length ?? 0) > 0 ? (block.descriptions?.length ?? 0) + ' secciones' : 'Sin secciones adicionales' }}
+                        </p>
+                      </div>
+                      <span class="detail-value">
+                        {{ block.subtotal | currency:'EUR':'symbol':'1.2-2':'es' }}
+                      </span>
+                    </div>
+                  }
                 </div>
               }
             </div>
           }
-        </div>
-      }
-
-      <!-- Item Tables accordion -->
-      @if (hasItemTables()) {
-        <div class="accordion-item">
-          <button type="button" class="accordion-trigger" (click)="toggleItemTablesExpanded()">
-            <div class="trigger-label">
-              <span class="material-symbols-rounded" aria-hidden="true">table_chart</span>
-              <div>
-                <span class="trigger-title">{{ itemsSectionTitle() }}</span>
-                <small>
+          @case ('itemTables') {
+            <!-- Item Tables accordion -->
+            <div class="accordion-item">
+              <button type="button" class="accordion-trigger" (click)="toggleItemTablesExpanded()">
+                <div class="trigger-label">
+                  <span class="material-symbols-rounded" aria-hidden="true">table_chart</span>
+                  <div>
+                    <span class="trigger-title">{{ itemsSectionTitle() }}</span>
+                    <small>
+                      @if (hasItemTablesData()) {
+                        {{ itemTables().length === 1 ? '1 tabla' : itemTables().length + ' tablas' }}
+                      } @else {
+                        {{ items().length === 1 ? '1 partida' : items().length + ' partidas' }}
+                      }
+                    </small>
+                  </div>
+                </div>
+                <div class="trigger-value">
+                  <span>{{ effectiveTotalItems() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+                  <span class="material-symbols-rounded" aria-hidden="true">
+                    {{ itemTablesExpanded() ? 'expand_less' : 'expand_more' }}
+                  </span>
+                </div>
+              </button>
+              @if (itemTablesExpanded() && (hasItemTablesData() || items().length > 0)) {
+                <div class="accordion-panel">
                   @if (hasItemTablesData()) {
-                    {{ itemTables().length === 1 ? '1 tabla' : itemTables().length + ' tablas' }}
+                    @for (table of itemTables(); track table.id) {
+                      <div class="detail-row">
+                        <div>
+                          <p class="detail-title">{{ table.title || 'Tabla sin título' }}</p>
+                          <p class="detail-subtitle">{{ tableRowsLabel(table) }}</p>
+                        </div>
+                        <span class="detail-value">
+                          {{ tableSubtotal(table) | currency:'EUR':'symbol':'1.2-2':'es' }}
+                        </span>
+                      </div>
+                    }
                   } @else {
-                    {{ items().length === 1 ? '1 partida' : items().length + ' partidas' }}
+                    @for (item of items(); track item.id) {
+                      <div class="detail-row">
+                        <div>
+                          <p class="detail-title">{{ item.description || 'Elemento sin descripción' }}</p>
+                          <p class="detail-subtitle">
+                            {{ item.manufacturer || 'Fabricante no definido' }} | Ref: {{ item.reference || '—' }}
+                          </p>
+                        </div>
+                        <span class="detail-value">
+                          {{ item.totalPrice | currency:'EUR':'symbol':'1.2-2':'es' }}
+                        </span>
+                      </div>
+                    }
                   }
-                </small>
-              </div>
-            </div>
-            <div class="trigger-value">
-              <span>{{ effectiveTotalItems() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-              <span class="material-symbols-rounded" aria-hidden="true">
-                {{ itemTablesExpanded() ? 'expand_less' : 'expand_more' }}
-              </span>
-            </div>
-          </button>
-          @if (itemTablesExpanded() && (hasItemTablesData() || items().length > 0)) {
-            <div class="accordion-panel">
-              @if (hasItemTablesData()) {
-                @for (table of itemTables(); track table.id) {
-                  <div class="detail-row">
-                    <div>
-                      <p class="detail-title">{{ table.title || 'Tabla sin título' }}</p>
-                      <p class="detail-subtitle">{{ tableRowsLabel(table) }}</p>
-                    </div>
-                    <span class="detail-value">
-                      {{ tableSubtotal(table) | currency:'EUR':'symbol':'1.2-2':'es' }}
-                    </span>
-                  </div>
-                }
-              } @else {
-                @for (item of items(); track item.id) {
-                  <div class="detail-row">
-                    <div>
-                      <p class="detail-title">{{ item.description || 'Elemento sin descripción' }}</p>
-                      <p class="detail-subtitle">
-                        {{ item.manufacturer || 'Fabricante no definido' }} | Ref: {{ item.reference || '—' }}
-                      </p>
-                    </div>
-                    <span class="detail-value">
-                      {{ item.totalPrice | currency:'EUR':'symbol':'1.2-2':'es' }}
-                    </span>
-                  </div>
-                }
+                </div>
               }
             </div>
           }
-        </div>
-      }
-
-      <!-- Simple Block section -->
-      @if (hasSimpleBlock()) {
-        <div class="accordion-item">
-          <div class="accordion-trigger" style="cursor: default;">
-            <div class="trigger-label">
-              <span class="material-symbols-rounded" aria-hidden="true">article</span>
-              <div>
-                <span class="trigger-title">{{ simpleBlockSectionTitle() || 'Bloque Simple' }}</span>
+          @case ('simpleBlock') {
+            <!-- Simple Block section -->
+            <div class="accordion-item">
+              <div class="accordion-trigger" style="cursor: default;">
+                <div class="trigger-label">
+                  <span class="material-symbols-rounded" aria-hidden="true">article</span>
+                  <div>
+                    <span class="trigger-title">{{ simpleBlockSectionTitle() || 'Bloque Simple' }}</span>
+                  </div>
+                </div>
+                <div class="trigger-value">
+                  <span>{{ effectiveTotalSimpleBlock() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+                </div>
               </div>
             </div>
-            <div class="trigger-value">
-              <span>{{ effectiveTotalSimpleBlock() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
-            </div>
-          </div>
-        </div>
+          }
+        }
       }
 
       <div class="summary-row subtotal">

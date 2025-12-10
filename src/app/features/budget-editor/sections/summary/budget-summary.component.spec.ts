@@ -172,4 +172,98 @@ describe('BudgetSummaryComponent', () => {
       expect(component['hasUnsavedChanges']()).toBe(false);
     });
   });
+
+  describe('Section Ordering', () => {
+    it('should render sections in default order (simpleBlock, compositeBlocks, itemTables)', () => {
+      // Setup data for all sections
+      fixture.componentRef.setInput('totalBlocks', 100);
+      fixture.componentRef.setInput('totalItems', 50);
+      fixture.componentRef.setInput('totalSimpleBlock', 25);
+      fixture.componentRef.setInput('showBlocks', true);
+      fixture.componentRef.setInput('showItemTables', true);
+      fixture.componentRef.setInput('showSimpleBlock', true);
+      fixture.componentRef.setInput('blocks', [{ id: 1, heading: 'Block 1', subtotal: 100, sectionTitle: 'Bloques' }]);
+      fixture.componentRef.setInput('items', [{ id: 1, description: 'Item 1', totalPrice: 50 }]);
+      fixture.detectChanges();
+
+      const orderedSections = component['orderedSections']();
+
+      expect(orderedSections.length).toBe(3);
+      expect(orderedSections[0].key).toBe('simpleBlock');
+      expect(orderedSections[1].key).toBe('compositeBlocks');
+      expect(orderedSections[2].key).toBe('itemTables');
+    });
+
+    it('should render sections in custom order', () => {
+      // Setup custom order: itemTables, simpleBlock, compositeBlocks
+      fixture.componentRef.setInput('sectionOrder', ['itemTables', 'simpleBlock', 'compositeBlocks']);
+      fixture.componentRef.setInput('totalBlocks', 100);
+      fixture.componentRef.setInput('totalItems', 50);
+      fixture.componentRef.setInput('totalSimpleBlock', 25);
+      fixture.componentRef.setInput('showBlocks', true);
+      fixture.componentRef.setInput('showItemTables', true);
+      fixture.componentRef.setInput('showSimpleBlock', true);
+      fixture.componentRef.setInput('blocks', [{ id: 1, heading: 'Block 1', subtotal: 100 }]);
+      fixture.componentRef.setInput('items', [{ id: 1, description: 'Item 1', totalPrice: 50 }]);
+      fixture.detectChanges();
+
+      const orderedSections = component['orderedSections']();
+
+      expect(orderedSections.length).toBe(3);
+      expect(orderedSections[0].key).toBe('itemTables');
+      expect(orderedSections[1].key).toBe('simpleBlock');
+      expect(orderedSections[2].key).toBe('compositeBlocks');
+    });
+
+    it('should only include visible sections in ordered list', () => {
+      fixture.componentRef.setInput('sectionOrder', ['compositeBlocks', 'itemTables', 'simpleBlock']);
+      fixture.componentRef.setInput('totalBlocks', 100);
+      fixture.componentRef.setInput('totalItems', 50);
+      fixture.componentRef.setInput('totalSimpleBlock', 25);
+      fixture.componentRef.setInput('showBlocks', true);
+      fixture.componentRef.setInput('showItemTables', false); // Hidden
+      fixture.componentRef.setInput('showSimpleBlock', true);
+      fixture.componentRef.setInput('blocks', [{ id: 1, heading: 'Block 1', subtotal: 100 }]);
+      fixture.detectChanges();
+
+      const orderedSections = component['orderedSections']();
+
+      // Only 2 sections should be visible (itemTables is hidden)
+      expect(orderedSections.length).toBe(2);
+      expect(orderedSections[0].key).toBe('compositeBlocks');
+      expect(orderedSections[1].key).toBe('simpleBlock');
+      expect(orderedSections.find(s => s.key === 'itemTables')).toBeUndefined();
+    });
+
+    it('should handle empty section order gracefully', () => {
+      fixture.componentRef.setInput('sectionOrder', []);
+      fixture.componentRef.setInput('totalBlocks', 100);
+      fixture.componentRef.setInput('showBlocks', true);
+      fixture.componentRef.setInput('blocks', [{ id: 1, heading: 'Block 1', subtotal: 100 }]);
+      fixture.detectChanges();
+
+      const orderedSections = component['orderedSections']();
+
+      // No sections should be rendered with empty order
+      expect(orderedSections.length).toBe(0);
+    });
+
+    it('should handle unknown section keys in order', () => {
+      fixture.componentRef.setInput('sectionOrder', ['unknownSection', 'compositeBlocks', 'itemTables']);
+      fixture.componentRef.setInput('totalBlocks', 100);
+      fixture.componentRef.setInput('totalItems', 50);
+      fixture.componentRef.setInput('showBlocks', true);
+      fixture.componentRef.setInput('showItemTables', true);
+      fixture.componentRef.setInput('blocks', [{ id: 1, heading: 'Block 1', subtotal: 100 }]);
+      fixture.componentRef.setInput('items', [{ id: 1, description: 'Item 1', totalPrice: 50 }]);
+      fixture.detectChanges();
+
+      const orderedSections = component['orderedSections']();
+
+      // Only valid sections should be included
+      expect(orderedSections.length).toBe(2);
+      expect(orderedSections[0].key).toBe('compositeBlocks');
+      expect(orderedSections[1].key).toBe('itemTables');
+    });
+  });
 });
