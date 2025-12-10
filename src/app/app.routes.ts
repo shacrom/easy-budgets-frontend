@@ -19,6 +19,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/products/components/products-catalog.component').then(m => m.ProductsCatalogComponent)
   },
   {
+    path: 'emails',
+    loadComponent: () => import('./features/budget-editor/sections/email-history/email-history-tab.component').then(m => m.EmailHistoryTabComponent)
+  },
+  {
     path: 'clientes',
     loadComponent: () => import('./features/customers/components/customers-page.component').then(m => m.CustomersPageComponent)
   }

@@ -1,19 +1,23 @@
 import { Component, signal, inject, effect, computed, untracked, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { MatDialog } from '@angular/material/dialog';
 import { CompositeBlocksComponent } from '../sections/composite-blocks/composite-blocks.component';
 import { ItemTableComponent } from '../sections/item-tables/item-table.component';
 import { BudgetSummaryComponent } from '../sections/summary/budget-summary.component';
 import { GeneralConditionsComponent } from '../sections/conditions/general-conditions.component';
 import { CustomerSelectorComponent } from '../../customers/components/customer-selector.component';
+import { SendEmailDialogComponent } from './send-email-dialog.component';
 import { CompositeBlock } from '../../../models/composite-block.model';
 import { ItemRow, ItemTable } from '../../../models/item-table.model';
 import { Customer } from '../../../models/customer.model';
 import { BudgetSummary, SummaryLine } from '../../../models/budget-summary.model';
 import { Condition } from '../../../models/conditions.model';
 import { BudgetSection, DEFAULT_SECTION_ORDER, migrateSectionOrder } from '../../../models/budget-section.model';
+import { EmailLog, SendEmailDialogData, SendEmailDialogResult } from '../../../models/email-log.model';
 import { SupabaseService } from '../../../services/supabase.service';
 import { PdfExportService, BudgetPdfPayload, BudgetPdfMetadata } from '../../../services/pdf-export.service';
+import { NotificationService } from '../../../services/notification.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SimpleBlockEditorComponent } from '../sections/simple-block/simple-block-editor.component';
@@ -41,6 +45,8 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
+  private readonly notification = inject(NotificationService);
   private readonly routeParams = toSignal(this.route.paramMap);
 
   @ViewChild('pdfIframe') pdfIframeRef!: ElementRef<HTMLIFrameElement>;
@@ -1077,4 +1083,55 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       this.pdfUpdateDebounceTimer = null;
     }
   }
+
+  // ============================================
+  // TAB NAVIGATION
+  // ============================================
+
+
+
+  // ============================================
+  // EMAIL FUNCTIONALITY
+  // ============================================
+
+  /**
+   * Opens the send email dialog with optional prefill data for retries
+   */
+  openSendEmailDialog(prefillData?: { email: string; subject: string; bodyText: string }): void {
+    const budgetId = this.currentBudgetId();
+    if (!budgetId) {
+      this.notification.showError('No se puede enviar el email sin un presupuesto válido');
+      return;
+    }
+
+    const meta = this.budgetMeta();
+    const customer = this.selectedCustomer();
+
+    const dialogData: SendEmailDialogData & { pdfPayload: BudgetPdfPayload } = {
+      customerEmail: customer?.email,
+      customerName: customer?.name,
+      budgetNumber: meta?.budgetNumber || `#${budgetId}`,
+      budgetTitle: meta?.title || '',
+      budgetId,
+      prefillData,
+      pdfPayload: this.buildPdfPayload()
+    };
+
+    const dialogRef = this.dialog.open(SendEmailDialogComponent, {
+      data: dialogData,
+      disableClose: true,
+      panelClass: 'send-email-dialog-panel'
+    });
+
+    dialogRef.afterClosed().subscribe((result: SendEmailDialogResult | undefined) => {
+      if (result?.success) {
+        this.notification.showSuccess('Email enviado correctamente');
+      } else if (result && !result.success && result.error) {
+        this.notification.showError(result.error);
+      }
+    });
+  }
+
+
 }
+

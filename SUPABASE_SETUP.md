@@ -837,10 +837,107 @@ CREATE POLICY "Enable all for authenticated users" ON budgets
 
 ---
 
+## Configuración de Email (Resend)
+
+La aplicación utiliza [Resend](https://resend.com/) para enviar presupuestos por email a los clientes. La integración se realiza mediante una Supabase Edge Function.
+
+### Requisitos Previos
+
+1. **Cuenta de Resend:** Crea una cuenta gratuita en [resend.com](https://resend.com/)
+2. **Supabase CLI:** Instala la CLI de Supabase globalmente:
+   ```bash
+   npm install -g supabase
+   ```
+
+### Configuración Paso a Paso
+
+#### 1. Obtener API Key de Resend
+
+1. Inicia sesión en [Resend Dashboard](https://resend.com/api-keys)
+2. Haz clic en "Create API Key"
+3. Asigna un nombre descriptivo (ej: "Easy Budgets Production")
+4. Copia la API key generada (solo se muestra una vez)
+
+#### 2. Configurar Secret en Supabase
+
+Ejecuta el siguiente comando en la raíz del proyecto:
+
+```bash
+supabase secrets set RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+Para verificar que el secret está configurado:
+
+```bash
+supabase secrets list
+```
+
+#### 3. Desplegar la Edge Function
+
+```bash
+supabase functions deploy send-budget-email
+```
+
+### Limitaciones del Tier Gratuito
+
+- **Remitente temporal:** Por defecto usa `onboarding@resend.dev` como remitente
+- **Límite diario:** 100 emails/día con el dominio de prueba
+- **Límite mensual:** 3.000 emails/mes
+- **Tamaño de adjuntos:** Máximo 40MB por email
+
+### Configurar Dominio Personalizado (Recomendado para Producción)
+
+Para mejorar la deliverability y evitar que los emails lleguen a spam:
+
+1. Ve a [Resend Domains](https://resend.com/domains)
+2. Haz clic en "Add Domain"
+3. Introduce tu dominio (ej: `tuempresa.com`)
+4. Configura los registros DNS requeridos (MX, TXT, DKIM)
+5. Espera la verificación (puede tardar hasta 72 horas)
+6. Actualiza el remitente en la Edge Function (`supabase/functions/send-budget-email/index.ts`):
+
+```typescript
+from: 'Presupuestos <presupuestos@tuempresa.com>',
+```
+
+### Estructura de la Tabla EmailLogs
+
+La tabla `EmailLogs` almacena el historial de todos los emails enviados:
+
+```sql
+CREATE TABLE "EmailLogs" (
+  "id" bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "budgetId" bigint REFERENCES "Budgets"("id") ON DELETE CASCADE,
+  "recipientEmail" varchar NOT NULL,
+  "recipientName" varchar,
+  "subject" varchar NOT NULL,
+  "bodyText" text NOT NULL,
+  "status" "EmailStatus" NOT NULL DEFAULT 'pending',
+  "errorMessage" text,
+  "sentAt" timestamp with time zone,
+  "createdAt" timestamp with time zone DEFAULT now()
+);
+```
+
+El enum `EmailStatus` tiene los valores: `'pending'`, `'sent'`, `'failed'`
+
+### Solución de Problemas
+
+| Error | Causa | Solución |
+|-------|-------|----------|
+| "Email service not configured" | Falta RESEND_API_KEY | Configura el secret con `supabase secrets set` |
+| "Invalid email format" | Email del destinatario inválido | Verifica el formato del email |
+| Emails van a spam | Usando dominio de prueba | Configura un dominio personalizado |
+| "Rate limit exceeded" | Superado límite diario/mensual | Espera al día siguiente o upgrade plan |
+
+---
+
 ## Recursos Adicionales
 
 - 📚 [Documentación oficial de Supabase](https://supabase.com/docs)
 - 📚 [Supabase JavaScript Client](https://supabase.com/docs/reference/javascript/introduction)
+- 📚 [Supabase Edge Functions](https://supabase.com/docs/guides/functions)
+- 📚 [Resend Documentation](https://resend.com/docs)
 - 📚 [PostgreSQL Docs](https://www.postgresql.org/docs/)
 
 ---
