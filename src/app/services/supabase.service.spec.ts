@@ -214,7 +214,7 @@ describe('SupabaseService', () => {
     it('should get budget details', async () => {
       const mockBudget = {
         id: 1,
-        textBlocks: [],
+        compositeBlocks: [],
         materialTables: [],
         additionalLines: [],
         simpleBlock: []
@@ -283,7 +283,7 @@ describe('SupabaseService', () => {
         id: 1,
         budgetNumber: 'BUD-123',
         title: 'Original',
-        textBlocks: [{ id: 10, heading: 'Block 1', descriptions: [{ id: 100, title: 'Sec 1' }] }],
+        compositeBlocks: [{ id: 10, heading: 'Block 1', descriptions: [{ id: 100, title: 'Sec 1' }] }],
         materialTables: [{ id: 20, title: 'Table 1', rows: [{ id: 200, reference: 'Ref 1' }] }],
         additionalLines: [{ id: 30, concept: 'Line 1' }],
         simpleBlock: { id: 40, material: 'Granite' },
@@ -374,7 +374,7 @@ describe('SupabaseService', () => {
         id: 1,
         budgetNumber: 'BUD-123',
         title: 'Original',
-        textBlocks: [],
+        compositeBlocks: [],
         materialTables: [],
         additionalLines: [],
         simpleBlock: null,
@@ -421,7 +421,7 @@ describe('SupabaseService', () => {
         id: 1,
         budgetNumber: 'BUD-123',
         title: 'Original',
-        textBlocks: [],
+        compositeBlocks: [],
         materialTables: [],
         additionalLines: [],
         simpleBlock: null,

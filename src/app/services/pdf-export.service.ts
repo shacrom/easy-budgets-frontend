@@ -37,7 +37,7 @@ export interface BudgetPdfPayload {
   companyLogoUrl?: string;
   supplierLogoUrl?: string;
   showSignature?: boolean;
-  printTextBlocks?: boolean;
+  printCompositeBlocks?: boolean;
   printItemTables?: boolean;
   printMaterials?: boolean;
   printSimpleBlock?: boolean;
@@ -214,7 +214,7 @@ export class PdfExportService {
     const itemsSectionTitle = payload.itemsSectionTitle ?? payload.materialsSectionTitle;
     const printItemTables = payload.printItemTables ?? payload.printMaterials ?? true;
 
-    const textBlocksContent = (payload.printTextBlocks !== false) ? this.buildTextBlocksSection(blocks) : [];
+    const compositeBlocksContent = (payload.printCompositeBlocks !== false) ? this.buildCompositeBlocksSection(blocks) : [];
     const materialsContent = (printItemTables !== false) ? this.buildMaterialsSection(itemTables, items, itemsSectionTitle) : [];
     const simpleBlockContent = (payload.printSimpleBlock !== false) ? this.buildSimpleBlockSection(simpleBlock) : null;
 
@@ -234,8 +234,7 @@ export class PdfExportService {
     const signatureContent = payload.showSignature !== false ? this.buildSignatureSection(payload.customer) : null;
 
     const sectionMap: { [key: string]: Content[] } = {
-      'textBlocks': textBlocksContent.length > 0 ? textBlocksContent : [],
-      'compositeBlocks': textBlocksContent.length > 0 ? textBlocksContent : [],
+      'compositeBlocks': compositeBlocksContent.length > 0 ? compositeBlocksContent : [],
       'materials': materialsContent.length > 0 ? materialsContent : [],
       'itemTables': materialsContent.length > 0 ? materialsContent : [],
       'simpleBlock': simpleBlockContent ? [simpleBlockContent] : [],
@@ -568,7 +567,7 @@ export class PdfExportService {
   return customer.dni || '';
   }
 
-  private buildTextBlocksSection(blocks: CompositeBlock[]): Content[] {
+  private buildCompositeBlocksSection(blocks: CompositeBlock[]): Content[] {
      if (!blocks?.length) {
       return [];
     }

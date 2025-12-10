@@ -395,7 +395,7 @@ describe('BudgetEditorComponent', () => {
 
   describe('PDF Print Options', () => {
     it('should initialize print options to true by default', () => {
-      expect((component as any).printTextBlocks()).toBe(true);
+      expect((component as any).printCompositeBlocks()).toBe(true);
       expect((component as any).printItemTables()).toBe(true);
       expect((component as any).printSimpleBlock()).toBe(true);
       expect((component as any).printConditions()).toBe(true);
@@ -404,13 +404,13 @@ describe('BudgetEditorComponent', () => {
 
     it('should toggle print options', () => {
       component.togglePrintOption('compositeBlocks');
-      expect((component as any).printTextBlocks()).toBe(false);
+      expect((component as any).printCompositeBlocks()).toBe(false);
 
       component.togglePrintOption('itemTables');
       expect((component as any).printItemTables()).toBe(false);
 
       component.togglePrintOption('compositeBlocks');
-      expect((component as any).printTextBlocks()).toBe(true);
+      expect((component as any).printCompositeBlocks()).toBe(true);
     });
 
     it('should include print flags in PDF payload', () => {
@@ -420,7 +420,7 @@ describe('BudgetEditorComponent', () => {
 
       const payload = (component as any).buildPdfPayload();
 
-      expect(payload.printTextBlocks).toBe(true);
+      expect(payload.printCompositeBlocks).toBe(true);
       expect(payload.printItemTables).toBe(false);
       expect(payload.printSimpleBlock).toBe(true);
       expect(payload.printConditions).toBe(false);

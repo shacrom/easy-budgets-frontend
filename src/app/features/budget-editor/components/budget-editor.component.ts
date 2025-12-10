@@ -106,7 +106,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   private readonly PDF_UPDATE_DEBOUNCE_MS = 800;
 
   // Print options signals
-  protected readonly printTextBlocks = signal<boolean>(true);
+  protected readonly printCompositeBlocks = signal<boolean>(true);
   protected readonly printItemTables = signal<boolean>(true);
   protected readonly printSimpleBlock = signal<boolean>(true);
   protected readonly printConditions = signal<boolean>(true);
@@ -162,7 +162,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
         this.showConditions();
         this.showSummary();
         this.showSignature();
-        this.printTextBlocks();
+        this.printCompositeBlocks();
         this.printItemTables();
         this.printSimpleBlock();
         this.printConditions();
@@ -243,7 +243,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       companyLogoUrl: this.companyLogoUrl() || undefined,
       supplierLogoUrl: this.supplierLogoUrl() || undefined,
       showSignature: this.showSignature(),
-      printTextBlocks: this.printTextBlocks(),
+      printCompositeBlocks: this.printCompositeBlocks(),
       printItemTables: this.printItemTables(),
       printSimpleBlock: this.printSimpleBlock(),
       printConditions: this.printConditions(),
@@ -936,7 +936,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   togglePrintOption(option: 'compositeBlocks' | 'itemTables' | 'simpleBlock' | 'conditions' | 'summary') {
     switch (option) {
       case 'compositeBlocks':
-        this.printTextBlocks.update((v: boolean) => !v);
+        this.printCompositeBlocks.update((v: boolean) => !v);
         break;
       case 'itemTables':
         this.printItemTables.update((v: boolean) => !v);

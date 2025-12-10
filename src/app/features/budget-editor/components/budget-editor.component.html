@@ -360,7 +360,7 @@
               <div class="print-toggles">
                 @if (showCompositeBlocks() && blocks().length > 0) {
                   <label class="print-toggle" title="Incluir página de bloque compuesto">
-                    <input type="checkbox" [checked]="printTextBlocks()" (change)="togglePrintOption('compositeBlocks')">
+                    <input type="checkbox" [checked]="printCompositeBlocks()" (change)="togglePrintOption('compositeBlocks')">
                     <span>Bloque Compuesto</span>
                   </label>
                 }
