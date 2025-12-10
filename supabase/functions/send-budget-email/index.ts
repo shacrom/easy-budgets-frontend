@@ -56,6 +56,7 @@ Deno.serve(async (req: Request) => {
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const emailFrom = Deno.env.get("EMAIL_FROM") || "Easy Budgets <onboarding@resend.dev>";
 
     if (!resendApiKey) {
       console.error("RESEND_API_KEY is not set");
@@ -138,24 +139,19 @@ Deno.serve(async (req: Request) => {
       base64Data = base64Data.split(",")[1];
     }
 
-    // Decode base64 to Uint8Array
-    const binaryString = atob(base64Data);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
+    console.log("PDF base64 length:", base64Data.length);
 
     // Send email via Resend
     try {
       const { data: emailData, error: emailError } = await resend.emails.send({
-        from: "Easy Budgets <onboarding@resend.dev>",
+        from: emailFrom,
         to: [payload.recipientEmail],
         subject: payload.subject,
         text: payload.bodyText,
         attachments: [
           {
             filename: `Presupuesto_${payload.budgetNumber}.pdf`,
-            content: bytes,
+            content: base64Data,
           },
         ],
       });
