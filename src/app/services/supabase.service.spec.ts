@@ -201,14 +201,14 @@ describe('SupabaseService', () => {
 
   describe('Budgets', () => {
     it('should get budgets', async () => {
-      const mockBudgets = [{ id: 1, budgetNumber: 'B1', status: 'completed', total: 100 }];
+      const mockBudgets = [{ id: 1, budgetNumber: 'B1', status: 'approved', total: 100 }];
       queryBuilderMock._mockResponse = { data: mockBudgets, error: null };
 
       const budgets = await service.getBudgets();
 
       expect(supabaseMock.from).toHaveBeenCalledWith('Budgets');
       expect(budgets.length).toBe(1);
-      expect(budgets[0].status).toBe('completed');
+      expect(budgets[0].status).toBe('approved');
     });
 
     it('should get budget details', async () => {
@@ -358,8 +358,14 @@ describe('SupabaseService', () => {
       expect(getBudgetSpy).toHaveBeenCalledWith(1);
       expect(supabaseMock.from).toHaveBeenCalledWith('Budgets');
       expect(budgetBuilder.insert).toHaveBeenCalled();
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlocks');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetItemTables');
+
+      // Since compositeBlocks and itemTables are empty arrays, these tables shouldn't be called
+      // Only check for the tables that should be called (Budgets, AdditionalLines, SimpleBlocks)
+      const fromCalls = supabaseMock.from.mock.calls.map((call: any) => call[0]);
+      expect(fromCalls).toContain('Budgets');
+      expect(fromCalls).toContain('BudgetAdditionalLines');
+      expect(fromCalls).toContain('BudgetSimpleBlocks');
+
       expect(result).toEqual(newBudget);
     });
 
@@ -450,7 +456,7 @@ describe('SupabaseService', () => {
         budgetNumber: 'BUD-001',
         title: 'Presupuesto Completo',
         customerId: 10,
-        status: 'completed',
+        status: 'approved',
         validUntil: '2025-12-31',
         showCompositeBlocks: true,
         showItemTables: true,
@@ -460,7 +466,7 @@ describe('SupabaseService', () => {
         compositeBlocks: [
           { id: 10, heading: 'Bloque 1', orderIndex: 0, descriptions: [{ id: 100, title: 'Sección 1', text: 'Texto 1' }] }
         ],
-        materialTables: [
+        itemTables: [
           { id: 20, title: 'Tabla 1', orderIndex: 0, rows: [{ id: 200, reference: 'REF-001', quantity: 2 }] }
         ],
         additionalLines: [
@@ -525,21 +531,22 @@ describe('SupabaseService', () => {
 
       const result = await service.duplicateBudget(1);
 
-      // Verify all tables were called
-      expect(supabaseMock.from).toHaveBeenCalledWith('Budgets');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlocks');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetCompositeBlockSections');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetItemTables');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetItemTableRows');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetAdditionalLines');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetSimpleBlocks');
-      expect(supabaseMock.from).toHaveBeenCalledWith('BudgetConditions');
+      // Verify all tables were called (check if each table appears in the calls)
+      const fromCalls = supabaseMock.from.mock.calls.map((call: any) => call[0]);
+      expect(fromCalls).toContain('Budgets');
+      expect(fromCalls).toContain('BudgetCompositeBlocks');
+      expect(fromCalls).toContain('BudgetCompositeBlockSections');
+      expect(fromCalls).toContain('BudgetItemTables');
+      expect(fromCalls).toContain('BudgetItemTableRows');
+      expect(fromCalls).toContain('BudgetAdditionalLines');
+      expect(fromCalls).toContain('BudgetSimpleBlocks');
+      expect(fromCalls).toContain('BudgetConditions');
 
       // Verify budget insert doesn't include relation fields
       const budgetInsertCall = budgetBuilder.insert.mock.calls[budgetBuilder.insert.mock.calls.length - 1][0][0];
       expect(budgetInsertCall.conditions).toBeUndefined();
-      expect(budgetInsertCall.textBlocks).toBeUndefined();
-      expect(budgetInsertCall.materialTables).toBeUndefined();
+      expect(budgetInsertCall.compositeBlocks).toBeUndefined();
+      expect(budgetInsertCall.itemTables).toBeUndefined();
       expect(budgetInsertCall.additionalLines).toBeUndefined();
       expect(budgetInsertCall.simpleBlock).toBeUndefined();
       expect(budgetInsertCall.customer).toBeUndefined();
@@ -552,8 +559,8 @@ describe('SupabaseService', () => {
         id: 1,
         budgetNumber: 'BUD-123',
         title: 'Original',
-        textBlocks: [],
-        materialTables: [],
+        compositeBlocks: [],
+        itemTables: [],
         additionalLines: [],
         simpleBlock: null,
         conditions: [{ id: 1, title: 'Test', text: 'Test text', orderIndex: 0 }],

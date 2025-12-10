@@ -459,8 +459,8 @@ export class SupabaseService {
     }
 
     const {
-      textBlocks = [],
-      materialTables = [],
+      compositeBlocks = [],
+      itemTables = [],
       additionalLines = [],
       conditions = [],
       simpleBlock,
@@ -491,7 +491,7 @@ export class SupabaseService {
 
     const newBudgetId = newBudget.id;
 
-    for (const block of textBlocks ?? []) {
+    for (const block of compositeBlocks ?? []) {
       const blockPayload: Record<string, any> = {
         budgetId: newBudgetId,
         orderIndex: block.orderIndex,
@@ -529,8 +529,8 @@ export class SupabaseService {
       }
     }
 
-    if (materialTables?.length) {
-      await this.cloneItemTables(newBudgetId, materialTables);
+    if (itemTables?.length) {
+      await this.cloneItemTables(newBudgetId, itemTables);
     }
 
     if (additionalLines?.length) {
