@@ -1076,7 +1076,7 @@ export class PdfExportService {
     if (simpleBlock.model) {
       stack.push({
         text: [
-          { text: simpleBlock.model.toUpperCase(), bold: true }
+          { text: simpleBlock.model, bold: true }
         ],
         margin: [0, 0, 0, 8] as [number, number, number, number],
         style: 'box'
@@ -1086,7 +1086,7 @@ export class PdfExportService {
     // Description
     if (simpleBlock.description) {
       stack.push({
-        text: simpleBlock.description.toUpperCase(),
+        text: simpleBlock.description,
         margin: [0, 0, 0, 8] as [number, number, number, number],
         style: 'box'
       });
