@@ -214,8 +214,8 @@ describe('SupabaseService', () => {
     it('should get budget details', async () => {
       const mockBudget = {
         id: 1,
-        textBlocks: [],
-        materialTables: [],
+        compositeBlocks: [],
+        itemTables: [],
         additionalLines: [],
         simpleBlock: []
       };
@@ -283,10 +283,10 @@ describe('SupabaseService', () => {
         id: 1,
         budgetNumber: 'BUD-123',
         title: 'Original',
-        textBlocks: [{ id: 10, heading: 'Block 1', descriptions: [{ id: 100, title: 'Sec 1' }] }],
-        materialTables: [{ id: 20, title: 'Table 1', rows: [{ id: 200, reference: 'Ref 1' }] }],
+        compositeBlocks: [{ id: 10, heading: 'Block 1', descriptions: [{ id: 100, title: 'Sec 1' }] }],
+        itemTables: [{ id: 20, title: 'Table 1', rows: [{ id: 200, reference: 'Ref 1' }] }],
         additionalLines: [{ id: 30, concept: 'Line 1' }],
-        simpleBlock: { id: 40, material: 'Granite' },
+        simpleBlock: { id: 40, model: 'Granite' },
         conditions: [],
         customer: { id: 50 }
       };
@@ -303,7 +303,7 @@ describe('SupabaseService', () => {
       // 1. insert budget -> returns newBudget
       // 2. insert text block -> returns newTextBlock
       // 3. insert sections -> returns null (error null)
-      // 4. insert material tables -> returns newTable
+      // 4. insert item tables -> returns newTable
       // 5. insert rows -> returns null
       // 6. insert additional lines -> returns null
       // 7. insert simpleBlock -> returns null
@@ -374,8 +374,8 @@ describe('SupabaseService', () => {
         id: 1,
         budgetNumber: 'BUD-123',
         title: 'Original',
-        textBlocks: [],
-        materialTables: [],
+        compositeBlocks: [],
+        itemTables: [],
         additionalLines: [],
         simpleBlock: null,
         conditions: [
@@ -421,8 +421,8 @@ describe('SupabaseService', () => {
         id: 1,
         budgetNumber: 'BUD-123',
         title: 'Original',
-        textBlocks: [],
-        materialTables: [],
+        compositeBlocks: [],
+        itemTables: [],
         additionalLines: [],
         simpleBlock: null,
         conditions: [],
@@ -462,7 +462,7 @@ describe('SupabaseService', () => {
         showItemTables: true,
         showSimpleBlock: true,
         showConditions: true,
-        itemTablesSectionTitle: 'Materiales',
+        itemTablesSectionTitle: 'Partidas',
         compositeBlocks: [
           { id: 10, heading: 'Bloque 1', orderIndex: 0, descriptions: [{ id: 100, title: 'Sección 1', text: 'Texto 1' }] }
         ],
@@ -472,7 +472,7 @@ describe('SupabaseService', () => {
         additionalLines: [
           { id: 30, concept: 'Descuento', amount: -100, isSubtotal: false }
         ],
-        simpleBlock: { id: 40, material: 'Mármol', sectionTitle: 'Encimera' },
+        simpleBlock: { id: 40, model: 'Mármol', sectionTitle: 'Encimera' },
         conditions: [
           { id: 50, title: 'Garantía', text: '2 años de garantía', orderIndex: 0 }
         ],
@@ -595,8 +595,8 @@ describe('SupabaseService', () => {
     });
   });
 
-  describe('Materials', () => {
-    it('should save material tables', async () => {
+  describe('Item Tables', () => {
+    it('should save item tables', async () => {
       const tables = [{
         title: 'Table 1',
         rows: [{ reference: 'Ref 1', quantity: 1, unitPrice: 10 }]
@@ -837,7 +837,7 @@ describe('SupabaseService', () => {
 
   describe('Simple Blocks', () => {
     it('should get simple block for budget', async () => {
-      const mockSimpleBlock = { id: 1, material: 'Granite' };
+      const mockSimpleBlock = { id: 1, model: 'Granite' };
       queryBuilderMock.maybeSingle.mockReturnValue(Promise.resolve({ data: mockSimpleBlock, error: null }));
 
       const result = await service.getSimpleBlockForBudget(1);
@@ -849,7 +849,7 @@ describe('SupabaseService', () => {
     });
 
     it('should upsert simple block', async () => {
-      const simpleBlock = { budgetId: 1, material: 'Marble' };
+      const simpleBlock = { budgetId: 1, model: 'Marble' };
       const upsertedSimpleBlock = { id: 1, ...simpleBlock };
       queryBuilderMock.single.mockReturnValue(Promise.resolve({ data: upsertedSimpleBlock, error: null }));
 

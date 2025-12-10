@@ -11,6 +11,7 @@ import { ItemRow, ItemTable } from '../../../models/item-table.model';
 import { Customer } from '../../../models/customer.model';
 import { BudgetSummary, SummaryLine } from '../../../models/budget-summary.model';
 import { Condition } from '../../../models/conditions.model';
+import { BudgetSection, DEFAULT_SECTION_ORDER, migrateSectionOrder } from '../../../models/budget-section.model';
 import { SupabaseService } from '../../../services/supabase.service';
 import { PdfExportService, BudgetPdfPayload, BudgetPdfMetadata } from '../../../services/pdf-export.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -90,8 +91,11 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   protected readonly showConditions = signal<boolean>(false);
   protected readonly showSummary = signal<boolean>(false);
   protected readonly showSignature = signal<boolean>(false);
-  protected readonly sectionOrder = signal<string[]>(['simpleBlock','compositeBlocks', 'itemTables', 'summary','conditions', 'signature']);
+  protected readonly sectionOrder = signal<BudgetSection[]>([...DEFAULT_SECTION_ORDER]);
   protected readonly togglingStatus = signal<boolean>(false);
+
+  // Expose BudgetSection enum to template
+  protected readonly BudgetSection = BudgetSection;
 
   // PDF Preview
   protected readonly showPdfPreview = signal<boolean>(false);
@@ -106,7 +110,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   private readonly PDF_UPDATE_DEBOUNCE_MS = 800;
 
   // Print options signals
-  protected readonly printTextBlocks = signal<boolean>(true);
+  protected readonly printCompositeBlocks = signal<boolean>(true);
   protected readonly printItemTables = signal<boolean>(true);
   protected readonly printSimpleBlock = signal<boolean>(true);
   protected readonly printConditions = signal<boolean>(true);
@@ -162,13 +166,14 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
         this.showConditions();
         this.showSummary();
         this.showSignature();
-        this.printTextBlocks();
+        this.printCompositeBlocks();
         this.printItemTables();
         this.printSimpleBlock();
         this.printConditions();
         this.printSummary();
         this.budgetMeta();
         this.conditionsTitle();
+        this.sectionOrder();
 
         // Update preview
         untracked(() => {
@@ -243,7 +248,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       companyLogoUrl: this.companyLogoUrl() || undefined,
       supplierLogoUrl: this.supplierLogoUrl() || undefined,
       showSignature: this.showSignature(),
-      printTextBlocks: this.printTextBlocks(),
+      printCompositeBlocks: this.printCompositeBlocks(),
       printItemTables: this.printItemTables(),
       printSimpleBlock: this.printSimpleBlock(),
       printConditions: this.printConditions(),
@@ -316,14 +321,14 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     this.showPdfPreview.update(v => !v);
   }
 
-  drop(event: CdkDragDrop<string[]>) {
+  drop(event: CdkDragDrop<BudgetSection[]>) {
     const newOrder = [...this.sectionOrder()];
     moveItemInArray(newOrder, event.previousIndex, event.currentIndex);
     this.sectionOrder.set(newOrder);
     this.saveSectionOrder(newOrder);
   }
 
-  private async saveSectionOrder(order: string[]) {
+  private async saveSectionOrder(order: BudgetSection[]) {
     const id = this.currentBudgetId();
     if (!id) return;
     try {
@@ -357,13 +362,8 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       this.showSignature.set(budget.showSignature ?? false);
 
       if (budget.sectionOrder && budget.sectionOrder.length > 0) {
-        // Migrate legacy keys
-        const migratedOrder = budget.sectionOrder.map((section: string) => {
-          if (section === 'textBlocks') return 'compositeBlocks';
-          if (section === 'materials') return 'itemTables';
-          if (section === 'countertops') return 'simpleBlock';
-          return section;
-        });
+        // Migrate legacy keys using the centralized mapping
+        const migratedOrder = migrateSectionOrder(budget.sectionOrder);
         this.sectionOrder.set(migratedOrder);
       }
 
@@ -888,38 +888,38 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  async toggleSection(section: 'compositeBlocks' | 'itemTables' | 'simpleBlock' | 'conditions' | 'summary' | 'signature') {
+  async toggleSection(section: BudgetSection) {
     const id = this.currentBudgetId();
     if (!id) return;
 
     let updates: any = {};
     switch (section) {
-      case 'compositeBlocks':
+      case BudgetSection.CompositeBlocks:
         const newCompositeBlocks = !this.showCompositeBlocks();
         this.showCompositeBlocks.set(newCompositeBlocks);
         updates = { showCompositeBlocks: newCompositeBlocks };
         break;
-      case 'itemTables':
+      case BudgetSection.ItemTables:
         const newItemTables = !this.showItemTables();
         this.showItemTables.set(newItemTables);
         updates = { showItemTables: newItemTables };
         break;
-      case 'simpleBlock':
+      case BudgetSection.SimpleBlock:
         const newSimpleBlock = !this.showSimpleBlock();
         this.showSimpleBlock.set(newSimpleBlock);
         updates = { showSimpleBlock: newSimpleBlock };
         break;
-      case 'conditions':
+      case BudgetSection.Conditions:
         const newConditions = !this.showConditions();
         this.showConditions.set(newConditions);
         updates = { showConditions: newConditions };
         break;
-      case 'summary':
+      case BudgetSection.Summary:
         const newSummary = !this.showSummary();
         this.showSummary.set(newSummary);
         updates = { showSummary: newSummary };
         break;
-      case 'signature':
+      case BudgetSection.Signature:
         const newSignature = !this.showSignature();
         this.showSignature.set(newSignature);
         updates = { showSignature: newSignature };
@@ -933,21 +933,21 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  togglePrintOption(option: 'compositeBlocks' | 'itemTables' | 'simpleBlock' | 'conditions' | 'summary') {
+  togglePrintOption(option: BudgetSection) {
     switch (option) {
-      case 'compositeBlocks':
-        this.printTextBlocks.update((v: boolean) => !v);
+      case BudgetSection.CompositeBlocks:
+        this.printCompositeBlocks.update((v: boolean) => !v);
         break;
-      case 'itemTables':
+      case BudgetSection.ItemTables:
         this.printItemTables.update((v: boolean) => !v);
         break;
-      case 'simpleBlock':
+      case BudgetSection.SimpleBlock:
         this.printSimpleBlock.update((v: boolean) => !v);
         break;
-      case 'conditions':
+      case BudgetSection.Conditions:
         this.printConditions.update((v: boolean) => !v);
         break;
-      case 'summary':
+      case BudgetSection.Summary:
         this.printSummary.update((v: boolean) => !v);
         break;
     }

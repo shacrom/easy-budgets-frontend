@@ -144,6 +144,38 @@ Here is a link to the most recent Angular style guide https://angular.dev/style-
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
 
+### Budget Section Identifiers
+
+**CRITICAL**: Always use the `BudgetSection` enum from `src/app/models/budget-section.model.ts` instead of hardcoded strings when referencing budget sections:
+
+```typescript
+import { BudgetSection, DEFAULT_SECTION_ORDER, CONTENT_SECTIONS } from '../models/budget-section.model';
+
+// ✅ CORRECT - Use enum values
+sectionOrder: BudgetSection[] = [BudgetSection.CompositeBlocks, BudgetSection.ItemTables];
+if (section === BudgetSection.Summary) { ... }
+
+// ❌ WRONG - Don't use hardcoded strings
+sectionOrder: string[] = ['compositeBlocks', 'itemTables'];
+if (section === 'summary') { ... }
+```
+
+Available enum values:
+- `BudgetSection.CompositeBlocks` = 'compositeBlocks'
+- `BudgetSection.ItemTables` = 'itemTables'
+- `BudgetSection.SimpleBlock` = 'simpleBlock'
+- `BudgetSection.Summary` = 'summary'
+- `BudgetSection.Conditions` = 'conditions'
+- `BudgetSection.Signature` = 'signature'
+
+Available helper constants:
+- `DEFAULT_SECTION_ORDER`: All sections in default order
+- `CONTENT_SECTIONS`: Only content sections (compositeBlocks, itemTables, simpleBlock)
+
+Available helper functions:
+- `isBudgetSection(value)`: Type guard to check if a string is a valid BudgetSection
+- `migrateSectionOrder(keys)`: Migrates legacy section keys to BudgetSection values
+
 ### Database Naming Conventions
 
 - Table names MUST be in **PascalCase** (e.g., `BudgetConditions`, `TextBlockTemplates`, `Customers`)

@@ -198,68 +198,68 @@
         <div class="flex flex-wrap gap-3" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">
           @for (section of sectionOrder(); track section) {
             @switch (section) {
-              @case ('compositeBlocks') {
+              @case (BudgetSection.CompositeBlocks) {
                 <button
                   cdkDrag
                   type="button"
                   class="toggle-btn"
                   [class.active]="showCompositeBlocks()"
-                  (click)="toggleSection('compositeBlocks')">
+                  (click)="toggleSection(BudgetSection.CompositeBlocks)">
                   <span class="material-symbols-rounded">layers</span>
                   <span>Bloque compuesto</span>
                 </button>
               }
-              @case ('itemTables') {
+              @case (BudgetSection.ItemTables) {
                 <button
                   cdkDrag
                   type="button"
                   class="toggle-btn"
                   [class.active]="showItemTables()"
-                  (click)="toggleSection('itemTables')">
+                  (click)="toggleSection(BudgetSection.ItemTables)">
                   <span class="material-symbols-rounded">table_chart</span>
                   <span>Tablas</span>
                 </button>
               }
-              @case ('simpleBlock') {
+              @case (BudgetSection.SimpleBlock) {
                 <button
                   cdkDrag
                   type="button"
                   class="toggle-btn"
                   [class.active]="showSimpleBlock()"
-                  (click)="toggleSection('simpleBlock')">
+                  (click)="toggleSection(BudgetSection.SimpleBlock)">
                   <span class="material-symbols-rounded">article</span>
                   <span>Bloque simple</span>
                 </button>
               }
-              @case ('conditions') {
+              @case (BudgetSection.Conditions) {
                 <button
                   cdkDrag
                   type="button"
                   class="toggle-btn"
                   [class.active]="showConditions()"
-                  (click)="toggleSection('conditions')">
+                  (click)="toggleSection(BudgetSection.Conditions)">
                   <span class="material-symbols-rounded">gavel</span>
                   <span>Condiciones</span>
                 </button>
               }
-              @case ('summary') {
+              @case (BudgetSection.Summary) {
                 <button
                   cdkDrag
                   type="button"
                   class="toggle-btn"
                   [class.active]="showSummary()"
-                  (click)="toggleSection('summary')">
+                  (click)="toggleSection(BudgetSection.Summary)">
                   <span class="material-symbols-rounded">summarize</span>
                   <span>Resumen</span>
                 </button>
               }
-              @case ('signature') {
+              @case (BudgetSection.Signature) {
                 <button
                   cdkDrag
                   type="button"
                   class="toggle-btn"
                   [class.active]="showSignature()"
-                  (click)="toggleSection('signature')">
+                  (click)="toggleSection(BudgetSection.Signature)">
                   <span class="material-symbols-rounded">draw</span>
                   <span>Firma</span>
                 </button>
@@ -324,6 +324,7 @@
                   [blocks]="blocks()"
                   [items]="items()"
                   [itemTables]="itemTables()"
+                  [sectionOrder]="sectionOrder()"
                   [initialAdditionalLines]="additionalLines()"
                   [budgetId]="currentBudgetId() ?? 0"
                   (summaryChanged)="onSummaryChanged($event)">
@@ -357,35 +358,49 @@
             <div class="print-options">
               <h4>Páginas a incluir:</h4>
               <div class="print-toggles">
-                @if (showCompositeBlocks() && blocks().length > 0) {
-                  <label class="print-toggle" title="Incluir página de bloque compuesto">
-                    <input type="checkbox" [checked]="printTextBlocks()" (change)="togglePrintOption('compositeBlocks')">
-                    <span>Bloque Compuesto</span>
-                  </label>
-                }
-                @if (showItemTables() && (itemTables().length > 0 || items().length > 0)) {
-                  <label class="print-toggle" title="Incluir página de tabla">
-                    <input type="checkbox" [checked]="printItemTables()" (change)="togglePrintOption('itemTables')">
-                    <span>Tabla</span>
-                  </label>
-                }
-                @if (showSimpleBlock() && simpleBlockData()) {
-                  <label class="print-toggle" title="Incluir página de bloque simple">
-                    <input type="checkbox" [checked]="printSimpleBlock()" (change)="togglePrintOption('simpleBlock')">
-                    <span>Bloque Simple</span>
-                  </label>
-                }
-                @if (showSummary()) {
-                  <label class="print-toggle" title="Incluir página de resumen">
-                    <input type="checkbox" [checked]="printSummary()" (change)="togglePrintOption('summary')">
-                    <span>Resumen</span>
-                  </label>
-                }
-                @if (showConditions() && conditionsList().length > 0) {
-                  <label class="print-toggle" title="Incluir página de condiciones">
-                    <input type="checkbox" [checked]="printConditions()" (change)="togglePrintOption('conditions')">
-                    <span>Condiciones</span>
-                  </label>
+                @for (section of sectionOrder(); track section) {
+                  @switch (section) {
+                    @case (BudgetSection.CompositeBlocks) {
+                      @if (showCompositeBlocks() && blocks().length > 0) {
+                        <label class="print-toggle" title="Incluir página de bloque compuesto">
+                          <input type="checkbox" [checked]="printCompositeBlocks()" (change)="togglePrintOption(BudgetSection.CompositeBlocks)">
+                          <span>Bloque Compuesto</span>
+                        </label>
+                      }
+                    }
+                    @case (BudgetSection.ItemTables) {
+                      @if (showItemTables() && (itemTables().length > 0 || items().length > 0)) {
+                        <label class="print-toggle" title="Incluir página de tabla">
+                          <input type="checkbox" [checked]="printItemTables()" (change)="togglePrintOption(BudgetSection.ItemTables)">
+                          <span>Tabla</span>
+                        </label>
+                      }
+                    }
+                    @case (BudgetSection.SimpleBlock) {
+                      @if (showSimpleBlock() && simpleBlockData()) {
+                        <label class="print-toggle" title="Incluir página de bloque simple">
+                          <input type="checkbox" [checked]="printSimpleBlock()" (change)="togglePrintOption(BudgetSection.SimpleBlock)">
+                          <span>Bloque Simple</span>
+                        </label>
+                      }
+                    }
+                    @case (BudgetSection.Summary) {
+                      @if (showSummary()) {
+                        <label class="print-toggle" title="Incluir página de resumen">
+                          <input type="checkbox" [checked]="printSummary()" (change)="togglePrintOption(BudgetSection.Summary)">
+                          <span>Resumen</span>
+                        </label>
+                      }
+                    }
+                    @case (BudgetSection.Conditions) {
+                      @if (showConditions() && conditionsList().length > 0) {
+                        <label class="print-toggle" title="Incluir página de condiciones">
+                          <input type="checkbox" [checked]="printConditions()" (change)="togglePrintOption(BudgetSection.Conditions)">
+                          <span>Condiciones</span>
+                        </label>
+                      }
+                    }
+                  }
                 }
               </div>
             </div>

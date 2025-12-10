@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BudgetSummary, SummaryLine, SummaryLineType } from '../../../../models/budget-summary.model';
 import { CompositeBlock } from '../../../../models/composite-block.model';
-import { ItemRow, ItemTable, MaterialTable } from '../../../../models/item-table.model';
+import { ItemRow, ItemTable } from '../../../../models/item-table.model';
+import { BudgetSection, CONTENT_SECTIONS } from '../../../../models/budget-section.model';
 
 /**
  * Component to display the budget summary
@@ -36,6 +37,12 @@ export class BudgetSummaryComponent {
   blocks = input<CompositeBlock[]>([]);
   items = input<ItemRow[]>([]);
   itemTables = input<ItemTable[]>([]);
+
+  // Input: section order from parent
+  sectionOrder = input<BudgetSection[]>([...CONTENT_SECTIONS]);
+
+  // Expose BudgetSection enum to template
+  protected readonly BudgetSection = BudgetSection;
 
   // Inputs
   budgetId = input<number | null>(null);
@@ -117,6 +124,24 @@ export class BudgetSummaryComponent {
   protected readonly hasItemTables = computed(() => this.showItemTables() && (this.items().length > 0 || this.itemTables().length > 0));
   protected readonly hasItemTablesData = computed(() => this.itemTables().length > 0);
   protected readonly hasSimpleBlock = computed(() => this.showSimpleBlock());
+
+  // Computed: ordered sections for rendering
+  protected readonly orderedSections = computed(() => {
+    const order = this.sectionOrder();
+    const sections: Array<{ key: BudgetSection; visible: boolean }> = [];
+
+    for (const sectionKey of order) {
+      if (sectionKey === BudgetSection.CompositeBlocks && this.hasBlocks()) {
+        sections.push({ key: BudgetSection.CompositeBlocks, visible: true });
+      } else if (sectionKey === BudgetSection.ItemTables && this.hasItemTables()) {
+        sections.push({ key: BudgetSection.ItemTables, visible: true });
+      } else if (sectionKey === BudgetSection.SimpleBlock && this.hasSimpleBlock()) {
+        sections.push({ key: BudgetSection.SimpleBlock, visible: true });
+      }
+    }
+
+    return sections;
+  });
 
   // Computed values
   // Computed: effective totals based on visibility
@@ -358,11 +383,11 @@ export class BudgetSummaryComponent {
     return this.nextClientId--;
   }
 
-  protected tableSubtotal(table: MaterialTable): number {
-    return table.rows.reduce((sum, material) => sum + material.totalPrice, 0);
+  protected tableSubtotal(table: ItemTable): number {
+    return table.rows.reduce((sum, item) => sum + item.totalPrice, 0);
   }
 
-  protected tableRowsLabel(table: MaterialTable): string {
+  protected tableRowsLabel(table: ItemTable): string {
     const count = table.rows.length;
     if (count === 0) {
       return 'Sin partidas';

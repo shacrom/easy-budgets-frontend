@@ -406,7 +406,7 @@ export class SupabaseService {
             .sort((a: any, b: any) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
         }));
     } else {
-      data.materialTables = [];
+      data.itemTables = [];
     }
 
     // SimpleBlock viene como array de 0 o 1 elementos, convertirlo a objeto único o null

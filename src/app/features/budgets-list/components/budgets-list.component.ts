@@ -13,7 +13,7 @@ interface BudgetListItem {
   status: BudgetStatus;
   total: number;
   totalBlocks?: number;
-  totalMaterials?: number;
+  totalItems?: number;
   createdAt: string;
   updatedAt?: string | null;
   customer?: {
