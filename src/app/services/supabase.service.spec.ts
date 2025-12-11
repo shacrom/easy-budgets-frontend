@@ -296,12 +296,12 @@ describe('SupabaseService', () => {
 
       // Mock inserts
       const newBudget = { id: 2, budgetNumber: 'BUD-NEW', title: 'Original (Copia)' };
-      const newTextBlock = { id: 11 };
+      const newCompositeBlock = { id: 11 };
       const newTable = { id: 21 };
 
       // We need to mock the sequence of Supabase calls
       // 1. insert budget -> returns newBudget
-      // 2. insert text block -> returns newTextBlock
+      // 2. insert composite block -> returns newCompositeBlock
       // 3. insert sections -> returns null (error null)
       // 4. insert item tables -> returns newTable
       // 5. insert rows -> returns null
@@ -318,10 +318,10 @@ describe('SupabaseService', () => {
       budgetBuilder.select.mockReturnValue(budgetBuilder);
       budgetBuilder.single.mockReturnValue(Promise.resolve({ data: newBudget, error: null }));
 
-      const textBlockBuilder = createVitestMock(['insert', 'select', 'single', 'then']);
-      textBlockBuilder.insert.mockReturnValue(textBlockBuilder);
-      textBlockBuilder.select.mockReturnValue(textBlockBuilder);
-      textBlockBuilder.single.mockReturnValue(Promise.resolve({ data: newTextBlock, error: null }));
+      const compositeBlockBuilder = createVitestMock(['insert', 'select', 'single', 'then']);
+      compositeBlockBuilder.insert.mockReturnValue(compositeBlockBuilder);
+      compositeBlockBuilder.select.mockReturnValue(compositeBlockBuilder);
+      compositeBlockBuilder.single.mockReturnValue(Promise.resolve({ data: newCompositeBlock, error: null }));
 
       const sectionBuilder = createVitestMock(['insert', 'then']);
       sectionBuilder.insert.mockReturnValue(Promise.resolve({ error: null }));
@@ -343,7 +343,7 @@ describe('SupabaseService', () => {
       supabaseMock.from.mockImplementation((table: string) => {
         switch (table) {
           case 'Budgets': return budgetBuilder;
-          case 'BudgetCompositeBlocks': return textBlockBuilder;
+          case 'BudgetCompositeBlocks': return compositeBlockBuilder;
           case 'BudgetCompositeBlockSections': return sectionBuilder;
           case 'BudgetItemTables': return tableBuilder;
           case 'BudgetItemRows': return rowBuilder;
@@ -482,7 +482,7 @@ describe('SupabaseService', () => {
       vi.spyOn(service, 'getBudget').mockReturnValue(Promise.resolve(originalBudget));
 
       const newBudget = { id: 2 };
-      const newTextBlock = { id: 11 };
+      const newCompositeBlock = { id: 11 };
       const newTable = { id: 21 };
 
       const budgetBuilder = createVitestMock(['insert', 'select', 'single']);
@@ -490,10 +490,10 @@ describe('SupabaseService', () => {
       budgetBuilder.select.mockReturnValue(budgetBuilder);
       budgetBuilder.single.mockReturnValue(Promise.resolve({ data: newBudget, error: null }));
 
-      const textBlockBuilder = createVitestMock(['insert', 'select', 'single']);
-      textBlockBuilder.insert.mockReturnValue(textBlockBuilder);
-      textBlockBuilder.select.mockReturnValue(textBlockBuilder);
-      textBlockBuilder.single.mockReturnValue(Promise.resolve({ data: newTextBlock, error: null }));
+      const compositeBlockBuilder = createVitestMock(['insert', 'select', 'single']);
+      compositeBlockBuilder.insert.mockReturnValue(compositeBlockBuilder);
+      compositeBlockBuilder.select.mockReturnValue(compositeBlockBuilder);
+      compositeBlockBuilder.single.mockReturnValue(Promise.resolve({ data: newCompositeBlock, error: null }));
 
       const sectionBuilder = createVitestMock(['insert']);
       sectionBuilder.insert.mockReturnValue(Promise.resolve({ error: null }));
@@ -518,7 +518,7 @@ describe('SupabaseService', () => {
       supabaseMock.from.mockImplementation((table: string) => {
         switch (table) {
           case 'Budgets': return budgetBuilder;
-          case 'BudgetCompositeBlocks': return textBlockBuilder;
+          case 'BudgetCompositeBlocks': return compositeBlockBuilder;
           case 'BudgetCompositeBlockSections': return sectionBuilder;
           case 'BudgetItemTables': return tableBuilder;
           case 'BudgetItemTableRows': return rowBuilder;

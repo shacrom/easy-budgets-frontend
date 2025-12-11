@@ -435,8 +435,8 @@ describe('BudgetEditorComponent', () => {
     });
 
     it('should load section order from budget and migrate legacy keys', async () => {
-      const legacyOrder = ['summary', 'textBlocks', 'materials', 'simpleBlock', 'conditions', 'signature'];
-      const expectedOrder: BudgetSection[] = [BudgetSection.Summary, BudgetSection.CompositeBlocks, BudgetSection.ItemTables, BudgetSection.SimpleBlock, BudgetSection.Conditions, BudgetSection.Signature];
+      const legacyOrder = ['summary', 'materials', 'simpleBlock', 'conditions', 'signature'];
+      const expectedOrder: BudgetSection[] = [BudgetSection.Summary, BudgetSection.ItemTables, BudgetSection.SimpleBlock, BudgetSection.Conditions, BudgetSection.Signature];
       const budgetWithOrder = { ...mockBudget, sectionOrder: legacyOrder };
       supabaseServiceSpy.getBudget.mockReturnValue(Promise.resolve(budgetWithOrder as any));
 
