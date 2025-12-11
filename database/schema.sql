@@ -4,7 +4,7 @@
 -- Este archivo contiene el esquema completo de la base de datos de Supabase
 -- Actualizado: 2024-12-09
 -- Fuente: supabase/migrations/20251201220651_initial_schema.sql
---         + 20251209174703_rename_compositeblocks_and_materials_to_items.sql
+--         + 20251209174703_rename_textblocks_to_compositeblocks_and_materials_to_items.sql
 -- =============================================================================
 
 -- ENUMS
@@ -365,7 +365,7 @@ CREATE INDEX "EmailLogs_recipientEmail_idx" ON "EmailLogs" ("recipientEmail");
 --
 -- MIGRATION HISTORY:
 -- - 20251201220651: Initial schema
--- - 20251209174703: Renamed CompositeBlocks and Materials to Items
+-- - 20251209174703: Renamed TextBlocks to CompositeBlocks and Materials to Items
 -- - 20251210161248: Added EmailLogs table for email tracking
 --
 
