@@ -1,0 +1,11 @@
+# Generated files
+src/types/supabase.types.ts
+
+# Build outputs
+dist/
+node_modules/
+coverage/
+
+# Config files
+*.config.js
+*.config.ts

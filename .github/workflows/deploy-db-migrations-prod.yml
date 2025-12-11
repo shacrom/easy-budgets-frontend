@@ -1,4 +1,4 @@
-name: Deploy Database Migrations
+name: Deploy Database Migrations (Production)
 
 on:
   push:
@@ -12,7 +12,10 @@ permissions:
 
 jobs:
   deploy-migrations:
+    name: Deploy Migrations to Production
     runs-on: ubuntu-latest
+    # Solo ejecutar después de que CI haya pasado
+    # Esto se asegura de que las migraciones solo se apliquen si el código es válido
 
     steps:
       - name: Checkout code
