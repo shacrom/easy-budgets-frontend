@@ -175,7 +175,7 @@ CREATE TABLE "BudgetSimpleBlocks" (
   CONSTRAINT "BudgetSimpleBlocks_budgetId_fkey" FOREIGN KEY ("budgetId") REFERENCES "Budgets"("id") ON DELETE CASCADE
 );
 
--- Tabla: BudgetCompositeBlocks (antes BudgetTextBlocks)
+-- Tabla: BudgetCompositeBlocks
 -- Bloques compuestos con múltiples secciones de texto
 CREATE TABLE "BudgetCompositeBlocks" (
   "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -194,7 +194,7 @@ CREATE TABLE "BudgetCompositeBlocks" (
   CONSTRAINT "BudgetCompositeBlocks_budgetId_fkey" FOREIGN KEY ("budgetId") REFERENCES "Budgets"("id") ON DELETE CASCADE
 );
 
--- Tabla: BudgetCompositeBlockSections (antes BudgetTextBlockSections)
+-- Tabla: BudgetCompositeBlockSections
 CREATE TABLE "BudgetCompositeBlockSections" (
   "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   "compositeBlockId" bigint NOT NULL,
@@ -226,7 +226,7 @@ CREATE TABLE "ConditionTemplateSections" (
   CONSTRAINT "ConditionTemplateSections_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "ConditionTemplates"("id") ON DELETE CASCADE
 );
 
--- Tabla: CompositeBlockTemplates (antes TextBlockTemplates)
+-- Tabla: CompositeBlockTemplates
 CREATE TABLE "CompositeBlockTemplates" (
   "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   "name" character varying NOT NULL,
@@ -237,7 +237,7 @@ CREATE TABLE "CompositeBlockTemplates" (
   CONSTRAINT "CompositeBlockTemplates_pkey" PRIMARY KEY ("id")
 );
 
--- Tabla: CompositeBlockTemplateSections (antes TextBlockTemplateSections)
+-- Tabla: CompositeBlockTemplateSections
 CREATE TABLE "CompositeBlockTemplateSections" (
   "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   "templateId" bigint NOT NULL,
@@ -337,7 +337,7 @@ CREATE INDEX "EmailLogs_recipientEmail_idx" ON "EmailLogs" ("recipientEmail");
 -- - EmailStatus: 'pending', 'sent', 'failed'
 --
 -- SECTION TYPES:
--- - compositeBlocks: Bloques compuestos con múltiples secciones de texto (antes textBlocks)
+-- - compositeBlocks: Bloques compuestos con múltiples secciones de texto
 -- - itemTables: Tablas de elementos genéricos - materiales, iluminación, etc. (antes materials)
 -- - simpleBlock: Bloque simple con modelo, descripción y precio
 -- - conditions: Condiciones generales del presupuesto
@@ -365,7 +365,7 @@ CREATE INDEX "EmailLogs_recipientEmail_idx" ON "EmailLogs" ("recipientEmail");
 --
 -- MIGRATION HISTORY:
 -- - 20251201220651: Initial schema
--- - 20251209174703: Renamed TextBlocks -> CompositeBlocks, Materials -> Items
+-- - 20251209174703: Renamed TextBlocks to CompositeBlocks and Materials to Items
 -- - 20251210161248: Added EmailLogs table for email tracking
 --
 

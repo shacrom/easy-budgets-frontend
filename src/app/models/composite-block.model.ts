@@ -31,6 +31,3 @@ export interface CompositeBlock {
   updatedAt?: Date;
 }
 
-// Re-export with old names for backward compatibility during migration
-export type BudgetTextBlock = CompositeBlock;
-export type DescriptionSection = CompositeBlockSection;

@@ -84,7 +84,7 @@ CREATE TABLE "Budgets" (
   "validUntil" DATE,
   "notes" TEXT,
   "pdfUrl" TEXT,
-  "showTextBlocks" BOOLEAN DEFAULT true,
+  "showCompositeBlocks" BOOLEAN DEFAULT true,
   "showMaterials" BOOLEAN DEFAULT true,
   "showCountertop" BOOLEAN DEFAULT false,
   "showConditions" BOOLEAN DEFAULT true,
@@ -99,9 +99,9 @@ CREATE INDEX "idx_Budgets_budgetNumber" ON "Budgets"("budgetNumber");
 CREATE INDEX "idx_Budgets_createdAt" ON "Budgets"("createdAt" DESC);
 
 -- ============================================
--- 4. TABLA: BudgetTextBlocks
+-- 4. TABLA: BudgetCompositeBlocks
 -- ============================================
-CREATE TABLE "BudgetTextBlocks" (
+CREATE TABLE "BudgetCompositeBlocks" (
   "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   "budgetId" UUID NOT NULL REFERENCES "Budgets"("id") ON DELETE CASCADE,
   "orderIndex" INTEGER NOT NULL,
@@ -114,8 +114,8 @@ CREATE TABLE "BudgetTextBlocks" (
 );
 
 -- Índices
-CREATE INDEX "idx_BudgetTextBlocks_budgetId" ON "BudgetTextBlocks"("budgetId");
-CREATE INDEX "idx_BudgetTextBlocks_orderIndex" ON "BudgetTextBlocks"("budgetId", "orderIndex");
+CREATE INDEX "idx_BudgetCompositeBlocks_budgetId" ON "BudgetCompositeBlocks"("budgetId");
+CREATE INDEX "idx_BudgetCompositeBlocks_orderIndex" ON "BudgetCompositeBlocks"("budgetId", "orderIndex");
 
 -- ============================================
 -- 5. TABLA: BudgetMaterials
@@ -748,10 +748,10 @@ async saveBudget() {
       total: this.calculateTotal()
     });
 
-    // 2. Guardar bloques de texto
-    for (const block of this.textBlocks) {
+    // 2. Guardar bloques compuestos
+    for (const block of this.compositeBlocks) {
       await this.supabase.client
-        .from('budget_text_blocks')
+        .from('budget_composite_blocks')
         .insert({
           budget_id: budget.id,
           order_index: block.order,

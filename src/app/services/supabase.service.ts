@@ -677,7 +677,7 @@ export class SupabaseService {
     const { data, error } = await this.supabase
       .from('BudgetCompositeBlockSections')
       .insert([{
-        compositeBlockId: section.compositeBlockId ?? section.textBlockId,
+        compositeBlockId: section.compositeBlockId,
         orderIndex: section.orderIndex,
         title: section.title,
         text: section.text

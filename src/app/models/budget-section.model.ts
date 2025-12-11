@@ -63,7 +63,6 @@ export function toBudgetSections(values: string[]): BudgetSection[] {
  * Legacy key mapping for migrating old section keys to new BudgetSection values.
  */
 const LEGACY_KEY_MAP: Record<string, BudgetSection> = {
-  'textBlocks': BudgetSection.CompositeBlocks,
   'materials': BudgetSection.ItemTables,
   'countertops': BudgetSection.SimpleBlock
 };

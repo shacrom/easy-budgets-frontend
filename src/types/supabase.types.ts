@@ -125,7 +125,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "BudgetTextBlocks_budgetId_fkey"
+            foreignKeyName: "BudgetCompositeBlocks_budgetId_fkey"
             columns: ["budgetId"]
             isOneToOne: false
             referencedRelation: "Budgets"
@@ -163,7 +163,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "BudgetTextBlockSections_textBlockId_fkey"
+            foreignKeyName: "BudgetCompositeBlockSections_compositeBlockId_fkey"
             columns: ["compositeBlockId"]
             isOneToOne: false
             referencedRelation: "BudgetCompositeBlocks"
@@ -506,7 +506,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "textblocktemplatesections_templateid_fkey"
+            foreignKeyName: "compositeblocktemplatesections_templateid_fkey"
             columns: ["templateId"]
             isOneToOne: false
             referencedRelation: "CompositeBlockTemplates"
