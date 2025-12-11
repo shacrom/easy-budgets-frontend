@@ -48,15 +48,18 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
+    "@analogjs/vitest-angular": "^1.22.5",
     "@angular/build": "^21.0.2",
     "@angular/cli": "^21.0.2",
     "@angular/compiler-cli": "^21.0.3",
-    "@analogjs/vitest-angular": "^1.22.5",
     "@vitest/coverage-v8": "^4.0.8",
     "@vitest/ui": "^4.0.8",
+    "angular-eslint": "21.1.0",
+    "eslint": "^9.39.1",
     "jsdom": "^26.1.0",
     "postcss": "^8.5.3",
     "typescript": "~5.9.3",
+    "typescript-eslint": "8.47.0",
     "vitest": "^4.0.8"
   }
 }
