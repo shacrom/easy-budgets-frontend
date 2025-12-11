@@ -1,5 +1,5 @@
 -- Migration: Change default values for section visibility to false
--- Date: 2024-12-10
+-- Date: 2025-12-10
 -- Description: Updates all "show*" columns in Budgets table to have DEFAULT false instead of true
 -- This ensures new budgets start with all sections unmarked by default
 
