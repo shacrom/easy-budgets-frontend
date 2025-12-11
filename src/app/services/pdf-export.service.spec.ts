@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { PdfExportService, BudgetPdfPayload } from './pdf-export.service';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
-import { BudgetSection, DEFAULT_SECTION_ORDER, CONTENT_SECTIONS } from '../models/budget-section.model';
+import { BudgetSection } from '../models/budget-section.model';
 
 describe('PdfExportService', () => {
   let service: PdfExportService;
