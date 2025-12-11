@@ -1,12 +1,17 @@
-name: CI - PR (Full)
+name: CI
 
 on:
+  push:
+    branches:
+      - develop
+      - main
   pull_request:
     branches:
+      - develop
       - main
 
 concurrency:
-  group: pr-ci-${{ github.head_ref || github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -14,8 +19,11 @@ permissions:
   pull-requests: write
 
 jobs:
-  test:
-    name: Run Tests (full)
+  # ============================================
+  # LINT & TYPE CHECK
+  # ============================================
+  lint:
+    name: Lint & Type Check
     runs-on: ubuntu-latest
 
     steps:
@@ -31,16 +39,33 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linter (if configured)
-        run: |
-          if [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || [ -f .eslintrc ] || grep -q "\"lint\"" angular.json; then
-            echo "Lint target found, running linter..."
-            npm run lint --if-present || echo "Lint failed but not blocking CI"
-          else
-            echo "No lint configuration found, skipping lint step."
-          fi
+      - name: Run linter
+        run: npm run lint --if-present
 
-      - name: Run unit tests (coverage)
+      - name: Type check
+        run: npx tsc --noEmit
+
+  # ============================================
+  # UNIT TESTS
+  # ============================================
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
         run: npm run test:ci
 
       - name: Upload coverage reports
@@ -51,10 +76,13 @@ jobs:
           flags: unittests
           name: codecov-umbrella
 
+  # ============================================
+  # BUILD
+  # ============================================
   build:
     name: Build Application
-    needs: test
     runs-on: ubuntu-latest
+    needs: [lint, test]
 
     steps:
       - name: Checkout code
@@ -69,12 +97,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build for develop
+        if: github.ref == 'refs/heads/develop' || github.base_ref == 'develop'
+        run: npm run build:develop
+
       - name: Build for production
+        if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
         run: npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-${{ github.sha }}
           path: dist/
           retention-days: 7
