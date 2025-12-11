@@ -125,7 +125,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "BudgetCompositeBlocks_budgetId_fkey"
+            foreignKeyName: "BudgetTextBlocks_budgetId_fkey"
             columns: ["budgetId"]
             isOneToOne: false
             referencedRelation: "Budgets"
@@ -163,7 +163,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "BudgetCompositeBlockSections_compositeBlockId_fkey"
+            foreignKeyName: "BudgetTextBlockSections_textBlockId_fkey"
             columns: ["compositeBlockId"]
             isOneToOne: false
             referencedRelation: "BudgetCompositeBlocks"
@@ -506,7 +506,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "compositeblocktemplatesections_templateid_fkey"
+            foreignKeyName: "textblocktemplatesections_templateid_fkey"
             columns: ["templateId"]
             isOneToOne: false
             referencedRelation: "CompositeBlockTemplates"
@@ -606,6 +606,53 @@ export type Database = {
         }
         Relationships: []
       }
+      EmailLogs: {
+        Row: {
+          bodyText: string
+          budgetId: number | null
+          createdAt: string | null
+          errorMessage: string | null
+          id: number
+          recipientEmail: string
+          recipientName: string | null
+          sentAt: string | null
+          status: Database["public"]["Enums"]["EmailStatus"]
+          subject: string
+        }
+        Insert: {
+          bodyText: string
+          budgetId?: number | null
+          createdAt?: string | null
+          errorMessage?: string | null
+          id?: never
+          recipientEmail: string
+          recipientName?: string | null
+          sentAt?: string | null
+          status?: Database["public"]["Enums"]["EmailStatus"]
+          subject: string
+        }
+        Update: {
+          bodyText?: string
+          budgetId?: number | null
+          createdAt?: string | null
+          errorMessage?: string | null
+          id?: never
+          recipientEmail?: string
+          recipientName?: string | null
+          sentAt?: string | null
+          status?: Database["public"]["Enums"]["EmailStatus"]
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "EmailLogs_budgetId_fkey"
+            columns: ["budgetId"]
+            isOneToOne: false
+            referencedRelation: "Budgets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       Products: {
         Row: {
           category: string | null
@@ -661,6 +708,7 @@ export type Database = {
     Enums: {
       BudgetAdditionalLineType: "adjustment" | "discount" | "optional" | "note"
       BudgetStatus: "completed" | "not_completed"
+      EmailStatus: "pending" | "sent" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -793,6 +841,7 @@ export const Constants = {
     Enums: {
       BudgetAdditionalLineType: ["adjustment", "discount", "optional", "note"],
       BudgetStatus: ["completed", "not_completed"],
+      EmailStatus: ["pending", "sent", "failed"],
     },
   },
 } as const
