@@ -103,6 +103,18 @@
   @apply text-center text-sm text-gray-500;
 }
 
+.reference-no-match {
+  @apply flex flex-col items-center gap-3 py-2;
+}
+
+.create-product-btn {
+  @apply inline-flex items-center gap-2 border border-green-600 bg-green-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-green-700 transition-colors hover:bg-green-100;
+}
+
+.create-product-btn .material-symbols-rounded {
+  font-size: 1.1rem;
+}
+
 .reference-list {
   @apply flex flex-col gap-1;
 }

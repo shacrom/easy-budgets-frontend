@@ -18,7 +18,17 @@
         @if (products().length === 0) {
           <p class="reference-empty">Catálogo no disponible</p>
         } @else if (referenceMatches().length === 0) {
-          <p class="reference-empty">Sin coincidencias</p>
+          <div class="reference-no-match">
+            <p class="reference-empty">Sin coincidencias</p>
+            <button
+              type="button"
+              class="create-product-btn"
+              (mousedown)="requestCreateProduct($event)"
+              title="Crear nuevo producto con estos datos">
+              <span class="material-symbols-rounded" aria-hidden="true">add_circle</span>
+              <span>Crear producto</span>
+            </button>
+          </div>
         } @else {
           <div class="reference-list">
             @for (product of referenceMatches(); track product.id ?? product.reference) {

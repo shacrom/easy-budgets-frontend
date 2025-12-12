@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, output, computed, signal, Vi
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ItemRow } from '../../../../models/item-table.model';
-import { Product } from '../../../../models/product.model';
+import { Product, CreateProductDto } from '../../../../models/product.model';
 
 /**
  * Component to display and edit an item row in the table
@@ -37,6 +37,9 @@ export class ItemRowComponent implements OnInit {
 
   // Output: event when dropdown state changes
   dropdownStateChanged = output<boolean>();
+
+  // Output: event when user requests to create a new product from row data
+  createProductRequested = output<Partial<CreateProductDto>>();
 
   // Local signals for form values
   protected readonly localReference = signal('');
@@ -74,6 +77,14 @@ export class ItemRowComponent implements OnInit {
         product.description.toLowerCase().includes(term)
       )
       .slice(0, 8);
+  });
+
+  // Check if reference doesn't exist in catalog (for showing create button)
+  protected readonly canCreateProduct = computed(() => {
+    const term = this.referenceSearchTerm().trim();
+    const catalog = this.products() ?? [];
+    // Show create button if: there's a search term AND no exact match in catalog
+    return term.length > 0 && catalog.length > 0 && this.referenceMatches().length === 0;
   });
 
   private referenceDropdownTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -174,6 +185,45 @@ export class ItemRowComponent implements OnInit {
 
     // Notify parent of changes
     this.localValuesChanged.emit();
+  }
+
+  /**
+   * Applies a product to this row (used after creating a new product)
+   */
+  applyProduct(product: Product): void {
+    const resolvedQuantity = this.localQuantity() > 0 ? this.localQuantity() : 1;
+    const resolvedUnitPrice = product.basePrice ?? this.localUnitPrice();
+
+    this.localReference.set(product.reference);
+    this.localDescription.set(product.description);
+    this.localManufacturer.set(product.manufacturer);
+    this.localQuantity.set(resolvedQuantity);
+    this.localUnitPrice.set(resolvedUnitPrice);
+    this.referenceSearchTerm.set(product.reference);
+
+    this.localValuesChanged.emit();
+  }
+
+  /**
+   * Request to create a new product from current row data
+   */
+  protected requestCreateProduct(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.clearDropdownTimeout();
+    this.referenceDropdownOpen.set(false);
+
+    // Build prefill data from current row values
+    const prefillData: Partial<CreateProductDto> = {
+      reference: this.localReference().trim(),
+      description: this.localDescription().trim(),
+      manufacturer: this.localManufacturer().trim(),
+      basePrice: this.localUnitPrice() > 0 ? this.localUnitPrice() : undefined,
+      vatRate: 21, // Default VAT
+      active: true
+    };
+
+    this.createProductRequested.emit(prefillData);
   }
 
   private clearDropdownTimeout(): void {

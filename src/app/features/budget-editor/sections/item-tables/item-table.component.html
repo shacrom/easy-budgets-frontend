@@ -162,7 +162,8 @@
                       [showUnitPrice]="table.showUnitPrice ?? true"
                       [showTotalPrice]="table.showTotalPrice ?? true"
                       (deleteRequested)="deleteRow(table.id, $event)"
-                      (localValuesChanged)="onRowLocalChange()">
+                      (localValuesChanged)="onRowLocalChange()"
+                      (createProductRequested)="openCreateProductDialog($event, row.id)">
                     </app-item-row>
                   </tr>
                 }

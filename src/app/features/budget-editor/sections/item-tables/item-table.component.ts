@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, signal, computed, output, inject, input, effect, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CdkDragDrop, CdkDropList, CdkDrag, moveItemInArray } from '@angular/cdk/drag-drop';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ItemRowComponent } from './item-row.component';
 import { ItemRow, ItemTable } from '../../../../models/item-table.model';
-import { Product } from '../../../../models/product.model';
+import { Product, CreateProductDto } from '../../../../models/product.model';
 import { SupabaseService } from '../../../../services/supabase.service';
+import { ProductFormDialogComponent, ProductFormDialogResult } from '../../../products/components/product-form-dialog.component';
 
 /**
  * Container component for the item tables section
@@ -14,13 +16,14 @@ import { SupabaseService } from '../../../../services/supabase.service';
   selector: 'app-item-table',
   templateUrl: './item-table.component.html',
   styleUrls: ['./item-table.component.css'],
-  imports: [CommonModule, ItemRowComponent, CdkDropList, CdkDrag],
+  imports: [CommonModule, ItemRowComponent, CdkDropList, CdkDrag, MatDialogModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemTableComponent {
   private readonly defaultTableTitle = 'Título';
   private readonly defaultSectionTitle = 'Partidas y equipamiento';
   private readonly supabase = inject(SupabaseService);
+  private readonly dialog = inject(MatDialog);
 
   // Section title (editable)
   readonly sectionTitleInput = input<string>(this.defaultSectionTitle, { alias: 'sectionTitle' });
@@ -377,6 +380,35 @@ export class ItemTableComponent {
   ): void {
     this.tables.update(current => this.normalizeTables(mutator(this.cloneTables(current))));
     // No auto-emit - changes are only emitted when saveChanges() is called
+  }
+
+  /**
+   * Opens the product creation dialog with prefilled data from a row
+   * After successful creation, applies the product to the requesting row
+   */
+  protected openCreateProductDialog(prefillData: Partial<CreateProductDto>, rowId: number): void {
+    const dialogRef = this.dialog.open(ProductFormDialogComponent, {
+      width: '600px',
+      data: { prefillData },
+      panelClass: 'product-form-dialog'
+    });
+
+    dialogRef.afterClosed().subscribe((result: ProductFormDialogResult | undefined) => {
+      if (result?.created && result.product) {
+        // Add the new product to the local catalog
+        this.products.update(products => [...products, result.product!]);
+
+        // Find and apply the product to the row that requested creation
+        const rowComponent = this.itemRowComponents?.find(
+          comp => comp.row().id === rowId
+        );
+
+        if (rowComponent) {
+          rowComponent.applyProduct(result.product);
+          this.hasUnsavedChanges.set(true);
+        }
+      }
+    });
   }
 
   private async loadProducts(): Promise<void> {
