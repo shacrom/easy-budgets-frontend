@@ -182,14 +182,14 @@
             class="input-field"
             type="text"
             [(ngModel)]="line.concept"
-            (ngModelChange)="updateAdditionalLine(line)"
+            (blur)="markAsChanged()"
             placeholder="Descripción" />
           @if (isDiscount(line)) {
             <input
               class="input-field valid-until"
               type="date"
               [(ngModel)]="line.validUntil"
-              (ngModelChange)="updateAdditionalLine(line)"
+              (change)="markAsChanged()"
               title="Fecha de validez del descuento" />
           }
           <div class="amount-display">
@@ -198,7 +198,7 @@
               type="number"
               [disabled]="isNote(line)"
               [(ngModel)]="line.amount"
-              (ngModelChange)="updateAdditionalLine(line)"
+              (blur)="markAsChanged()"
               [placeholder]="isDiscount(line) ? '0' : '0,00'" />
             @if (isDiscount(line)) {
               <span class="unit-label">%</span>

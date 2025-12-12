@@ -249,6 +249,13 @@ export class BudgetSummaryComponent {
   }
 
   /**
+   * Marks the form as changed (for use with blur events)
+   */
+  protected markAsChanged(): void {
+    this.hasUnsavedChanges.set(true);
+  }
+
+  /**
    * Updates an additional line
    */
   protected updateAdditionalLine(updatedLine: SummaryLine): void {
