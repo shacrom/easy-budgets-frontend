@@ -41,7 +41,7 @@ describe('PdfExportService', () => {
         quantity: 2,
         unitPrice: 50,
         totalPrice: 100,
-        manufacturer: 'Fab',
+        supplierId: 1,
         orderIndex: 0
       }
     ],
@@ -57,7 +57,7 @@ describe('PdfExportService', () => {
                     quantity: 1,
                     unitPrice: 20,
                     totalPrice: 20,
-                    manufacturer: 'Fab',
+                    supplierId: 1,
                     orderIndex: 0
                   }
             ],
@@ -643,7 +643,7 @@ describe('PdfExportService', () => {
       };
 
       const blocks = [{ id: 1, budgetId: 1, heading: 'Bloque Test', subtotal: 100, descriptions: [], orderIndex: 0 }];
-      const itemTables = [{ id: 1, title: 'Tabla Test', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
+      const itemTables = [{ id: 1, title: 'Tabla Test', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, supplierId: null, orderIndex: 0 }], orderIndex: 0 }];
 
       // Orden personalizado: simpleBlock primero, luego itemTables, luego compositeBlocks
       const customOrder: BudgetSection[] = [BudgetSection.SimpleBlock, BudgetSection.ItemTables, BudgetSection.CompositeBlocks];
@@ -685,7 +685,7 @@ describe('PdfExportService', () => {
       };
 
       const blocks = [{ id: 1, budgetId: 1, heading: 'Bloque Test', subtotal: 100, descriptions: [], orderIndex: 0 }];
-      const itemTables = [{ id: 1, title: 'Tabla Test', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
+      const itemTables = [{ id: 1, title: 'Tabla Test', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, supplierId: null, orderIndex: 0 }], orderIndex: 0 }];
 
       // Sin sectionOrder (undefined)
       // @ts-ignore (private method)
@@ -725,7 +725,7 @@ describe('PdfExportService', () => {
       };
 
       const blocks: any[] = [];
-      const itemTables = [{ id: 1, title: 'Tabla Test', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
+      const itemTables = [{ id: 1, title: 'Tabla Test', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, supplierId: null, orderIndex: 0 }], orderIndex: 0 }];
 
       // @ts-ignore (private method)
       const section = service.buildSummarySection(
@@ -760,7 +760,7 @@ describe('PdfExportService', () => {
       };
 
       const blocks = [{ id: 1, budgetId: 1, heading: 'Mi Bloque', subtotal: 150, descriptions: [], orderIndex: 0 }];
-      const itemTables = [{ id: 1, title: 'Mis Partidas', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 250, totalPrice: 250, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
+      const itemTables = [{ id: 1, title: 'Mis Partidas', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 250, totalPrice: 250, supplierId: null, orderIndex: 0 }], orderIndex: 0 }];
 
       // itemTables antes de compositeBlocks
       const customOrder: BudgetSection[] = [BudgetSection.ItemTables, BudgetSection.CompositeBlocks, BudgetSection.SimpleBlock];
@@ -798,7 +798,7 @@ describe('PdfExportService', () => {
       };
 
       const blocks = [{ id: 1, budgetId: 1, heading: 'Bloque', subtotal: 100, descriptions: [], orderIndex: 0 }];
-      const itemTables = [{ id: 1, title: 'Tabla', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, manufacturer: '', orderIndex: 0 }], orderIndex: 0 }];
+      const itemTables = [{ id: 1, title: 'Tabla', rows: [{ id: 1, reference: 'R1', description: 'Item', quantity: 1, unitPrice: 200, totalPrice: 200, supplierId: null, orderIndex: 0 }], orderIndex: 0 }];
 
       // Orden: itemTables antes de compositeBlocks, simpleBlock sin valor no aparece
       const customOrder: BudgetSection[] = [BudgetSection.ItemTables, BudgetSection.CompositeBlocks, BudgetSection.SimpleBlock];

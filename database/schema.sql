@@ -116,7 +116,7 @@ CREATE TABLE "BudgetItemTables" (
   "orderIndex" integer NOT NULL DEFAULT 0,
   "showReference" boolean NOT NULL DEFAULT true,
   "showDescription" boolean NOT NULL DEFAULT true,
-  "showManufacturer" boolean NOT NULL DEFAULT true,
+  "showSupplier" boolean NOT NULL DEFAULT true,
   "showQuantity" boolean NOT NULL DEFAULT true,
   "showUnitPrice" boolean NOT NULL DEFAULT true,
   "showTotalPrice" boolean NOT NULL DEFAULT true,
@@ -130,7 +130,6 @@ CREATE TABLE "Products" (
   "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   "reference" character varying NOT NULL UNIQUE,
   "description" text NOT NULL,
-  "manufacturer" character varying,
   "unitPrice" numeric NOT NULL CHECK ("unitPrice" >= 0::numeric),
   "category" character varying,
   "supplierId" bigint,
@@ -151,7 +150,7 @@ CREATE TABLE "BudgetItemTableRows" (
   "productId" bigint,
   "reference" character varying,
   "description" text NOT NULL DEFAULT ''::text,
-  "manufacturer" character varying,
+  "supplierId" bigint,
   "quantity" numeric NOT NULL DEFAULT 0,
   "unitPrice" numeric NOT NULL DEFAULT 0,
   "totalPrice" numeric NOT NULL DEFAULT 0,
@@ -159,7 +158,8 @@ CREATE TABLE "BudgetItemTableRows" (
   "createdAt" timestamp with time zone DEFAULT now(),
   CONSTRAINT "BudgetItemTableRows_pkey" PRIMARY KEY ("id"),
   CONSTRAINT "BudgetItemTableRows_tableId_fkey" FOREIGN KEY ("tableId") REFERENCES "BudgetItemTables"("id") ON DELETE CASCADE,
-  CONSTRAINT "BudgetItemTableRows_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Products"("id") ON DELETE SET NULL
+  CONSTRAINT "BudgetItemTableRows_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Products"("id") ON DELETE SET NULL,
+  CONSTRAINT "BudgetItemTableRows_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "Suppliers"("id") ON DELETE SET NULL
 );
 
 -- Tabla: BudgetSimpleBlocks
@@ -390,7 +390,7 @@ CREATE TABLE "SupplierOrderItems" (
   "reference" character varying,
   "concept" character varying NOT NULL DEFAULT ''::character varying,
   "description" text,
-  "manufacturer" character varying,
+  "supplierId" bigint,
   "quantity" numeric NOT NULL DEFAULT 1,
   "unit" character varying,
   "unitPrice" numeric NOT NULL DEFAULT 0,
@@ -400,7 +400,8 @@ CREATE TABLE "SupplierOrderItems" (
   CONSTRAINT "SupplierOrderItems_pkey" PRIMARY KEY ("id"),
   CONSTRAINT "SupplierOrderItems_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "SupplierOrders"("id") ON DELETE CASCADE,
   CONSTRAINT "SupplierOrderItems_itemTableRowId_fkey" FOREIGN KEY ("itemTableRowId") REFERENCES "BudgetItemTableRows"("id") ON DELETE SET NULL,
-  CONSTRAINT "SupplierOrderItems_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Products"("id") ON DELETE SET NULL
+  CONSTRAINT "SupplierOrderItems_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Products"("id") ON DELETE SET NULL,
+  CONSTRAINT "SupplierOrderItems_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "Suppliers"("id") ON DELETE SET NULL
 );
 
 -- Añadir columna supplierId a Products (referencia a proveedor)

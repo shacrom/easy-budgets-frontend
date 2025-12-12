@@ -89,6 +89,12 @@
             "production": {
               "buildTarget": "easy-budgets-frontend:build:production"
             },
+            "develop": {
+              "buildTarget": "easy-budgets-frontend:build:develop"
+            },
+            "local": {
+              "buildTarget": "easy-budgets-frontend:build:local"
+            },
             "development": {
               "buildTarget": "easy-budgets-frontend:build:development"
             }

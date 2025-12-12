@@ -20,8 +20,7 @@
 .material-cell.descripcion,
 .material-cell.description,
 .material-cell.reference,
-.material-cell.fabricante,
-.material-cell.manufacturer {
+.material-cell.supplier {
   @apply text-left;
 }
 

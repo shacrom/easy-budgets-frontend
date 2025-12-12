@@ -284,7 +284,7 @@ export class ItemTableComponent {
     let count = 0;
     if (table.showReference) count++;
     if (table.showDescription) count++;
-    if (table.showManufacturer) count++;
+    if (table.showSupplier) count++;
     if (table.showQuantity) count++;
     if (table.showUnitPrice) count++;
     if (table.showTotalPrice) count++;
@@ -323,7 +323,7 @@ export class ItemTableComponent {
       rows: [],
       showReference: true,
       showDescription: true,
-      showManufacturer: true,
+      showSupplier: true,
       showQuantity: true,
       showUnitPrice: true,
       showTotalPrice: true
@@ -338,7 +338,7 @@ export class ItemTableComponent {
       orderIndex,
       description: '',
       reference: '',
-      manufacturer: '',
+      supplierId: null,
       quantity: 0,
       unitPrice: 0,
       totalPrice: 0
@@ -389,7 +389,7 @@ export class ItemTableComponent {
       // Ensure visibility flags default to true when absent
       showReference: table.showReference ?? true,
       showDescription: table.showDescription ?? true,
-      showManufacturer: table.showManufacturer ?? true,
+      showSupplier: table.showSupplier ?? true,
       showQuantity: table.showQuantity ?? true,
       showUnitPrice: table.showUnitPrice ?? true,
       showTotalPrice: table.showTotalPrice ?? true

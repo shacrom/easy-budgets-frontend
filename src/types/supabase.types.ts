@@ -211,7 +211,7 @@ export type Database = {
           createdAt: string | null
           description: string
           id: number
-          manufacturer: string | null
+          supplierId: number | null
           orderIndex: number
           productId: number | null
           quantity: number
@@ -224,7 +224,7 @@ export type Database = {
           createdAt?: string | null
           description?: string
           id?: number
-          manufacturer?: string | null
+          supplierId?: number | null
           orderIndex?: number
           productId?: number | null
           quantity?: number
@@ -237,7 +237,7 @@ export type Database = {
           createdAt?: string | null
           description?: string
           id?: number
-          manufacturer?: string | null
+          supplierId?: number | null
           orderIndex?: number
           productId?: number | null
           quantity?: number
@@ -270,7 +270,7 @@ export type Database = {
           id: number
           orderIndex: number
           showDescription: boolean
-          showManufacturer: boolean
+          showSupplier: boolean
           showQuantity: boolean
           showReference: boolean
           showTotalPrice: boolean
@@ -283,7 +283,7 @@ export type Database = {
           id?: number
           orderIndex?: number
           showDescription?: boolean
-          showManufacturer?: boolean
+          showSupplier?: boolean
           showQuantity?: boolean
           showReference?: boolean
           showTotalPrice?: boolean
@@ -296,7 +296,7 @@ export type Database = {
           id?: number
           orderIndex?: number
           showDescription?: boolean
-          showManufacturer?: boolean
+          showSupplier?: boolean
           showQuantity?: boolean
           showReference?: boolean
           showTotalPrice?: boolean
@@ -662,7 +662,7 @@ export type Database = {
           imageUrl: string | null
           isActive: boolean | null
           link: string | null
-          manufacturer: string | null
+          supplierId: number | null
           reference: string
           unitPrice: number
           updatedAt: string | null
@@ -676,7 +676,7 @@ export type Database = {
           imageUrl?: string | null
           isActive?: boolean | null
           link?: string | null
-          manufacturer?: string | null
+          supplierId?: number | null
           reference: string
           unitPrice: number
           updatedAt?: string | null
@@ -690,7 +690,7 @@ export type Database = {
           imageUrl?: string | null
           isActive?: boolean | null
           link?: string | null
-          manufacturer?: string | null
+          supplierId?: number | null
           reference?: string
           unitPrice?: number
           updatedAt?: string | null

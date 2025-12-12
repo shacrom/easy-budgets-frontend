@@ -1,3 +1,4 @@
+// This file is used for the 'develop' branch environment
 export const environment = {
   production: false,
   supabaseUrl: 'https://gmuzptwutaxdeekzxdff.supabase.co',

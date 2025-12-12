@@ -5,7 +5,6 @@ export interface Product {
   id?: number;
   reference: string;
   description: string;
-  manufacturer: string;
   basePrice: number;
   vatRate: number;
   category?: string;
@@ -21,7 +20,6 @@ export interface Product {
 export interface CreateProductDto {
   reference: string;
   description: string;
-  manufacturer: string;
   basePrice: number;
   vatRate: number;
   category?: string;
@@ -35,7 +33,6 @@ export interface CreateProductDto {
 export interface UpdateProductDto {
   reference?: string;
   description?: string;
-  manufacturer?: string;
   basePrice?: number;
   vatRate?: number;
   category?: string;

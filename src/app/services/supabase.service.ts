@@ -87,7 +87,7 @@ export class SupabaseService {
       id: product.id,
       reference: product.reference,
       description: product.description,
-      manufacturer: product.manufacturer,
+      supplierId: product.supplierId,
       basePrice: product.unitPrice,
       vatRate: product.vatRate ?? 0,
       category: product.category,
@@ -126,7 +126,7 @@ export class SupabaseService {
       .insert([{
         reference: product.reference,
         description: product.description,
-        manufacturer: product.manufacturer,
+        supplierId: product.supplierId,
         unitPrice: product.basePrice,
         vatRate: product.vatRate, // Guardar IVA
         category: product.category,
@@ -142,7 +142,7 @@ export class SupabaseService {
       id: data.id,
       reference: data.reference,
       description: data.description,
-      manufacturer: data.manufacturer,
+      supplierId: data.supplierId,
       basePrice: data.unitPrice,
       vatRate: data.vatRate ?? 21,
       category: data.category,
@@ -158,7 +158,7 @@ export class SupabaseService {
       .update({
         reference: updates.reference,
         description: updates.description,
-        manufacturer: updates.manufacturer,
+        supplierId: updates.supplierId,
         unitPrice: updates.basePrice,
         vatRate: updates.vatRate, // Actualizar IVA
         category: updates.category,
@@ -175,7 +175,7 @@ export class SupabaseService {
       id: data.id,
       reference: data.reference,
       description: data.description,
-      manufacturer: data.manufacturer,
+      supplierId: data.supplierId,
       basePrice: data.unitPrice,
       vatRate: data.vatRate ?? 21,
       category: data.category,
@@ -787,7 +787,7 @@ export class SupabaseService {
       // Column visibility for PDF export
       showReference: table.showReference ?? true,
       showDescription: table.showDescription ?? true,
-      showManufacturer: table.showManufacturer ?? true,
+      showSupplier: table.showSupplier ?? true,
       showQuantity: table.showQuantity ?? true,
       showUnitPrice: table.showUnitPrice ?? true,
       showTotalPrice: table.showTotalPrice ?? true
@@ -809,7 +809,7 @@ export class SupabaseService {
         productId: row.productId ?? null,
         reference: row.reference ?? '',
         description: row.description ?? '',
-        manufacturer: row.manufacturer ?? '',
+        supplierId: row.supplierId ?? null,
         quantity: row.quantity ?? 0,
         unitPrice: row.unitPrice ?? 0,
         totalPrice: row.totalPrice ?? ((row.unitPrice ?? 0) * (row.quantity ?? 0)),
@@ -846,7 +846,7 @@ export class SupabaseService {
           // Clone column visibility settings
           showReference: table.showReference ?? true,
           showDescription: table.showDescription ?? true,
-          showManufacturer: table.showManufacturer ?? true,
+          showSupplier: table.showSupplier ?? true,
           showQuantity: table.showQuantity ?? true,
           showUnitPrice: table.showUnitPrice ?? true,
           showTotalPrice: table.showTotalPrice ?? true
@@ -864,7 +864,7 @@ export class SupabaseService {
           productId: row.productId ?? null,
           reference: row.reference ?? '',
           description: row.description ?? '',
-          manufacturer: row.manufacturer ?? '',
+          supplierId: row.supplierId ?? null,
           quantity: row.quantity ?? 0,
           unitPrice: row.unitPrice ?? 0,
           totalPrice: row.totalPrice ?? ((row.unitPrice ?? 0) * (row.quantity ?? 0)),
@@ -1570,7 +1570,7 @@ export class SupabaseService {
     productId?: number | null;
     reference?: string | null;
     description: string;
-    manufacturer?: string | null;
+    supplierId?: number | null;
     quantity: number;
     orderIndex: number;
   }>) {
@@ -1666,7 +1666,7 @@ export class SupabaseService {
     productId?: number | null;
     reference?: string | null;
     description: string;
-    manufacturer?: string | null;
+    supplierId?: number | null;
     quantity: number;
     orderIndex: number;
   }) {
@@ -1683,7 +1683,7 @@ export class SupabaseService {
   async updateSupplierOrderItem(id: number, updates: {
     reference?: string | null;
     description?: string;
-    manufacturer?: string | null;
+    supplierId?: number | null;
     quantity?: number;
     orderIndex?: number;
   }) {
@@ -1712,7 +1712,7 @@ export class SupabaseService {
     productId?: number | null;
     reference?: string | null;
     description: string;
-    manufacturer?: string | null;
+    supplierId?: number | null;
     quantity: number;
     orderIndex: number;
   }>) {

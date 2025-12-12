@@ -64,8 +64,8 @@
     class="input-field textarea-field"
     placeholder="Descripción del material"></textarea>
 </td>
-<td class="material-cell manufacturer">
-  <input type="text" [value]="localManufacturer()" (input)="onManufacturerChange($any($event.target).value)" class="input-field">
+<td class="material-cell supplier">
+  <input type="number" [value]="localSupplierId()" (input)="onSupplierIdChange($any($event.target).valueAsNumber || null)" class="input-field" placeholder="ID Proveedor">
 </td>
 <td class="material-cell quantity">
   <input type="number" [value]="localQuantity()" (input)="onQuantityChange($any($event.target).valueAsNumber)" min="0" class="input-field text-right" placeholder="0">

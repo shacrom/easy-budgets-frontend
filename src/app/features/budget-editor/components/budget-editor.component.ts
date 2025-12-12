@@ -673,7 +673,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
             title: t.title,
             showReference: t.showReference ?? true,
             showDescription: t.showDescription ?? true,
-            showManufacturer: t.showManufacturer ?? true,
+            showSupplier: t.showSupplier ?? true,
             showQuantity: t.showQuantity ?? true,
             showUnitPrice: t.showUnitPrice ?? true,
             showTotalPrice: t.showTotalPrice ?? true,
@@ -684,7 +684,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
               orderIndex: r.orderIndex,
               reference: r.reference,
               description: r.description,
-              manufacturer: r.manufacturer,
+              supplierId: r.supplierId,
               quantity: Number(r.quantity ?? 0),
               unitPrice: Number(r.unitPrice ?? 0),
               totalPrice: Number(r.totalPrice ?? 0)

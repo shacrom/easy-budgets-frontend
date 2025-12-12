@@ -24,7 +24,7 @@ export class ItemRowComponent implements OnInit {
   // Input: visibility of columns for this row
   showReference = input<boolean>(true);
   showDescription = input<boolean>(true);
-  showManufacturer = input<boolean>(true);
+  showSupplier = input<boolean>(true);
   showQuantity = input<boolean>(true);
   showUnitPrice = input<boolean>(true);
   showTotalPrice = input<boolean>(true);
@@ -53,7 +53,7 @@ export class ItemRowComponent implements OnInit {
   // Local signals for form values
   protected readonly localReference = signal('');
   protected readonly localDescription = signal('');
-  protected readonly localManufacturer = signal('');
+  protected readonly localSupplierId = signal<number | null>(null);
   protected readonly localQuantity = signal(0);
   protected readonly localUnitPrice = signal(0);
 
@@ -113,7 +113,7 @@ export class ItemRowComponent implements OnInit {
     const rowData = this.row();
     this.localReference.set(rowData.reference ?? '');
     this.localDescription.set(rowData.description ?? '');
-    this.localManufacturer.set(rowData.manufacturer ?? '');
+    this.localSupplierId.set(rowData.supplierId ?? null);
     this.localQuantity.set(rowData.quantity ?? 0);
     this.localUnitPrice.set(rowData.unitPrice ?? 0);
     this.referenceSearchTerm.set(rowData.reference ?? '');
@@ -131,10 +131,10 @@ export class ItemRowComponent implements OnInit {
   }
 
   /**
-   * Updates local manufacturer
+   * Updates local supplier ID
    */
-  protected onManufacturerChange(value: string): void {
-    this.localManufacturer.set(value);
+  protected onSupplierIdChange(value: number | null): void {
+    this.localSupplierId.set(value);
     this.localValuesChanged.emit();
   }
 
@@ -186,7 +186,7 @@ export class ItemRowComponent implements OnInit {
     // Update local signals
     this.localReference.set(product.reference);
     this.localDescription.set(product.description);
-    this.localManufacturer.set(product.manufacturer);
+    this.localSupplierId.set(product.supplierId ?? null);
     this.localQuantity.set(resolvedQuantity);
     this.localUnitPrice.set(resolvedUnitPrice);
     this.referenceSearchTerm.set(product.reference);
@@ -205,7 +205,7 @@ export class ItemRowComponent implements OnInit {
 
     this.localReference.set(product.reference);
     this.localDescription.set(product.description);
-    this.localManufacturer.set(product.manufacturer);
+    this.localSupplierId.set(product.supplierId ?? null);
     this.localQuantity.set(resolvedQuantity);
     this.localUnitPrice.set(resolvedUnitPrice);
     this.referenceSearchTerm.set(product.reference);
@@ -226,7 +226,7 @@ export class ItemRowComponent implements OnInit {
     const prefillData: Partial<CreateProductDto> = {
       reference: this.localReference().trim(),
       description: this.localDescription().trim(),
-      manufacturer: this.localManufacturer().trim(),
+      supplierId: this.localSupplierId(),
       basePrice: this.localUnitPrice() > 0 ? this.localUnitPrice() : undefined,
       vatRate: 21, // Default VAT
       active: true
@@ -259,7 +259,7 @@ export class ItemRowComponent implements OnInit {
       ...this.row(),
       reference: this.localReference(),
       description: this.localDescription(),
-      manufacturer: this.localManufacturer(),
+      supplierId: this.localSupplierId(),
       quantity: this.localQuantity(),
       unitPrice: this.localUnitPrice(),
       totalPrice: this.localQuantity() * this.localUnitPrice()

@@ -25,7 +25,7 @@ export interface SupplierSelectionDialogResult {
 }
 
 /**
- * Interface for grouped items by supplier/manufacturer
+ * Interface for grouped items by supplier
  */
 interface SupplierGroup {
   supplierName: string;
@@ -36,8 +36,8 @@ interface SupplierGroup {
 }
 
 /**
- * Dialog component for selecting suppliers when creating orders from selected items
- * Groups items by manufacturer/supplier and allows user to select which orders to create
+ * Dialog component for selecting suppliers when creating orders from selected items.
+ * Groups items by supplier and allows user to select which orders to create.
  */
 @Component({
   selector: 'app-supplier-selection-dialog',
@@ -389,12 +389,12 @@ export class SupplierSelectionDialogComponent implements OnInit {
   private async loadAndGroupItems(): Promise<void> {
     this.isLoading.set(true);
     try {
-      // Load suppliers to match with manufacturers
+      // Load suppliers
       const suppliers = await this.supabase.getSuppliers();
       this.suppliers.set(suppliers);
 
-      // Group items by manufacturer
-      const groups = this.groupItemsByManufacturer(this.data.selectedRows, suppliers);
+      // Group items by supplier
+      const groups = this.groupItemsBySupplier(this.data.selectedRows, suppliers);
       this.supplierGroupsState.set(groups);
     } catch (error) {
       console.error('Error loading suppliers:', error);
@@ -404,20 +404,17 @@ export class SupplierSelectionDialogComponent implements OnInit {
     }
   }
 
-  private groupItemsByManufacturer(items: ItemRow[], suppliers: Supplier[]): SupplierGroup[] {
+  private groupItemsBySupplier(items: ItemRow[], suppliers: Supplier[]): SupplierGroup[] {
     const groupMap = new Map<string, SupplierGroup>();
 
     for (const item of items) {
-      const manufacturerName = item.manufacturer?.trim() || 'Sin proveedor';
+      // Use supplierId to find supplier, or fallback to 'Sin proveedor'
+      const matchingSupplier = item.supplierId ? suppliers.find(s => s.id === item.supplierId) : null;
+      const supplierKey = matchingSupplier ? matchingSupplier.name : 'Sin proveedor';
 
-      if (!groupMap.has(manufacturerName)) {
-        // Try to find matching supplier
-        const matchingSupplier = suppliers.find(s =>
-          s.name.toLowerCase() === manufacturerName.toLowerCase()
-        );
-
-        groupMap.set(manufacturerName, {
-          supplierName: manufacturerName,
+      if (!groupMap.has(supplierKey)) {
+        groupMap.set(supplierKey, {
+          supplierName: supplierKey,
           supplierId: matchingSupplier?.id,
           items: [],
           selected: true, // Select by default
@@ -425,7 +422,7 @@ export class SupplierSelectionDialogComponent implements OnInit {
         });
       }
 
-      const group = groupMap.get(manufacturerName)!;
+      const group = groupMap.get(supplierKey)!;
       group.items.push(item);
       group.itemCount = group.items.length;
     }
@@ -494,7 +491,7 @@ export class SupplierSelectionDialogComponent implements OnInit {
           productId: item.productId ?? null,
           reference: item.reference ?? null,
           description: item.description,
-          manufacturer: item.manufacturer ?? null,
+          supplierId: item.supplierId ?? null,
           quantity: item.quantity,
           orderIndex: index
         })));

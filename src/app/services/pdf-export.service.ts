@@ -813,7 +813,7 @@ export class PdfExportService {
       const visibility = {
         reference: table.showReference ?? true,
         description: table.showDescription ?? true,
-        manufacturer: table.showManufacturer ?? true,
+        supplier: table.showSupplier ?? true,
         quantity: table.showQuantity ?? true,
         unitPrice: table.showUnitPrice ?? true,
         totalPrice: table.showTotalPrice ?? true
@@ -825,7 +825,7 @@ export class PdfExportService {
       const defaultVisibility = {
         reference: true,
         description: true,
-        manufacturer: true,
+        supplier: true,
         quantity: true,
         unitPrice: true,
         totalPrice: true
@@ -845,8 +845,8 @@ export class PdfExportService {
     return content;
   }
 
-  private buildItemsTable(items: ItemRow[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
-    const v = visibility ?? { reference: true, description: true, manufacturer: true, quantity: true, unitPrice: true, totalPrice: true };
+  private buildItemsTable(items: ItemRow[], visibility?: { reference: boolean; description: boolean; supplier: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
+    const v = visibility ?? { reference: true, description: true, supplier: true, quantity: true, unitPrice: true, totalPrice: true };
     const headers: TableCell[] = [];
     const widths: (string | number)[] = [];
 
@@ -858,8 +858,8 @@ export class PdfExportService {
       headers.push({ text: 'Descripción', style: 'tableHeader' });
       widths.push('*');
     }
-    if (v.manufacturer) {
-      headers.push({ text: 'Fabricante', style: 'tableHeader' });
+    if (v.supplier) {
+      headers.push({ text: 'Proveedor', style: 'tableHeader' });
       widths.push('auto');
     }
     if (v.quantity) {
@@ -879,7 +879,7 @@ export class PdfExportService {
       const r: TableCell[] = [];
       if (v.reference) r.push({ text: item.reference || '—', color: '#4b5563', fontSize: 9 } as TableCell);
       if (v.description) r.push({ text: item.description || '—', fontSize: 10 } as TableCell);
-      if (v.manufacturer) r.push({ text: item.manufacturer || '—', color: '#6b7280', fontSize: 9 } as TableCell);
+      if (v.supplier) r.push({ text: item.supplierId ? `ID: ${item.supplierId}` : '—', color: '#6b7280', fontSize: 9 } as TableCell);
       if (v.quantity) r.push({ text: this.formatQuantity(item.quantity), alignment: 'center' } as TableCell);
       if (v.unitPrice) r.push({ text: this.formatCurrency(item.unitPrice), alignment: 'right' } as TableCell);
       if (v.totalPrice) r.push({ text: this.formatCurrency(item.totalPrice), alignment: 'right', bold: true } as TableCell);
@@ -897,7 +897,7 @@ export class PdfExportService {
     };
   }
 
-  private buildItemTableCard(title: string, rows: ItemRow[], visibility?: { reference: boolean; description: boolean; manufacturer: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
+  private buildItemTableCard(title: string, rows: ItemRow[], visibility?: { reference: boolean; description: boolean; supplier: boolean; quantity: boolean; unitPrice: boolean; totalPrice: boolean }): Content {
     const countLabel = rows.length === 1 ? '1 partida' : `${rows.length} partidas`;
     const subtotal = rows.reduce((sum, row) => sum + (row.totalPrice ?? 0), 0);
 

@@ -134,9 +134,9 @@
                 </th>
                 <th>
                   <div class="th-content">
-                    <span>Fabricante</span>
-                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showManufacturer')" title="Mostrar/ocultar fabricante">
-                      <span class="material-symbols-rounded">{{ table.showManufacturer ? 'visibility' : 'visibility_off' }}</span>
+                    <span>Proveedor</span>
+                    <button type="button" class="btn icon" (click)="toggleShowColumn(table.id, 'showSupplier')" title="Mostrar/ocultar proveedor">
+                      <span class="material-symbols-rounded">{{ table.showSupplier ? 'visibility' : 'visibility_off' }}</span>
                     </button>
                   </div>
                 </th>
@@ -192,7 +192,7 @@
                       [products]="products()"
                       [showReference]="table.showReference ?? true"
                       [showDescription]="table.showDescription ?? true"
-                      [showManufacturer]="table.showManufacturer ?? true"
+                      [showSupplier]="table.showSupplier ?? true"
                       [showQuantity]="table.showQuantity ?? true"
                       [showUnitPrice]="table.showUnitPrice ?? true"
                       [showTotalPrice]="table.showTotalPrice ?? true"

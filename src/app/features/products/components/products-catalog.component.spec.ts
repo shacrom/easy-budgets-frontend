@@ -19,9 +19,9 @@ describe('ProductsCatalogComponent', () => {
   };
 
   const mockProducts: Product[] = [
-    { id: 1, reference: 'P1', description: 'Product 1', manufacturer: 'M1', basePrice: 100, vatRate: 21, category: 'C1', active: true },
-    { id: 2, reference: 'P2', description: 'Product 2', manufacturer: 'M2', basePrice: 200, vatRate: 10, category: 'C2', active: true },
-    { id: 3, reference: 'P3', description: 'Product 3', manufacturer: 'M1', basePrice: 300, vatRate: 21, category: 'C1', active: false }
+    { id: 1, reference: 'P1', description: 'Product 1', supplierId: 1, basePrice: 100, vatRate: 21, category: 'C1', active: true },
+    { id: 2, reference: 'P2', description: 'Product 2', supplierId: 2, basePrice: 200, vatRate: 10, category: 'C2', active: true },
+    { id: 3, reference: 'P3', description: 'Product 3', supplierId: 1, basePrice: 300, vatRate: 21, category: 'C1', active: false }
   ];
 
   beforeAll(() => {

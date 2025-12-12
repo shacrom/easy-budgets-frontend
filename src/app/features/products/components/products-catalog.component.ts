@@ -43,7 +43,7 @@ export class ProductsCatalogComponent {
       const values = [
         product.reference,
         product.description,
-        product.manufacturer,
+        product.supplierId?.toString(),
         product.category
       ]
         .filter((value): value is string => !!value)

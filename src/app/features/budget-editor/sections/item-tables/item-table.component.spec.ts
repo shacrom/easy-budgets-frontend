@@ -14,7 +14,7 @@ describe('ItemTableComponent', () => {
   let supabaseServiceSpy: { getProducts: ReturnType<typeof vi.fn> };
 
   const mockProducts: Product[] = [
-    { id: 1, reference: 'P1', description: 'Prod 1', manufacturer: 'M1', basePrice: 10, category: 'C1', vatRate: 21, active: true }
+    { id: 1, reference: 'P1', description: 'Prod 1', supplierId: 1, basePrice: 10, category: 'C1', vatRate: 21, active: true }
   ];
 
   const mockTables: ItemTable[] = [
@@ -23,11 +23,11 @@ describe('ItemTableComponent', () => {
       title: 'Table 1',
       orderIndex: 0,
       rows: [
-        { id: 101, tableId: 1, orderIndex: 0, reference: 'R1', description: 'D1', manufacturer: 'M1', quantity: 1, unitPrice: 10, totalPrice: 10 }
+        { id: 101, tableId: 1, orderIndex: 0, reference: 'R1', description: 'D1', supplierId: 1, quantity: 1, unitPrice: 10, totalPrice: 10 }
       ],
       showReference: true,
       showDescription: true,
-      showManufacturer: true,
+      showSupplier: true,
       showQuantity: true,
       showUnitPrice: true,
       showTotalPrice: true

@@ -14,7 +14,7 @@ describe('ItemRowComponent', () => {
     id: 1,
     reference: 'REF1',
     description: 'Desc',
-    manufacturer: 'Manuf',
+    supplierId: 1,
     quantity: 2,
     unitPrice: 10,
     totalPrice: 20,
@@ -22,8 +22,8 @@ describe('ItemRowComponent', () => {
   };
 
   const mockProducts: Product[] = [
-    { id: 1, reference: 'PROD1', description: 'Product 1', manufacturer: 'M1', basePrice: 50, category: 'C1', vatRate: 21, active: true },
-    { id: 2, reference: 'PROD2', description: 'Product 2', manufacturer: 'M2', basePrice: 100, category: 'C2', vatRate: 21, active: true }
+    { id: 1, reference: 'PROD1', description: 'Product 1', supplierId: 1, basePrice: 50, category: 'C1', vatRate: 21, active: true },
+    { id: 2, reference: 'PROD2', description: 'Product 2', supplierId: 2, basePrice: 100, category: 'C2', vatRate: 21, active: true }
   ];
 
   beforeAll(() => {
@@ -49,7 +49,7 @@ describe('ItemRowComponent', () => {
   it('should initialize local signals from input', () => {
     expect(component['localReference']()).toBe('REF1');
     expect(component['localDescription']()).toBe('Desc');
-    expect(component['localManufacturer']()).toBe('Manuf');
+    expect(component['localSupplierId']()).toBe(1);
     expect(component['localQuantity']()).toBe(2);
     expect(component['localUnitPrice']()).toBe(10);
     expect(component['totalPrice']()).toBe(20);
@@ -67,13 +67,13 @@ describe('ItemRowComponent', () => {
     expect(emitted).toBe(true);
   });
 
-  it('should update local manufacturer and emit change', () => {
+  it('should update local supplierId and emit change', () => {
     let emitted = false;
     component.localValuesChanged.subscribe(() => emitted = true);
 
-    component['onManufacturerChange']('New Manuf');
+    component['onSupplierIdChange'](2);
 
-    expect(component['localManufacturer']()).toBe('New Manuf');
+    expect(component['localSupplierId']()).toBe(2);
     expect(emitted).toBe(true);
   });
 
@@ -131,7 +131,7 @@ describe('ItemRowComponent', () => {
 
     expect(component['localReference']()).toBe('PROD1');
     expect(component['localDescription']()).toBe('Product 1');
-    expect(component['localManufacturer']()).toBe('M1');
+    expect(component['localSupplierId']()).toBe(1);
     expect(component['localUnitPrice']()).toBe(50);
     expect(component['referenceDropdownOpen']()).toBe(false);
     expect(emitted).toBe(true);

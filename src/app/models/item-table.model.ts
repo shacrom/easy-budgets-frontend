@@ -10,7 +10,7 @@ export interface ItemTableRow {
   orderIndex: number;
   description: string;
   reference: string;
-  manufacturer: string;
+  supplierId?: number | null;
   quantity: number;
   unitPrice: number;
   totalPrice: number; // calculado: cantidad * precioUnitario
@@ -30,7 +30,7 @@ export interface ItemTable {
   // Column visibility for PDF export (per table)
   showReference?: boolean;
   showDescription?: boolean;
-  showManufacturer?: boolean;
+  showSupplier?: boolean;
   showQuantity?: boolean;
   showUnitPrice?: boolean;
   showTotalPrice?: boolean;

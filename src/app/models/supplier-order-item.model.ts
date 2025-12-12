@@ -10,7 +10,7 @@ export interface SupplierOrderItem {
   reference?: string | null;
   concept: string;
   description?: string | null;
-  manufacturer?: string | null;
+  supplierId?: number | null;
   quantity: number;
   unit?: string | null;
   unitPrice: number;

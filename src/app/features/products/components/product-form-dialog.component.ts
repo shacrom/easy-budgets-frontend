@@ -50,11 +50,12 @@ export interface ProductFormDialogResult {
             (input)="updateField('reference', $event)">
         </label>
         <label class="form-field">
-          <span>Fabricante *</span>
+          <span>Proveedor</span>
           <input
-            type="text"
-            [value]="formData().manufacturer"
-            (input)="updateField('manufacturer', $event)">
+            type="number"
+            [value]="formData().supplierId"
+            (input)="updateField('supplierId', $event)"
+            placeholder="ID del proveedor">
         </label>
         <label class="form-field full">
           <span>Descripción *</span>
@@ -360,11 +361,10 @@ export class ProductFormDialogComponent implements OnInit {
     return {
       reference: prefill.reference ?? '',
       description: prefill.description ?? '',
-      manufacturer: prefill.manufacturer ?? '',
       basePrice: prefill.basePrice ?? 0,
       vatRate: prefill.vatRate ?? 21, // Default VAT 21%
       category: prefill.category ?? '',
-      supplierId: (prefill as Product).supplierId ?? null,
+      supplierId: prefill.supplierId ?? null,
       active: prefill.active ?? true
     };
   }
@@ -430,11 +430,6 @@ export class ProductFormDialogComponent implements OnInit {
 
     if (!product.description?.trim()) {
       this.errorMessage.set('La descripción es obligatoria');
-      return;
-    }
-
-    if (!product.manufacturer?.trim()) {
-      this.errorMessage.set('El fabricante es obligatorio');
       return;
     }
 

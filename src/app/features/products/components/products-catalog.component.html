@@ -60,7 +60,7 @@
               <tr>
                 <td>{{ product.reference }}</td>
                 <td class="description-cell" [attr.title]="product.description">{{ product.description }}</td>
-                <td>{{ product.manufacturer }}</td>
+                <td>{{ product.supplierId || '—' }}</td>
                 <td>{{ product.category || '—' }}</td>
                 <td class="numeric">{{ (product.basePrice || 0).toFixed(2) }}€</td>
                 <td class="numeric">{{ product.vatRate || 0 }}%</td>
