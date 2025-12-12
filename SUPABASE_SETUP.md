@@ -69,7 +69,7 @@ CREATE INDEX "idx_Customers_name" ON "Customers"("name");
 CREATE INDEX "idx_Customers_email" ON "Customers"("email");
 
 -- Tipo ENUM para el estado del presupuesto
-CREATE TYPE "BudgetStatus" AS ENUM ('completed', 'not_completed');
+CREATE TYPE "BudgetStatus" AS ENUM ('not_completed', 'completed', 'contract');
 
 CREATE TABLE "Budgets" (
   "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

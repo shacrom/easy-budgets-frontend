@@ -707,7 +707,7 @@ export type Database = {
     }
     Enums: {
       BudgetAdditionalLineType: "adjustment" | "discount" | "optional" | "note"
-      BudgetStatus: "completed" | "not_completed"
+      BudgetStatus: "completed" | "not_completed" | "contract"
       EmailStatus: "pending" | "sent" | "failed"
     }
     CompositeTypes: {
@@ -840,7 +840,7 @@ export const Constants = {
   public: {
     Enums: {
       BudgetAdditionalLineType: ["adjustment", "discount", "optional", "note"],
-      BudgetStatus: ["completed", "not_completed"],
+      BudgetStatus: ["completed", "not_completed", "contract"],
       EmailStatus: ["pending", "sent", "failed"],
     },
   },

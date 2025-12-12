@@ -13,8 +13,8 @@
 -- Tipos de línea adicional en presupuesto
 CREATE TYPE "BudgetAdditionalLineType" AS ENUM ('adjustment', 'discount', 'surcharge', 'tax');
 
--- Estados de un presupuesto
-CREATE TYPE "BudgetStatus" AS ENUM ('not_completed', 'draft', 'pending', 'approved', 'rejected');
+-- Estados de un presupuesto (consolidado)
+CREATE TYPE "BudgetStatus" AS ENUM ('not_completed', 'completed', 'contract');
 
 -- Estados de envío de email
 CREATE TYPE "EmailStatus" AS ENUM ('pending', 'sent', 'failed');
@@ -333,7 +333,7 @@ CREATE INDEX "EmailLogs_recipientEmail_idx" ON "EmailLogs" ("recipientEmail");
 --
 -- ENUMS:
 -- - BudgetAdditionalLineType: 'adjustment', 'discount', 'surcharge', 'tax'
--- - BudgetStatus: 'not_completed', 'draft', 'pending', 'approved', 'rejected'
+-- - BudgetStatus: 'not_completed', 'completed', 'contract'
 -- - EmailStatus: 'pending', 'sent', 'failed'
 --
 -- SECTION TYPES:

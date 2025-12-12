@@ -258,10 +258,8 @@ export class BudgetsListComponent implements OnInit {
 
   protected formatStatus(status: BudgetStatus): string {
     switch (status) {
-      case 'approved': return 'Aprobado';
-      case 'rejected': return 'Rechazado';
-      case 'pending': return 'Pendiente';
-      case 'draft': return 'Borrador';
+      case 'completed': return 'Completado';
+      case 'contract': return 'Contratado';
       default: return 'No completado';
     }
   }

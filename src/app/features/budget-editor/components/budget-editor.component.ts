@@ -123,10 +123,10 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
   protected readonly printSummary = signal<boolean>(true);
 
   protected readonly selectedCustomer = computed(() => this.cachedSelectedCustomer());
-  protected readonly isBudgetCompleted = computed(() => (this.budgetMeta()?.status ?? '').toLowerCase() === 'approved');
-  protected readonly completionStateLabel = computed(() => this.isBudgetCompleted() ? 'Aprobado' : 'No aprobado');
+  protected readonly isBudgetCompleted = computed(() => (this.budgetMeta()?.status ?? '') === 'completed');
+  protected readonly completionStateLabel = computed(() => this.isBudgetCompleted() ? 'Completado' : 'No completado');
   protected readonly completionStateIcon = computed(() => this.isBudgetCompleted() ? 'task_alt' : 'hourglass_top');
-  protected readonly completionActionLabel = computed(() => this.isBudgetCompleted() ? 'Marcar como no aprobado' : 'Marcar como aprobado');
+  protected readonly completionActionLabel = computed(() => this.isBudgetCompleted() ? 'Marcar como no completado' : 'Marcar como completado');
   protected readonly completionActionIcon = computed(() => this.isBudgetCompleted() ? 'undo' : 'check_circle');
 
   private customerSearchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -768,7 +768,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       return;
     }
 
-    const nextStatus: BudgetStatus = this.isBudgetCompleted() ? 'not_completed' : 'approved';
+    const nextStatus: BudgetStatus = this.isBudgetCompleted() ? 'not_completed' : 'completed';
     this.togglingStatus.set(true);
 
     try {
