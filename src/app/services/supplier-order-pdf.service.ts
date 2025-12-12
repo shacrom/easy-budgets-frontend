@@ -204,16 +204,16 @@ export class SupplierOrderPdfService {
         {
           width: '*',
           stack: [
-            { 
-              text: companyName, 
-              fontSize: 22, 
-              bold: true, 
+            {
+              text: companyName,
+              fontSize: 22,
+              bold: true,
               color: this.accentColor,
-              characterSpacing: 2 
+              characterSpacing: 2
             },
-            { 
-              text: 'PEDIDO A PROVEEDOR', 
-              fontSize: 11, 
+            {
+              text: 'PEDIDO A PROVEEDOR',
+              fontSize: 11,
               color: '#64748b',
               marginTop: 4,
               characterSpacing: 1
@@ -224,15 +224,15 @@ export class SupplierOrderPdfService {
           width: 'auto',
           alignment: 'right' as const,
           stack: [
-            { 
-              text: order.orderNumber, 
-              fontSize: 16, 
-              bold: true, 
-              color: '#1e293b' 
+            {
+              text: order.orderNumber,
+              fontSize: 16,
+              bold: true,
+              color: '#1e293b'
             },
-            { 
-              text: this.formatDate(order.createdAt), 
-              fontSize: 10, 
+            {
+              text: this.formatDate(order.createdAt),
+              fontSize: 10,
               color: '#64748b',
               marginTop: 4
             },
@@ -256,10 +256,10 @@ export class SupplierOrderPdfService {
       table: {
         widths: ['auto'],
         body: [[
-          { 
-            text: config.text, 
-            fontSize: 8, 
-            bold: true, 
+          {
+            text: config.text,
+            fontSize: 8,
+            bold: true,
             color: config.color,
             fillColor: config.bg,
             margin: [8, 3, 8, 3]
@@ -273,8 +273,8 @@ export class SupplierOrderPdfService {
   }
 
   private buildInfoBoxes(
-    order: SupplierOrder, 
-    supplier: Supplier | null, 
+    order: SupplierOrder,
+    supplier: Supplier | null,
     deliveryAddress: DeliveryAddress | null
   ): Content {
     const supplierContent: Content[] = [
@@ -304,17 +304,17 @@ export class SupplierOrderPdfService {
       deliveryContent.push({ text: deliveryAddress.name, style: 'boxValue' });
       deliveryContent.push({ text: deliveryAddress.address, style: 'boxDetail' });
       if (deliveryAddress.city || deliveryAddress.postalCode) {
-        deliveryContent.push({ 
-          text: `${deliveryAddress.postalCode || ''} ${deliveryAddress.city || ''}`.trim(), 
-          style: 'boxDetail' 
+        deliveryContent.push({
+          text: `${deliveryAddress.postalCode || ''} ${deliveryAddress.city || ''}`.trim(),
+          style: 'boxDetail'
         });
       }
       if (deliveryAddress.province) {
         deliveryContent.push({ text: deliveryAddress.province, style: 'boxDetail' });
       }
       if (deliveryAddress.contactName || deliveryAddress.contactPhone) {
-        deliveryContent.push({ 
-          text: `${deliveryAddress.contactName || ''} ${deliveryAddress.contactPhone ? '· ' + deliveryAddress.contactPhone : ''}`.trim(), 
+        deliveryContent.push({
+          text: `${deliveryAddress.contactName || ''} ${deliveryAddress.contactPhone ? '· ' + deliveryAddress.contactPhone : ''}`.trim(),
           style: 'boxDetail',
           marginTop: 4
         });
@@ -333,8 +333,8 @@ export class SupplierOrderPdfService {
       referenceContent.push({ text: order.customerReference, style: 'boxValue' });
     }
     if (order.deliveryDate) {
-      referenceContent.push({ 
-        text: `Fecha entrega: ${this.formatDate(order.deliveryDate)}`, 
+      referenceContent.push({
+        text: `Fecha entrega: ${this.formatDate(order.deliveryDate)}`,
         style: 'boxDetail',
         marginTop: 4
       });
@@ -383,7 +383,7 @@ export class SupplierOrderPdfService {
     for (const item of items) {
       tableBody.push([
         { text: item.reference || '-', style: 'tableCell' },
-        { 
+        {
           stack: [
             { text: item.concept, style: 'tableCell' },
             ...(item.description ? [{ text: item.description, style: 'tableCellSmall' }] : [])
@@ -435,10 +435,10 @@ export class SupplierOrderPdfService {
 
     return {
       stack: [
-        { 
-          text: `PRODUCTOS (${items.length})`, 
-          fontSize: 11, 
-          bold: true, 
+        {
+          text: `PRODUCTOS (${items.length})`,
+          fontSize: 11,
+          bold: true,
           color: '#1e293b',
           marginBottom: 10
         },
@@ -451,9 +451,9 @@ export class SupplierOrderPdfService {
     return {
       stack: [
         { text: 'NOTAS', style: 'boxTitle' },
-        { 
-          text: notes, 
-          fontSize: 9, 
+        {
+          text: notes,
+          fontSize: 9,
           color: '#475569',
           lineHeight: 1.4,
           margin: [0, 5, 0, 0]

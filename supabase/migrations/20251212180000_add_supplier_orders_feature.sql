@@ -82,12 +82,12 @@ CREATE TABLE "SupplierOrderItems" (
 
 -- Añadir columna supplierId a Products
 ALTER TABLE "Products" ADD COLUMN "supplierId" bigint;
-ALTER TABLE "Products" ADD CONSTRAINT "Products_supplierId_fkey" 
+ALTER TABLE "Products" ADD CONSTRAINT "Products_supplierId_fkey"
   FOREIGN KEY ("supplierId") REFERENCES "Suppliers"("id") ON DELETE SET NULL;
 
 -- Añadir supplierOrderId a EmailLogs para registrar envíos de pedidos
 ALTER TABLE "EmailLogs" ADD COLUMN "supplierOrderId" bigint;
-ALTER TABLE "EmailLogs" ADD CONSTRAINT "EmailLogs_supplierOrderId_fkey" 
+ALTER TABLE "EmailLogs" ADD CONSTRAINT "EmailLogs_supplierOrderId_fkey"
   FOREIGN KEY ("supplierOrderId") REFERENCES "SupplierOrders"("id") ON DELETE CASCADE;
 
 -- TRIGGERS

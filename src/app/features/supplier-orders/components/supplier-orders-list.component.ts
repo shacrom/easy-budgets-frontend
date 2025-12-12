@@ -25,7 +25,7 @@ import { DatePipe, DecimalPipe } from '@angular/common';
       <section class="filters-section">
         <div class="filter-group">
           <label for="statusFilter">Estado:</label>
-          <select id="statusFilter" 
+          <select id="statusFilter"
                   [value]="statusFilter()"
                   (change)="onStatusFilterChange($event)">
             <option value="">Todos</option>
@@ -47,7 +47,7 @@ import { DatePipe, DecimalPipe } from '@angular/common';
         </div>
         <div class="filter-group search-group">
           <span class="material-icons search-icon">search</span>
-          <input type="text" 
+          <input type="text"
                  placeholder="Buscar por número o referencia..."
                  [value]="searchTerm()"
                  (input)="onSearchInput($event)">
@@ -589,7 +589,7 @@ export class SupplierOrdersListComponent implements OnInit {
 
   protected readonly filteredOrders = computed(() => {
     let result = this.orders();
-    
+
     const status = this.statusFilter();
     if (status) {
       result = result.filter(o => o.status === status);
@@ -602,7 +602,7 @@ export class SupplierOrdersListComponent implements OnInit {
 
     const term = this.searchTerm().toLowerCase().trim();
     if (term) {
-      result = result.filter(o => 
+      result = result.filter(o =>
         o.orderNumber.toLowerCase().includes(term) ||
         (o.customerReference?.toLowerCase().includes(term))
       );
@@ -611,25 +611,25 @@ export class SupplierOrdersListComponent implements OnInit {
     return result;
   });
 
-  protected readonly hasActiveFilters = computed(() => 
-    this.statusFilter() !== '' || 
-    this.supplierFilter() !== '' || 
+  protected readonly hasActiveFilters = computed(() =>
+    this.statusFilter() !== '' ||
+    this.supplierFilter() !== '' ||
     this.searchTerm().trim() !== ''
   );
 
-  protected readonly draftCount = computed(() => 
+  protected readonly draftCount = computed(() =>
     this.orders().filter(o => o.status === 'draft').length
   );
 
-  protected readonly sentCount = computed(() => 
+  protected readonly sentCount = computed(() =>
     this.orders().filter(o => o.status === 'sent').length
   );
 
-  protected readonly deliveredCount = computed(() => 
+  protected readonly deliveredCount = computed(() =>
     this.orders().filter(o => o.status === 'delivered').length
   );
 
-  protected readonly totalPending = computed(() => 
+  protected readonly totalPending = computed(() =>
     this.orders()
       .filter(o => o.status !== 'delivered')
       .reduce((sum, o) => sum + (o.totalAmount || 0), 0)
@@ -708,14 +708,14 @@ export class SupplierOrdersListComponent implements OnInit {
   async sendOrder(order: SupplierOrder): Promise<void> {
     // For now, just navigate to the order editor
     // The actual send functionality will be in the editor
-    this.router.navigate(['/supplier-orders', order.id], { 
-      queryParams: { action: 'send' } 
+    this.router.navigate(['/supplier-orders', order.id], {
+      queryParams: { action: 'send' }
     });
   }
 
   async markAsDelivered(order: SupplierOrder): Promise<void> {
     try {
-      await this.supabase.updateSupplierOrder(order.id, { 
+      await this.supabase.updateSupplierOrder(order.id, {
         status: 'delivered',
         deliveredAt: new Date().toISOString()
       });

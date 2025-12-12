@@ -212,7 +212,7 @@ import { DeliveryAddress } from '../../../models/delivery-address.model';
                 Notas
               </h2>
               @if (order()?.status === 'draft') {
-                <textarea 
+                <textarea
                   [ngModel]="order()?.notes"
                   (ngModelChange)="onNotesChange($event)"
                   placeholder="Añade notas o instrucciones especiales..."

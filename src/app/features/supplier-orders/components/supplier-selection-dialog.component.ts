@@ -63,7 +63,7 @@ interface SupplierGroup {
           </div>
         } @else {
           <p class="info-text">
-            Has seleccionado <strong>{{ totalItems() }}</strong> elementos de 
+            Has seleccionado <strong>{{ totalItems() }}</strong> elementos de
             <strong>{{ supplierGroups().length }}</strong> proveedor(es) diferente(s).
           </p>
           <p class="info-text secondary">
@@ -378,7 +378,7 @@ export class SupplierSelectionDialogComponent implements OnInit {
 
   protected readonly supplierGroups = computed(() => this.supplierGroupsState());
   protected readonly totalItems = computed(() => this.data.selectedRows.length);
-  protected readonly selectedGroupCount = computed(() => 
+  protected readonly selectedGroupCount = computed(() =>
     this.supplierGroupsState().filter(g => g.selected).length
   );
 
@@ -409,10 +409,10 @@ export class SupplierSelectionDialogComponent implements OnInit {
 
     for (const item of items) {
       const manufacturerName = item.manufacturer?.trim() || 'Sin proveedor';
-      
+
       if (!groupMap.has(manufacturerName)) {
         // Try to find matching supplier
-        const matchingSupplier = suppliers.find(s => 
+        const matchingSupplier = suppliers.find(s =>
           s.name.toLowerCase() === manufacturerName.toLowerCase()
         );
 
@@ -440,21 +440,21 @@ export class SupplierSelectionDialogComponent implements OnInit {
 
   protected toggleSupplierSelection(supplierName: string, event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
-    this.supplierGroupsState.update(groups => 
-      groups.map(g => 
+    this.supplierGroupsState.update(groups =>
+      groups.map(g =>
         g.supplierName === supplierName ? { ...g, selected: checked } : g
       )
     );
   }
 
   protected selectAll(): void {
-    this.supplierGroupsState.update(groups => 
+    this.supplierGroupsState.update(groups =>
       groups.map(g => ({ ...g, selected: true }))
     );
   }
 
   protected deselectAll(): void {
-    this.supplierGroupsState.update(groups => 
+    this.supplierGroupsState.update(groups =>
       groups.map(g => ({ ...g, selected: false }))
     );
   }

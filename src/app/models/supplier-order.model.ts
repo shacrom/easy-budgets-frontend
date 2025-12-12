@@ -32,7 +32,7 @@ export interface SupplierOrder {
   itemCount?: number | null;
   createdAt?: string;
   updatedAt?: string;
-  
+
   // Relaciones (pobladas opcionalmente)
   supplier?: Supplier | null;
   deliveryAddress?: DeliveryAddress | null;
