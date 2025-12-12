@@ -158,7 +158,7 @@ describe('ProductsCatalogComponent', () => {
       supabaseServiceSpy.updateProduct.mockReturnValue(Promise.resolve(updatedProduct as any));
 
       const dialogRefMock = {
-        afterClosed: vi.fn().mockReturnValue(of({ updated: true, product: updatedProduct }))
+        afterClosed: vi.fn().mockReturnValue(of({ created: true, product: updatedProduct }))
       };
       vi.spyOn(component['dialog'], 'open').mockReturnValue(dialogRefMock as any);
 
@@ -169,9 +169,7 @@ describe('ProductsCatalogComponent', () => {
 
       expect(component['products']().find(p => p.id === 1)?.description).toBe('Updated Desc');
       expect(component['successMessage']()).toBe('Producto actualizado correctamente');
-    });
-
-    it('should delete a product', async () => {
+    });    it('should delete a product', async () => {
       vi.spyOn(window, 'confirm').mockReturnValue(true);
       supabaseServiceSpy.deleteProduct.mockReturnValue(Promise.resolve());
 
