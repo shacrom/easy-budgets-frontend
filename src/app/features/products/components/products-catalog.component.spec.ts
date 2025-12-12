@@ -5,6 +5,7 @@ import { SupabaseService } from '../../../services/supabase.service';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { Product } from '../../../models/product.model';
+import { ProductFormDialogData } from './product-form-dialog.component';
 import { of } from 'rxjs';
 
 describe('ProductsCatalogComponent', () => {
@@ -110,7 +111,9 @@ describe('ProductsCatalogComponent', () => {
 
       expect(dialogSpy).toHaveBeenCalled();
       const callArgs = dialogSpy.mock.calls[0];
-      expect(callArgs[1]?.data?.prefillData).toEqual({});
+      const dialogData = callArgs[1]?.data as ProductFormDialogData;
+      expect(dialogData).toBeDefined();
+      expect(dialogData.prefillData).toEqual({});
       expect(callArgs[1]?.width).toBe('600px');
     });
 
@@ -124,13 +127,15 @@ describe('ProductsCatalogComponent', () => {
 
       expect(dialogSpy).toHaveBeenCalled();
       const callArgs = dialogSpy.mock.calls[0];
-      expect(callArgs[1]?.data?.isEditing).toBe(true);
-      expect(callArgs[1]?.data?.productId).toBe(product.id);
+      const dialogData = callArgs[1]?.data as ProductFormDialogData;
+      expect(dialogData).toBeDefined();
+      expect(dialogData.isEditing).toBe(true);
+      expect(dialogData.productId).toBe(product.id);
     });
   });
 
   describe('CRUD Operations', () => {
-    it('should add a new product via dialog', (done) => {
+    it('should add a new product via dialog', async () => {
       const newProduct = { ...mockProducts[0], id: 4, reference: 'P4' };
       supabaseServiceSpy.createProduct.mockReturnValue(Promise.resolve(newProduct as any));
 
@@ -142,14 +147,13 @@ describe('ProductsCatalogComponent', () => {
       component['openCreateForm']();
 
       // Wait for afterClosed subscription to complete
-      setTimeout(() => {
-        expect(component['products']().length).toBe(4);
-        expect(component['successMessage']()).toBe('Producto añadido correctamente');
-        done();
-      }, 50);
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      expect(component['products']().length).toBe(4);
+      expect(component['successMessage']()).toBe('Producto añadido correctamente');
     });
 
-    it('should update an existing product via dialog', (done) => {
+    it('should update an existing product via dialog', async () => {
       const updatedProduct = { ...mockProducts[0], description: 'Updated Desc' };
       supabaseServiceSpy.updateProduct.mockReturnValue(Promise.resolve(updatedProduct as any));
 
@@ -161,11 +165,10 @@ describe('ProductsCatalogComponent', () => {
       component['openEditForm'](mockProducts[0]);
 
       // Wait for afterClosed subscription to complete
-      setTimeout(() => {
-        expect(component['products']().find(p => p.id === 1)?.description).toBe('Updated Desc');
-        expect(component['successMessage']()).toBe('Producto actualizado correctamente');
-        done();
-      }, 50);
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      expect(component['products']().find(p => p.id === 1)?.description).toBe('Updated Desc');
+      expect(component['successMessage']()).toBe('Producto actualizado correctamente');
     });
 
     it('should delete a product', async () => {
