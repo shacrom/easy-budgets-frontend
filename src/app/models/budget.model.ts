@@ -5,7 +5,7 @@ import { SummaryLine } from './budget-summary.model';
 import { Condition } from './conditions.model';
 import { SimpleBlock } from './simple-block.model';
 
-export type BudgetStatus = 'not_completed' | 'draft' | 'pending' | 'approved' | 'rejected';
+export type BudgetStatus = 'not_completed' | 'completed' | 'contract';
 
 export interface Budget {
   id: number;

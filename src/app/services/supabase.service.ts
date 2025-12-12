@@ -105,6 +105,18 @@ export class SupabaseService {
       .single();
 
     if (error) throw error;
+    const normalizeStatus = (value: unknown): BudgetStatus => {
+      const status = String(value);
+      if (['completed', 'not_completed', 'contract'].includes(status)) return status as BudgetStatus;
+      if (['draft', 'pending', 'rejected'].includes(status)) return 'not_completed';
+      if (['approved', 'confirmed', 'delivered'].includes(status)) return 'completed';
+      return 'not_completed';
+    };
+
+    if (data && data.status !== undefined) {
+      (data as any).status = normalizeStatus(data.status);
+    }
+
     return data;
   }
 
@@ -301,8 +313,14 @@ export class SupabaseService {
 
     const parseStatus = (value: unknown): BudgetStatus => {
       const status = String(value);
-      if (['approved', 'rejected', 'pending', 'draft', 'not_completed'].includes(status)) {
+      if (['completed', 'not_completed', 'contract'].includes(status)) {
         return status as BudgetStatus;
+      }
+      if (['draft', 'pending', 'rejected'].includes(status)) {
+        return 'not_completed';
+      }
+      if (['approved', 'confirmed', 'delivered'].includes(status)) {
+        return 'completed';
       }
       return 'not_completed';
     };
@@ -425,6 +443,15 @@ export class SupabaseService {
       .single();
 
     if (error) throw error;
+    if (data && data.status !== undefined) {
+      (data as any).status = ((value: unknown): BudgetStatus => {
+        const status = String(value);
+        if (['completed', 'not_completed', 'contract'].includes(status)) return status as BudgetStatus;
+        if (['draft', 'pending', 'rejected'].includes(status)) return 'not_completed';
+        if (['approved', 'confirmed', 'delivered'].includes(status)) return 'completed';
+        return 'not_completed';
+      })(data.status);
+    }
     return data;
   }
 
@@ -438,6 +465,15 @@ export class SupabaseService {
       .single();
 
     if (error) throw error;
+    if (data && data.status !== undefined) {
+      (data as any).status = ((value: unknown): BudgetStatus => {
+        const status = String(value);
+        if (['completed', 'not_completed', 'contract'].includes(status)) return status as BudgetStatus;
+        if (['draft', 'pending', 'rejected'].includes(status)) return 'not_completed';
+        if (['approved', 'confirmed', 'delivered'].includes(status)) return 'completed';
+        return 'not_completed';
+      })(data.status);
+    }
     return data;
   }
 

@@ -40,7 +40,7 @@ describe('BudgetEditorComponent', () => {
   const mockBudget = {
     id: 1,
     title: 'Test Budget',
-    status: 'draft',
+    status: 'not_completed',
     date: new Date(),
     expirationDate: new Date(),
     customerId: 10,
@@ -180,10 +180,10 @@ describe('BudgetEditorComponent', () => {
     expect(component['isBudgetCompleted']()).toBe(false);
 
     // Toggle to completed
-    supabaseServiceSpy.updateBudget.mockReturnValue(Promise.resolve({ ...mockBudget, status: 'approved' } as any));
+    supabaseServiceSpy.updateBudget.mockReturnValue(Promise.resolve({ ...mockBudget, status: 'completed' } as any));
     await component['toggleCompletionState']();
 
-    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { status: 'approved' });
+    expect(supabaseServiceSpy.updateBudget).toHaveBeenCalledWith(1, { status: 'completed' });
     expect(component['isBudgetCompleted']()).toBe(true);
 
     // Toggle back to not completed

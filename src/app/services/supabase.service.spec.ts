@@ -201,14 +201,35 @@ describe('SupabaseService', () => {
 
   describe('Budgets', () => {
     it('should get budgets', async () => {
-      const mockBudgets = [{ id: 1, budgetNumber: 'B1', status: 'approved', total: 100 }];
+      const mockBudgets = [{ id: 1, budgetNumber: 'B1', status: 'completed', total: 100 }];
       queryBuilderMock._mockResponse = { data: mockBudgets, error: null };
 
       const budgets = await service.getBudgets();
 
       expect(supabaseMock.from).toHaveBeenCalledWith('Budgets');
       expect(budgets.length).toBe(1);
-      expect(budgets[0].status).toBe('approved');
+      expect(budgets[0].status).toBe('completed');
+    });
+
+    it('should map legacy statuses to consolidated values', async () => {
+      const mockBudgets = [
+        { id: 1, budgetNumber: 'B1', status: 'draft', total: 10 },
+        { id: 2, budgetNumber: 'B2', status: 'pending', total: 20 },
+        { id: 3, budgetNumber: 'B3', status: 'approved', total: 30 },
+        { id: 4, budgetNumber: 'B4', status: 'confirmed', total: 40 },
+        { id: 5, budgetNumber: 'B5', status: 'delivered', total: 50 },
+        { id: 6, budgetNumber: 'B6', status: 'rejected', total: 60 }
+      ];
+      queryBuilderMock._mockResponse = { data: mockBudgets, error: null };
+
+      const budgets = await service.getBudgets();
+
+      expect(budgets[0].status).toBe('not_completed');
+      expect(budgets[1].status).toBe('not_completed');
+      expect(budgets[2].status).toBe('completed');
+      expect(budgets[3].status).toBe('completed');
+      expect(budgets[4].status).toBe('completed');
+      expect(budgets[5].status).toBe('not_completed');
     });
 
     it('should get budget details', async () => {
@@ -456,7 +477,7 @@ describe('SupabaseService', () => {
         budgetNumber: 'BUD-001',
         title: 'Presupuesto Completo',
         customerId: 10,
-        status: 'approved',
+        status: 'completed',
         validUntil: '2025-12-31',
         showCompositeBlocks: true,
         showItemTables: true,
