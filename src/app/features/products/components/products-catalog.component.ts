@@ -134,7 +134,7 @@ export class ProductsCatalogComponent {
     this.clearMessages();
     const dialogRef = this.dialog.open(ProductFormDialogComponent, {
       width: '600px',
-      data: { 
+      data: {
         prefillData: product,
         isEditing: true,
         productId: product.id
@@ -143,7 +143,7 @@ export class ProductsCatalogComponent {
 
     dialogRef.afterClosed().subscribe((result: ProductFormDialogResult | undefined) => {
       if (result?.created && result.product) {
-        this.products.update(products => 
+        this.products.update(products =>
           products.map(p => p.id === result.product!.id ? result.product! : p)
         );
         this.successMessage.set('Producto actualizado correctamente');

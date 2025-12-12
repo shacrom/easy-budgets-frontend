@@ -105,9 +105,9 @@ describe('ProductsCatalogComponent', () => {
       const dialogSpy = vi.spyOn(component['dialog'], 'open').mockReturnValue({
         afterClosed: () => of(undefined)
       } as any);
-      
+
       component['openCreateForm']();
-      
+
       expect(dialogSpy).toHaveBeenCalled();
       const callArgs = dialogSpy.mock.calls[0];
       expect(callArgs[1]?.data?.prefillData).toEqual({});
@@ -119,7 +119,7 @@ describe('ProductsCatalogComponent', () => {
       const dialogSpy = vi.spyOn(component['dialog'], 'open').mockReturnValue({
         afterClosed: () => of(undefined)
       } as any);
-      
+
       component['openEditForm'](product);
 
       expect(dialogSpy).toHaveBeenCalled();
@@ -140,7 +140,7 @@ describe('ProductsCatalogComponent', () => {
       vi.spyOn(component['dialog'], 'open').mockReturnValue(dialogRefMock as any);
 
       component['openCreateForm']();
-      
+
       // Wait for afterClosed subscription to complete
       setTimeout(() => {
         expect(component['products']().length).toBe(4);
@@ -159,7 +159,7 @@ describe('ProductsCatalogComponent', () => {
       vi.spyOn(component['dialog'], 'open').mockReturnValue(dialogRefMock as any);
 
       component['openEditForm'](mockProducts[0]);
-      
+
       // Wait for afterClosed subscription to complete
       setTimeout(() => {
         expect(component['products']().find(p => p.id === 1)?.description).toBe('Updated Desc');
