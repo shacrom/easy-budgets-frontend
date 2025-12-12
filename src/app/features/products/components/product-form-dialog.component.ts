@@ -51,11 +51,14 @@ export interface ProductFormDialogResult {
         </label>
         <label class="form-field">
           <span>Proveedor</span>
-          <input
-            type="number"
-            [value]="formData().supplierId"
-            (input)="updateField('supplierId', $event)"
-            placeholder="ID del proveedor">
+          <select
+            [value]="formData().supplierId ?? ''"
+            (change)="updateSupplierField($event)">
+            <option value="">Sin proveedor</option>
+            @for (supplier of suppliers(); track supplier.id) {
+              <option [value]="supplier.id">{{ supplier.name }}</option>
+            }
+          </select>
         </label>
         <label class="form-field full">
           <span>Descripción *</span>
@@ -99,17 +102,6 @@ export interface ProductFormDialogResult {
             type="text"
             [value]="formData().category || ''"
             (input)="updateField('category', $event)">
-        </label>
-        <label class="form-field">
-          <span>Proveedor</span>
-          <select
-            [value]="formData().supplierId ?? ''"
-            (change)="updateSupplierField($event)">
-            <option value="">Sin proveedor</option>
-            @for (supplier of suppliers(); track supplier.id) {
-              <option [value]="supplier.id">{{ supplier.name }}</option>
-            }
-          </select>
         </label>
         <label class="form-field checkbox full">
           <span>Estado</span>
@@ -239,7 +231,19 @@ export interface ProductFormDialogResult {
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .form-field input:focus {
+    .form-field select {
+      border: 1px solid #d1d5db;
+      border-radius: 0;
+      padding: 0.8rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 300;
+      background: #fff;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+
+    .form-field input:focus,
+    .form-field select:focus {
       outline: none;
       border-color: #111827;
       box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.1);

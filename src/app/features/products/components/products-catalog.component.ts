@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, signal, inject, computed } from '@a
 import { FormsModule } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Product, CreateProductDto } from '../../../models/product.model';
+import { Supplier } from '../../../models/supplier.model';
 import { SupabaseService } from '../../../services/supabase.service';
 import { ProductFormDialogComponent, ProductFormDialogResult } from './product-form-dialog.component';
 
@@ -27,6 +28,9 @@ export class ProductsCatalogComponent {
   // Lista de productos
   protected readonly products = signal<Product[]>([]);
 
+  // Lista de proveedores
+  protected readonly suppliers = signal<Supplier[]>([]);
+
   // Estados de UI
   protected readonly isLoading = signal<boolean>(false);
   protected readonly errorMessage = signal<string>('');
@@ -40,10 +44,11 @@ export class ProductsCatalogComponent {
     }
 
     return list.filter(product => {
+      const supplierName = this.getSupplierName(product.supplierId);
       const values = [
         product.reference,
         product.description,
-        product.supplierId?.toString(),
+        supplierName,
         product.category
       ]
         .filter((value): value is string => !!value)
@@ -86,6 +91,7 @@ export class ProductsCatalogComponent {
 
   constructor() {
     this.loadProducts();
+    this.loadSuppliers();
   }
 
   /**
@@ -104,6 +110,29 @@ export class ProductsCatalogComponent {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  /**
+   * Carga todos los proveedores desde Supabase
+   */
+  protected async loadSuppliers(): Promise<void> {
+    try {
+      const suppliers = await this.supabaseService.getSuppliers();
+      this.suppliers.set(suppliers);
+    } catch (error) {
+      console.error('Error loading suppliers:', error);
+    }
+  }
+
+  /**
+   * Obtiene el nombre del proveedor por su ID
+   */
+  protected getSupplierName(supplierId: number | null | undefined): string {
+    if (!supplierId) {
+      return '—';
+    }
+    const supplier = this.suppliers().find(s => s.id === supplierId);
+    return supplier?.name || '—';
   }
 
   /**
