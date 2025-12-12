@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, signal, inject, computed } from '@angular/core';
-
 import { FormsModule } from '@angular/forms';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Product, CreateProductDto } from '../../../models/product.model';
 import { SupabaseService } from '../../../services/supabase.service';
+import { ProductFormDialogComponent, ProductFormDialogResult } from './product-form-dialog.component';
 
 /**
  * Componente para gestión del catálogo de productos
@@ -12,7 +13,7 @@ import { SupabaseService } from '../../../services/supabase.service';
   selector: 'app-products-catalog',
   templateUrl: './products-catalog.component.html',
   styleUrls: ['./products-catalog.component.css'],
-  imports: [FormsModule],
+  imports: [FormsModule, MatDialogModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductsCatalogComponent {
@@ -21,36 +22,16 @@ export class ProductsCatalogComponent {
   protected readonly currentPage = signal<number>(0);
 
   private readonly supabaseService = inject(SupabaseService);
+  private readonly dialog = inject(MatDialog);
 
   // Lista de productos
   protected readonly products = signal<Product[]>([]);
 
-  // Producto en edición
-  protected readonly editingProduct = signal<Product | null>(null);
-
-  // Nuevo producto
-  protected readonly newProduct = signal<CreateProductDto>({
-    reference: '',
-    description: '',
-    manufacturer: '',
-    basePrice: 0,
-    vatRate: 0,
-    category: '',
-    active: true
-  });
-
   // Estados de UI
   protected readonly isLoading = signal<boolean>(false);
-  protected readonly showForm = signal<boolean>(false);
   protected readonly errorMessage = signal<string>('');
   protected readonly successMessage = signal<string>('');
   protected readonly searchTerm = signal<string>('');
-  protected readonly isEditing = computed<boolean>(() => !!this.editingProduct());
-  protected readonly formValues = computed<Product | CreateProductDto>(() => this.editingProduct() ?? this.newProduct());
-  protected readonly formGrossPrice = computed(() =>
-    this.calculateGrossPrice(this.formValues().basePrice ?? 0, this.formValues().vatRate ?? 0)
-  );
-  protected readonly lastGrossPrice = signal<number | null>(null);
   protected readonly filteredProducts = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
     const list = this.products();
@@ -126,109 +107,52 @@ export class ProductsCatalogComponent {
   }
 
   /**
-   * Muestra/oculta el formulario de nuevo producto
+   * Opens dialog to create a new product
    */
   protected openCreateForm(): void {
-    this.editingProduct.set(null);
-    this.resetNewProduct();
-    this.lastGrossPrice.set(null);
-    this.showForm.set(true);
     this.clearMessages();
+    const dialogRef = this.dialog.open(ProductFormDialogComponent, {
+      width: '600px',
+      data: { prefillData: {} }
+    });
+
+    dialogRef.afterClosed().subscribe((result: ProductFormDialogResult | undefined) => {
+      if (result?.created && result.product) {
+        this.products.update(products => [...products, result.product!]);
+        this.successMessage.set('Producto añadido correctamente');
+        setTimeout(() => this.successMessage.set(''), 3000);
+      }
+    });
   }
 
-  protected closeForm(): void {
-    this.showForm.set(false);
-    this.editingProduct.set(null);
-    this.resetNewProduct();
-    this.lastGrossPrice.set(null);
-  }
 
-  protected cancelForm(): void {
-    this.closeForm();
-    this.clearMessages();
-  }
 
   /**
-   * Añade un nuevo producto
-   */
-  protected async addProduct(): Promise<void> {
-    const product = this.newProduct();
-
-    // Validaciones
-    if (!product.reference || !product.description || !product.manufacturer) {
-      this.errorMessage.set('Por favor, completa todos los campos obligatorios');
-      return;
-    }
-
-    if (product.basePrice <= 0) {
-      this.errorMessage.set('El precio debe ser mayor que 0');
-      return;
-    }
-
-    this.isLoading.set(true);
-    this.errorMessage.set('');
-
-    try {
-      const newProduct = await this.supabaseService.createProduct(product);
-      this.products.update(products => [...products, newProduct]);
-      this.successMessage.set('Producto añadido correctamente');
-      this.closeForm();
-
-      setTimeout(() => this.successMessage.set(''), 3000);
-    } catch (error) {
-      this.errorMessage.set('Error al añadir el producto');
-      console.error('Error adding product:', error);
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
-
-  /**
-   * Inicia la edición de un producto
+   * Opens dialog to edit an existing product
    */
   protected openEditForm(product: Product): void {
-    this.editingProduct.set({ ...product });
-    this.lastGrossPrice.set(null);
-    this.showForm.set(true);
     this.clearMessages();
+    const dialogRef = this.dialog.open(ProductFormDialogComponent, {
+      width: '600px',
+      data: { 
+        prefillData: product,
+        isEditing: true,
+        productId: product.id
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result: ProductFormDialogResult | undefined) => {
+      if (result?.created && result.product) {
+        this.products.update(products => 
+          products.map(p => p.id === result.product!.id ? result.product! : p)
+        );
+        this.successMessage.set('Producto actualizado correctamente');
+        setTimeout(() => this.successMessage.set(''), 3000);
+      }
+    });
   }
 
-  /**
-   * Guarda los cambios de un producto
-   */
-  protected async saveProduct(product: Product): Promise<void> {
-    if (!product.id) return;
 
-    // Validaciones
-    if (!product.reference || !product.description || !product.manufacturer) {
-      this.errorMessage.set('Por favor, completa todos los campos obligatorios');
-      return;
-    }
-
-    if (product.basePrice <= 0) {
-      this.errorMessage.set('El precio debe ser mayor que 0');
-      return;
-    }
-
-    this.isLoading.set(true);
-    this.errorMessage.set('');
-
-    try {
-      const updated = await this.supabaseService.updateProduct(product.id, product);
-      this.products.update(products =>
-        products.map(p => p.id === updated.id ? updated : p)
-      );
-      this.successMessage.set('Producto actualizado correctamente');
-      this.closeForm();
-
-      setTimeout(() => this.successMessage.set(''), 3000);
-    } catch (error) {
-      this.errorMessage.set('Error al actualizar el producto');
-      console.error('Error updating product:', error);
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
 
   /**
    * Elimina un producto
@@ -244,9 +168,6 @@ export class ProductsCatalogComponent {
     try {
       await this.supabaseService.deleteProduct(productId);
       this.products.update(products => products.filter(p => p.id !== productId));
-      if (this.editingProduct()?.id === productId) {
-        this.closeForm();
-      }
       this.successMessage.set('Producto eliminado correctamente');
 
       setTimeout(() => this.successMessage.set(''), 3000);
@@ -265,123 +186,6 @@ export class ProductsCatalogComponent {
     const input = event.target as HTMLInputElement;
     this.searchTerm.set(input.value);
     this.currentPage.set(0);
-  }
-
-  /**
-   * Actualiza un campo del nuevo producto
-   */
-  protected updateNewProductField(field: keyof CreateProductDto, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const value = field === 'basePrice' || field === 'vatRate'
-      ? this.parseNumber(input.value)
-      : field === 'active'
-        ? (input as HTMLInputElement).checked
-        : input.value;
-
-    this.newProduct.update(product => {
-      const updatedProduct = { ...product, [field]: value };
-      const trackedGrossPrice = this.lastGrossPrice();
-
-      if (field === 'basePrice') {
-        this.lastGrossPrice.set(null);
-        return updatedProduct;
-      }
-
-      if (field === 'vatRate' && trackedGrossPrice !== null) {
-        const basePrice = this.calculateBasePriceFromGross(trackedGrossPrice, value as number);
-        return { ...updatedProduct, basePrice };
-      }
-
-      return updatedProduct;
-    });
-  }
-
-  /**
-   * Actualiza un campo del producto en edición
-   */
-  protected updateEditingProductField(field: keyof Product, event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const value = field === 'basePrice' || field === 'vatRate'
-      ? this.parseNumber(input.value)
-      : field === 'active'
-        ? (input as HTMLInputElement).checked
-        : input.value;
-
-    this.editingProduct.update(product => {
-      if (!product) {
-        return product;
-      }
-
-      const updatedProduct = { ...product, [field]: value } as Product;
-      const trackedGrossPrice = this.lastGrossPrice();
-
-      if (field === 'basePrice') {
-        this.lastGrossPrice.set(null);
-        return updatedProduct;
-      }
-
-      if (field === 'vatRate' && trackedGrossPrice !== null) {
-        const basePrice = this.calculateBasePriceFromGross(trackedGrossPrice, value as number);
-        return { ...updatedProduct, basePrice };
-      }
-
-      return updatedProduct;
-    });
-  }
-
-  protected updateFormField(field: keyof CreateProductDto, event: Event): void {
-    if (this.editingProduct()) {
-      this.updateEditingProductField(field as keyof Product, event);
-    } else {
-      this.updateNewProductField(field, event);
-    }
-  }
-
-  protected updateGrossPriceField(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const rawValue = input.value.trim();
-
-    if (!rawValue) {
-      // Clearing the field should stop forcing base price recalculations
-      this.lastGrossPrice.set(null);
-      return;
-    }
-
-    const grossPrice = this.parseNumber(rawValue);
-    const vatRate = this.formValues().vatRate ?? 0;
-    const basePrice = this.calculateBasePriceFromGross(grossPrice, vatRate);
-    this.lastGrossPrice.set(grossPrice);
-
-    if (this.editingProduct()) {
-      this.editingProduct.update(product =>
-        product ? { ...product, basePrice } : product
-      );
-    } else {
-      this.newProduct.update(product => ({ ...product, basePrice }));
-    }
-  }
-
-  protected async submitForm(): Promise<void> {
-    if (this.editingProduct()) {
-      await this.saveProduct(this.editingProduct()!);
-    } else {
-      await this.addProduct();
-    }
-  }
-
-  /**
-   * Resetea el formulario de nuevo producto
-   */
-  private resetNewProduct(): void {
-    this.newProduct.set({
-      reference: '',
-      description: '',
-      manufacturer: '',
-      basePrice: 0,
-      vatRate: 0,
-      category: '',
-      active: true
-    });
   }
 
   /**
@@ -416,27 +220,5 @@ export class ProductsCatalogComponent {
   protected goToLastPage(): void {
     if (this.isOnLastPage()) return;
     this.currentPage.set(this.totalPages() - 1);
-  }
-
-  private parseNumber(value: string): number {
-    const parsed = parseFloat(value);
-    return Number.isNaN(parsed) ? 0 : parsed;
-  }
-
-  private calculateGrossPrice(basePrice: number, vatRate: number): number {
-    const net = Number.isFinite(basePrice) ? basePrice : 0;
-    const rate = Number.isFinite(vatRate) ? vatRate : 0;
-    const multiplier = 1 + Math.max(rate, 0) / 100;
-    return Number((net * multiplier).toFixed(2));
-  }
-
-  private calculateBasePriceFromGross(grossPrice: number, vatRate: number): number {
-    const gross = Number.isFinite(grossPrice) ? grossPrice : 0;
-    const rate = Number.isFinite(vatRate) ? vatRate : 0;
-    const divisor = 1 + Math.max(rate, 0) / 100;
-    if (divisor <= 0) {
-      return Number(gross.toFixed(2));
-    }
-    return Number((gross / divisor).toFixed(2));
   }
 }

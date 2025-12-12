@@ -8,7 +8,9 @@ import { SupabaseService } from '../../../services/supabase.service';
  * Dialog data for pre-filling product form
  */
 export interface ProductFormDialogData {
-  prefillData?: Partial<CreateProductDto>;
+  prefillData?: Partial<CreateProductDto> | Product;
+  isEditing?: boolean;
+  productId?: number;
 }
 
 /**
@@ -28,7 +30,7 @@ export interface ProductFormDialogResult {
   template: `
     <div class="dialog-container">
       <div class="form-header">
-        <h3>Nuevo producto</h3>
+        <h3>{{ isEditMode() ? 'Editar producto' : 'Nuevo producto' }}</h3>
         <button type="button" class="close-button" (click)="cancel()">
           <span class="material-symbols-rounded" aria-hidden="true">close</span>
         </button>
@@ -114,8 +116,8 @@ export interface ProductFormDialogResult {
           type="button"
           class="btn dark"
           [disabled]="isLoading()"
-          (click)="createProduct()">
-          {{ isLoading() ? 'Creando...' : 'Crear producto' }}
+          (click)="submitProduct()">
+          {{ isLoading() ? (isEditMode() ? 'Guardando...' : 'Creando...') : (isEditMode() ? 'Guardar cambios' : 'Crear producto') }}
         </button>
         <button type="button" class="btn ghost" (click)="cancel()">Cancelar</button>
       </div>
@@ -294,6 +296,10 @@ export class ProductFormDialogComponent {
   private readonly data = inject<ProductFormDialogData>(MAT_DIALOG_DATA);
   private readonly supabaseService = inject(SupabaseService);
 
+  // Edit mode detection
+  protected readonly isEditMode = signal(this.data?.isEditing ?? false);
+  protected readonly productId = signal(this.data?.productId);
+
   // Form state
   protected readonly formData = signal<CreateProductDto>(this.initializeFormData());
   protected readonly isLoading = signal(false);
@@ -372,9 +378,9 @@ export class ProductFormDialogComponent {
   }
 
   /**
-   * Create the product
+   * Submit the product (create or update)
    */
-  protected async createProduct(): Promise<void> {
+  protected async submitProduct(): Promise<void> {
     const product = this.formData();
 
     // Validations
@@ -402,14 +408,24 @@ export class ProductFormDialogComponent {
     this.errorMessage.set('');
 
     try {
-      const createdProduct = await this.supabaseService.createProduct(product);
+      let resultProduct: Product;
+
+      if (this.isEditMode() && this.productId()) {
+        // Update existing product
+        resultProduct = await this.supabaseService.updateProduct(this.productId()!, product);
+      } else {
+        // Create new product
+        resultProduct = await this.supabaseService.createProduct(product);
+      }
+
       this.dialogRef.close({
         created: true,
-        product: createdProduct
+        product: resultProduct
       } as ProductFormDialogResult);
     } catch (error) {
-      console.error('Error creating product:', error);
-      this.errorMessage.set('Error al crear el producto. Por favor, inténtalo de nuevo.');
+      console.error('Error saving product:', error);
+      const action = this.isEditMode() ? 'actualizar' : 'crear';
+      this.errorMessage.set(`Error al ${action} el producto. Por favor, inténtalo de nuevo.`);
     } finally {
       this.isLoading.set(false);
     }
