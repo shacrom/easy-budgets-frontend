@@ -8,7 +8,7 @@ Te paso algunas de las imágenes de su plantilla que utiliza para dar informaci�
 
 Me gustaría hacer una página web con Astro para poder facilitarle la vida.
 
-Esa página también tiene que permitir crear archivos pdf para poder imprimirlos. Para generar los PDFs utilizaremos **Puppeteer**.
+Esa página también tiene que permitir crear archivos pdf para poder imprimirlos. 
 
 La idea principal es tener 4 tipos de documento. 
 
@@ -144,8 +144,81 @@ Here is a link to the most recent Angular style guide https://angular.dev/style-
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
 
+### Budget Section Identifiers
+
+**CRITICAL**: Always use the `BudgetSection` enum from `src/app/models/budget-section.model.ts` instead of hardcoded strings when referencing budget sections:
+
+```typescript
+import { BudgetSection, DEFAULT_SECTION_ORDER, CONTENT_SECTIONS } from '../models/budget-section.model';
+
+// ✅ CORRECT - Use enum values
+sectionOrder: BudgetSection[] = [BudgetSection.CompositeBlocks, BudgetSection.ItemTables];
+if (section === BudgetSection.Summary) { ... }
+
+// ❌ WRONG - Don't use hardcoded strings
+sectionOrder: string[] = ['compositeBlocks', 'itemTables'];
+if (section === 'summary') { ... }
+```
+
+Available enum values:
+- `BudgetSection.CompositeBlocks` = 'compositeBlocks'
+- `BudgetSection.ItemTables` = 'itemTables'
+- `BudgetSection.SimpleBlock` = 'simpleBlock'
+- `BudgetSection.Summary` = 'summary'
+- `BudgetSection.Conditions` = 'conditions'
+- `BudgetSection.Signature` = 'signature'
+
+Available helper constants:
+- `DEFAULT_SECTION_ORDER`: All sections in default order
+- `CONTENT_SECTIONS`: Only content sections (compositeBlocks, itemTables, simpleBlock)
+
+Available helper functions:
+- `isBudgetSection(value)`: Type guard to check if a string is a valid BudgetSection
+- `migrateSectionOrder(keys)`: Migrates legacy section keys to BudgetSection values
+
 ### Database Naming Conventions
 
 - Table names MUST be in **PascalCase** (e.g., `BudgetConditions`, `TextBlockTemplates`, `Customers`)
 - Column names MUST be in **camelCase** (e.g., `budgetId`, `orderIndex`, `createdAt`, `templateId`)
 - Always use quoted identifiers for PostgreSQL tables and columns to preserve case sensitivity (e.g., `"BudgetConditions"`, `"budgetId"`)
+
+### Database Schema Reference
+
+**IMPORTANT**: Always consult the file `database/schema.sql` for the complete and up-to-date database schema before:
+- Writing database queries
+- Creating or modifying models/interfaces
+- Working with Supabase client calls
+- Suggesting database changes or migrations
+
+The `schema.sql` file contains:
+- All table definitions with correct column names and types
+- Relationships and foreign keys
+- Indexes and constraints
+- Valid values for enums (status, conceptType, etc.)
+- Naming conventions and best practices
+
+When working with database-related code, reference this file to ensure accuracy and consistency.
+
+### Database Migration Workflow
+
+**CRITICAL**: Any modification to the database schema MUST be done through Supabase migrations:
+
+1. **Never modify the database directly** - All schema changes must go through migration files
+2. **Create migrations using Supabase CLI**:
+   ```bash
+   npx supabase migration new descriptive_migration_name
+   ```
+3. **Write SQL changes** in the generated migration file under `supabase/migrations/`
+4. **Apply migrations locally** to test:
+   ```bash
+   npx supabase db reset
+   ```
+5. **Update `database/schema.sql`** to reflect the changes after the migration is applied
+6. **Commit both** the migration file and the updated schema.sql
+
+**Migration Best Practices**:
+- Use descriptive names that explain what the migration does (e.g., `add_payment_status_to_budgets`, `rename_customer_field`)
+- Always include rollback considerations in comments
+- Test migrations locally before pushing to production
+- Keep migrations atomic - one logical change per migration file
+- Never edit existing migration files that have been applied to production

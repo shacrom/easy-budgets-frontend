@@ -1,8 +1,11 @@
 import { Customer } from './customer.model';
-import { BudgetTextBlock } from './budget-text-block.model';
-import { Material } from './material.model';
+import { CompositeBlock } from './composite-block.model';
+import { ItemTable } from './item-table.model';
+import { SummaryLine } from './budget-summary.model';
+import { Condition } from './conditions.model';
+import { SimpleBlock } from './simple-block.model';
 
-export type BudgetStatus = 'completed' | 'not_completed';
+export type BudgetStatus = 'not_completed' | 'completed' | 'contract';
 
 export interface Budget {
   id: number;
@@ -13,17 +16,24 @@ export interface Budget {
   validUntil?: string;
   createdAt?: string;
   updatedAt?: string;
+  taxableBase?: number;
+  taxPercentage?: number;
+  taxAmount?: number;
+  total?: number;
+  notes?: string;
+  pdfUrl?: string;
 
   // Section titles
-  materialsSectionTitle?: string;
+  itemTablesSectionTitle?: string;
+  conditionsTitle?: string;
 
   // Logo URLs
   companyLogoUrl?: string;
   supplierLogoUrl?: string;
 
   // Visibility flags
-  showTextBlocks: boolean;
-  showMaterials: boolean;
+  showCompositeBlocks: boolean;
+  showItemTables: boolean;
   showSimpleBlock: boolean;
   showConditions: boolean;
   showSummary: boolean;
@@ -34,6 +44,9 @@ export interface Budget {
 
   // Relations
   customer?: Customer;
-  textBlocks?: BudgetTextBlock[];
-  materials?: Material[];
+  compositeBlocks?: CompositeBlock[];
+  itemTables?: ItemTable[];
+  additionalLines?: SummaryLine[];
+  conditions?: Condition[];
+  simpleBlock?: SimpleBlock;
 }

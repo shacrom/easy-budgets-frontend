@@ -1,0 +1,268 @@
+<section class="summary-module">
+  <header class="summary-header">
+    <div>
+      <h2>Resumen precios</h2>
+    </div>
+    <div class="header-actions">
+      @if (hasUnsavedChanges()) {
+        <span class="unsaved-indicator">
+          <span class="material-symbols-rounded" aria-hidden="true">edit_note</span>
+          <span>Cambios sin guardar</span>
+        </span>
+      }
+      @if (hasUnsavedChanges()) {
+        <button
+          type="button"
+          class="btn ghost"
+          (click)="discardChanges()"
+          [disabled]="isSaving()">
+          <span class="material-symbols-rounded" aria-hidden="true">undo</span>
+          <span>Descartar</span>
+        </button>
+      }
+      <button
+        type="button"
+        [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
+        (click)="saveChanges()"
+        [disabled]="isSaving() || !hasUnsavedChanges()">
+        <span class="material-symbols-rounded" aria-hidden="true">save</span>
+        <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="summary-card">
+    <div class="accordion">
+      <!-- Ordered sections -->
+      @for (section of orderedSections(); track section.key) {
+        @switch (section.key) {
+          @case (BudgetSection.CompositeBlocks) {
+            <!-- Blocks accordion -->
+            <div class="accordion-item">
+              <button type="button" class="accordion-trigger" (click)="toggleBlocksExpanded()">
+                <div class="trigger-label">
+                  <span class="material-symbols-rounded" aria-hidden="true">layers</span>
+                  <div>
+                    <span class="trigger-title">{{ blocksSectionTitle() }}</span>
+                    <small>{{ blocks().length === 1 ? '1 bloque' : blocks().length + ' bloques' }}</small>
+                  </div>
+                </div>
+                <div class="trigger-value">
+                  <span>{{ effectiveTotalBlocks() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+                  <span class="material-symbols-rounded" aria-hidden="true">
+                    {{ blocksExpanded() ? 'expand_less' : 'expand_more' }}
+                  </span>
+                </div>
+              </button>
+              @if (blocksExpanded() && blocks().length > 0) {
+                <div class="accordion-panel">
+                  @for (block of blocks(); track block.id) {
+                    <div class="detail-row">
+                      <div>
+                        <p class="detail-title">{{ block.heading || 'Bloque sin título' }}</p>
+                        <p class="detail-subtitle">
+                          {{ (block.descriptions?.length ?? 0) > 0 ? (block.descriptions?.length ?? 0) + ' secciones' : 'Sin secciones adicionales' }}
+                        </p>
+                      </div>
+                      <span class="detail-value">
+                        {{ block.subtotal | currency:'EUR':'symbol':'1.2-2':'es' }}
+                      </span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+          @case (BudgetSection.ItemTables) {
+            <!-- Item Tables accordion -->
+            <div class="accordion-item">
+              <button type="button" class="accordion-trigger" (click)="toggleItemTablesExpanded()">
+                <div class="trigger-label">
+                  <span class="material-symbols-rounded" aria-hidden="true">table_chart</span>
+                  <div>
+                    <span class="trigger-title">{{ itemsSectionTitle() }}</span>
+                    <small>
+                      @if (hasItemTablesData()) {
+                        {{ itemTables().length === 1 ? '1 tabla' : itemTables().length + ' tablas' }}
+                      } @else {
+                        {{ items().length === 1 ? '1 partida' : items().length + ' partidas' }}
+                      }
+                    </small>
+                  </div>
+                </div>
+                <div class="trigger-value">
+                  <span>{{ effectiveTotalItems() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+                  <span class="material-symbols-rounded" aria-hidden="true">
+                    {{ itemTablesExpanded() ? 'expand_less' : 'expand_more' }}
+                  </span>
+                </div>
+              </button>
+              @if (itemTablesExpanded() && (hasItemTablesData() || items().length > 0)) {
+                <div class="accordion-panel">
+                  @if (hasItemTablesData()) {
+                    @for (table of itemTables(); track table.id) {
+                      <div class="detail-row">
+                        <div>
+                          <p class="detail-title">{{ table.title || 'Tabla sin título' }}</p>
+                          <p class="detail-subtitle">{{ tableRowsLabel(table) }}</p>
+                        </div>
+                        <span class="detail-value">
+                          {{ tableSubtotal(table) | currency:'EUR':'symbol':'1.2-2':'es' }}
+                        </span>
+                      </div>
+                    }
+                  } @else {
+                    @for (item of items(); track item.id) {
+                      <div class="detail-row">
+                        <div>
+                          <p class="detail-title">{{ item.description || 'Elemento sin descripción' }}</p>
+                          <p class="detail-subtitle">
+                            {{ item.manufacturer || 'Fabricante no definido' }} | Ref: {{ item.reference || '—' }}
+                          </p>
+                        </div>
+                        <span class="detail-value">
+                          {{ item.totalPrice | currency:'EUR':'symbol':'1.2-2':'es' }}
+                        </span>
+                      </div>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          }
+          @case (BudgetSection.SimpleBlock) {
+            <!-- Simple Block section -->
+            <div class="accordion-item">
+              <div class="accordion-trigger" style="cursor: default;">
+                <div class="trigger-label">
+                  <span class="material-symbols-rounded" aria-hidden="true">article</span>
+                  <div>
+                    <span class="trigger-title">{{ simpleBlockSectionTitle() || 'Bloque Simple' }}</span>
+                  </div>
+                </div>
+                <div class="trigger-value">
+                  <span>{{ effectiveTotalSimpleBlock() | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      }
+
+      <div class="summary-row subtotal">
+        <span>Base imponible</span>
+        <strong>{{ baseSubtotal() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+      </div>
+    </div>
+
+    <!-- Additional lines -->
+    <div class="extras">
+      <div class="extras-header">
+        <div>
+          <span class="material-symbols-rounded" aria-hidden="true">playlist_add</span>
+          <p>Conceptos adicionales</p>
+        </div>
+        <button type="button" class="btn solid" (click)="addAdditionalLine()">
+          <span class="material-symbols-rounded" aria-hidden="true">control_point</span>
+          <span>Añadir</span>
+        </button>
+      </div>
+
+      @for (line of additionalLines(); track line.id) {
+        <div class="extra-row" [class.is-optional]="isOptional(line)" [class.is-note]="isNote(line)">
+          <select
+            class="input-field type-select"
+            [(ngModel)]="line.conceptType"
+            (ngModelChange)="updateLineType(line, $event)">
+            @for (option of conceptTypeOptions; track option.value) {
+              <option [ngValue]="option.value">{{ option.label }}</option>
+            }
+          </select>
+          <input
+            class="input-field"
+            type="text"
+            [(ngModel)]="line.concept"
+            (blur)="markAsChanged()"
+            placeholder="Descripción" />
+          @if (isDiscount(line)) {
+            <input
+              class="input-field valid-until"
+              type="date"
+              [(ngModel)]="line.validUntil"
+              (change)="markAsChanged()"
+              title="Fecha de validez del descuento" />
+          }
+          <div class="amount-display">
+            <input
+              class="input-field amount"
+              type="number"
+              [disabled]="isNote(line)"
+              [(ngModel)]="line.amount"
+              (blur)="markAsChanged()"
+              [placeholder]="isDiscount(line) ? '0' : '0,00'" />
+            @if (isDiscount(line)) {
+              <span class="unit-label">%</span>
+              <span class="calculated-amount">{{ displayCalculatedAmount(line) | currency:'EUR':'symbol':'1.2-2':'es' }}</span>
+            } @else if (isAdjustment(line)) {
+              <span class="unit-label">€</span>
+            }
+          </div>
+          <button type="button" class="icon-button" (click)="deleteAdditionalLine(line.id)">
+            <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+          </button>
+        </div>
+      }
+
+      @if (additionalLines().length > 0) {
+        <div class="extra-row total">
+          <span>Base imponible con adicionales</span>
+          <strong>{{ taxableBaseWithAdditionals() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+        </div>
+      }
+    </div>
+
+    <div class="taxes">
+      <div class="tax-row">
+        <div>
+          <span class="material-symbols-rounded" aria-hidden="true">percent</span>
+          <p>IVA</p>
+        </div>
+        <div class="tax-controls">
+          <input
+            type="number"
+            class="input-field"
+            min="0"
+            max="100"
+            [ngModel]="vatPercentage()"
+            (ngModelChange)="updateVatPercentage($event)"
+            placeholder="21" />
+          <span>%</span>
+          <strong>{{ vat() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+        </div>
+      </div>
+    </div>
+
+    @if (totalDiscount() > 0) {
+      <div class="summary-row total-before-discount">
+        <span>Total antes de descuento</span>
+        <strong>{{ totalBeforeDiscount() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+      </div>
+      <div class="summary-row discount-applied">
+        <span>Descuento aplicado</span>
+        <strong class="discount-value">-{{ totalDiscount() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+      </div>
+    }
+
+    <div class="grand-total">
+      <div>
+        <span class="material-symbols-rounded" aria-hidden="true">receipt_long</span>
+        <p>Total general</p>
+      </div>
+      <strong>{{ grandTotal() | currency:'EUR':'symbol':'1.2-2':'es' }}</strong>
+    </div>
+
+    @if (hasOptionalLines()) {
+      <p class="optional-footnote">* Los precios de los productos opcionales no se contabilizan sobre el total general.</p>
+    }
+  </div>
+</section>

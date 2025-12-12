@@ -33,9 +33,10 @@ describe('NavbarComponent', () => {
   it('should have navigation links', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const links = compiled.querySelectorAll('.nav-link');
-    expect(links.length).toBe(3);
+    expect(links.length).toBe(4);
     expect(links[0].textContent).toContain('PRESUPUESTOS');
     expect(links[1].textContent).toContain('CATÁLOGO');
     expect(links[2].textContent).toContain('CLIENTES');
+    expect(links[3].textContent).toContain('EMAILS');
   });
 });
