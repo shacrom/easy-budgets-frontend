@@ -15,28 +15,53 @@
       }
     </div>
     <div class="header-actions">
-      @if (hasUnsavedChanges()) {
+      @if (selectionModeActive()) {
+        <div class="selection-actions">
+          <span class="selection-count">{{ selectedCount() }} seleccionados</span>
+          <button
+            type="button"
+            class="btn ghost"
+            (click)="cancelSelection()">
+            <span class="material-symbols-rounded" aria-hidden="true">close</span>
+            <span>Cancelar</span>
+          </button>
+          <button
+            type="button"
+            class="btn solid accent"
+            [disabled]="selectedCount() === 0"
+            (click)="requestCreateOrder()">
+            <span class="material-symbols-rounded" aria-hidden="true">local_shipping</span>
+            <span>Crear Pedido</span>
+          </button>
+        </div>
+      } @else {
+        @if (hasUnsavedChanges()) {
+          <button
+            type="button"
+            class="btn ghost"
+            (click)="discardChanges()"
+            [disabled]="isSaving()">
+            <span class="material-symbols-rounded" aria-hidden="true">undo</span>
+            <span>Descartar</span>
+          </button>
+        }
         <button
           type="button"
-          class="btn ghost"
-          (click)="discardChanges()"
-          [disabled]="isSaving()">
-          <span class="material-symbols-rounded" aria-hidden="true">undo</span>
-          <span>Descartar</span>
+          [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
+          (click)="saveChanges()"
+          [disabled]="isSaving() || !hasUnsavedChanges()">
+          <span class="material-symbols-rounded" aria-hidden="true">save</span>
+          <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
+        </button>
+        <button type="button" class="btn ghost" (click)="toggleSelectionMode()" title="Seleccionar elementos para pedido a proveedor">
+          <span class="material-symbols-rounded" aria-hidden="true">checklist</span>
+          <span>Seleccionar</span>
+        </button>
+        <button type="button" class="btn solid" (click)="addTable()">
+          <span class="material-symbols-rounded" aria-hidden="true">post_add</span>
+          <span>Nueva tabla</span>
         </button>
       }
-      <button
-        type="button"
-        [class]="hasUnsavedChanges() ? 'btn solid' : 'btn ghost'"
-        (click)="saveChanges()"
-        [disabled]="isSaving() || !hasUnsavedChanges()">
-        <span class="material-symbols-rounded" aria-hidden="true">save</span>
-        <span>{{ isSaving() ? 'Guardando...' : 'Guardar cambios' }}</span>
-      </button>
-      <button type="button" class="btn solid" (click)="addTable()">
-        <span class="material-symbols-rounded" aria-hidden="true">post_add</span>
-        <span>Nueva tabla</span>
-      </button>
     </div>
   </header>
 
@@ -81,6 +106,16 @@
             <thead>
               <tr>
                 <th class="drag-header"></th>
+                @if (selectionModeActive()) {
+                  <th class="selection-header">
+                    <input
+                      type="checkbox"
+                      [checked]="allRowsSelected()"
+                      (change)="toggleSelectAll()"
+                      class="selection-checkbox"
+                      title="Seleccionar todo">
+                  </th>
+                }
                 <th>
                   <div class="th-content">
                     <span>Referencia</span>
@@ -146,7 +181,7 @@
                 </tr>
               } @else {
                 @for (row of table.rows; track row.id) {
-                  <tr cdkDrag class="material-row edit-mode draggable-row">
+                  <tr cdkDrag class="material-row edit-mode draggable-row" [class.selected-row]="isRowSelected(row.id)">
                     <td class="drag-cell">
                       <div class="drag-handle" cdkDragHandle>
                         <span class="material-symbols-rounded">drag_indicator</span>
@@ -161,8 +196,11 @@
                       [showQuantity]="table.showQuantity ?? true"
                       [showUnitPrice]="table.showUnitPrice ?? true"
                       [showTotalPrice]="table.showTotalPrice ?? true"
+                      [showSelectionCheckbox]="selectionModeActive()"
+                      [isSelected]="isRowSelected(row.id)"
                       (deleteRequested)="deleteRow(table.id, $event)"
                       (localValuesChanged)="onRowLocalChange()"
+                      (selectionChanged)="onRowSelectionChange($event)"
                       (createProductRequested)="openCreateProductDialog($event, row.id)">
                     </app-item-row>
                   </tr>

@@ -1265,5 +1265,478 @@ export class SupabaseService {
 
     if (error) throw error;
   }
+
+  // ============================================
+  // SUPPLIERS
+  // ============================================
+
+  async getSuppliers() {
+    const { data, error } = await this.supabase
+      .from('Suppliers')
+      .select('*')
+      .order('name');
+
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async getSupplier(id: number) {
+    if (!Number.isFinite(id)) return null;
+    const { data, error } = await this.supabase
+      .from('Suppliers')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async searchSuppliers(term: string, limit = 10) {
+    const value = term.trim();
+    if (!value) {
+      const { data, error } = await this.supabase
+        .from('Suppliers')
+        .select('*')
+        .order('name')
+        .limit(limit);
+
+      if (error) throw error;
+      return data ?? [];
+    }
+
+    const pattern = `%${value}%`;
+    const { data, error } = await this.supabase
+      .from('Suppliers')
+      .select('*')
+      .or(`name.ilike.${pattern},email.ilike.${pattern}`)
+      .order('name')
+      .limit(limit);
+
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async createSupplier(supplier: { name: string; email?: string | null; phone?: string | null; notes?: string | null }) {
+    const { data, error } = await this.supabase
+      .from('Suppliers')
+      .insert([supplier])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async updateSupplier(id: number, updates: { name?: string; email?: string | null; phone?: string | null; notes?: string | null }) {
+    const { data, error } = await this.supabase
+      .from('Suppliers')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteSupplier(id: number) {
+    const { error } = await this.supabase
+      .from('Suppliers')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  // ============================================
+  // DELIVERY ADDRESSES
+  // ============================================
+
+  async getDeliveryAddresses() {
+    const { data, error } = await this.supabase
+      .from('DeliveryAddresses')
+      .select('*')
+      .order('isDefault', { ascending: false })
+      .order('name');
+
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async getDeliveryAddress(id: number) {
+    if (!Number.isFinite(id)) return null;
+    const { data, error } = await this.supabase
+      .from('DeliveryAddresses')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async getDefaultDeliveryAddress() {
+    const { data, error } = await this.supabase
+      .from('DeliveryAddresses')
+      .select('*')
+      .eq('isDefault', true)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
+    return data;
+  }
+
+  async createDeliveryAddress(address: {
+    name: string;
+    address: string;
+    city?: string | null;
+    postalCode?: string | null;
+    contactName?: string | null;
+    contactPhone?: string | null;
+    isDefault?: boolean;
+  }) {
+    // Si es default, quitar el default de las demás
+    if (address.isDefault) {
+      await this.supabase
+        .from('DeliveryAddresses')
+        .update({ isDefault: false })
+        .eq('isDefault', true);
+    }
+
+    const { data, error } = await this.supabase
+      .from('DeliveryAddresses')
+      .insert([address])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async updateDeliveryAddress(id: number, updates: {
+    name?: string;
+    address?: string;
+    city?: string | null;
+    postalCode?: string | null;
+    contactName?: string | null;
+    contactPhone?: string | null;
+    isDefault?: boolean;
+  }) {
+    // Si se está poniendo como default, quitar el default de las demás
+    if (updates.isDefault) {
+      await this.supabase
+        .from('DeliveryAddresses')
+        .update({ isDefault: false })
+        .neq('id', id)
+        .eq('isDefault', true);
+    }
+
+    const { data, error } = await this.supabase
+      .from('DeliveryAddresses')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteDeliveryAddress(id: number) {
+    const { error } = await this.supabase
+      .from('DeliveryAddresses')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  // ============================================
+  // SUPPLIER ORDERS
+  // ============================================
+
+  async getSupplierOrders(filters?: { budgetId?: number; supplierId?: number; status?: string }) {
+    let query = this.supabase
+      .from('SupplierOrders')
+      .select(`
+        *,
+        supplier:Suppliers(*),
+        deliveryAddress:DeliveryAddresses(*)
+      `)
+      .order('createdAt', { ascending: false });
+
+    if (filters?.budgetId) {
+      query = query.eq('budgetId', filters.budgetId);
+    }
+    if (filters?.supplierId) {
+      query = query.eq('supplierId', filters.supplierId);
+    }
+    if (filters?.status) {
+      query = query.eq('status', filters.status);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async getSupplierOrder(id: number) {
+    if (!Number.isFinite(id)) return null;
+    const { data, error } = await this.supabase
+      .from('SupplierOrders')
+      .select(`
+        *,
+        supplier:Suppliers(*),
+        deliveryAddress:DeliveryAddresses(*)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async getSupplierOrderWithItems(id: number) {
+    if (!Number.isFinite(id)) return null;
+
+    // Get order with relations
+    const { data: order, error: orderError } = await this.supabase
+      .from('SupplierOrders')
+      .select(`
+        *,
+        supplier:Suppliers(*),
+        deliveryAddress:DeliveryAddresses(*)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (orderError) throw orderError;
+
+    // Get items
+    const { data: items, error: itemsError } = await this.supabase
+      .from('SupplierOrderItems')
+      .select('*')
+      .eq('orderId', id)
+      .order('orderIndex');
+
+    if (itemsError) throw itemsError;
+
+    return {
+      ...order,
+      items: items ?? []
+    };
+  }
+
+  async generateSupplierOrderNumber(): Promise<string> {
+    const year = new Date().getFullYear();
+    const prefix = `PED-${year}-`;
+
+    // Obtener el último número de pedido del año actual
+    const { data, error } = await this.supabase
+      .from('SupplierOrders')
+      .select('orderNumber')
+      .like('orderNumber', `${prefix}%`)
+      .order('orderNumber', { ascending: false })
+      .limit(1);
+
+    if (error) throw error;
+
+    let nextNumber = 1;
+    if (data && data.length > 0) {
+      const lastNumber = data[0].orderNumber;
+      const match = lastNumber.match(/PED-\d{4}-(\d+)/);
+      if (match) {
+        nextNumber = parseInt(match[1], 10) + 1;
+      }
+    }
+
+    return `${prefix}${nextNumber.toString().padStart(4, '0')}`;
+  }
+
+  async createSupplierOrder(order: {
+    budgetId?: number | null;
+    supplierId?: number | null;
+    orderNumber: string;
+    status?: string;
+    deliveryAddressId?: number | null;
+    customDeliveryAddress?: string | null;
+    deliveryDate?: string | null;
+    customerReference?: string | null;
+    notes?: string | null;
+  }, items?: Array<{
+    itemTableRowId?: number | null;
+    productId?: number | null;
+    reference?: string | null;
+    description: string;
+    manufacturer?: string | null;
+    quantity: number;
+    orderIndex: number;
+  }>) {
+    // Create order
+    const { data: createdOrder, error: orderError } = await this.supabase
+      .from('SupplierOrders')
+      .insert([order])
+      .select()
+      .single();
+
+    if (orderError) throw orderError;
+
+    // Create items if provided
+    if (items && items.length > 0) {
+      const itemsPayload = items.map(item => ({
+        ...item,
+        orderId: createdOrder.id
+      }));
+
+      const { error: itemsError } = await this.supabase
+        .from('SupplierOrderItems')
+        .insert(itemsPayload);
+
+      if (itemsError) throw itemsError;
+    }
+
+    return createdOrder;
+  }
+
+  async updateSupplierOrder(id: number, updates: {
+    supplierId?: number | null;
+    status?: string;
+    deliveryAddressId?: number | null;
+    customDeliveryAddress?: string | null;
+    deliveryDate?: string | null;
+    sentAt?: string | null;
+    deliveredAt?: string | null;
+    customerReference?: string | null;
+    notes?: string | null;
+    totalAmount?: number | null;
+    itemCount?: number | null;
+  }) {
+    const { data, error } = await this.supabase
+      .from('SupplierOrders')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async updateSupplierOrderStatus(id: number, status: 'draft' | 'sent' | 'delivered') {
+    const { data, error } = await this.supabase
+      .from('SupplierOrders')
+      .update({ status })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteSupplierOrder(id: number) {
+    const { error } = await this.supabase
+      .from('SupplierOrders')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  // ============================================
+  // SUPPLIER ORDER ITEMS
+  // ============================================
+
+  async getSupplierOrderItems(orderId: number) {
+    const { data, error } = await this.supabase
+      .from('SupplierOrderItems')
+      .select('*')
+      .eq('orderId', orderId)
+      .order('orderIndex');
+
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async addSupplierOrderItem(item: {
+    orderId: number;
+    itemTableRowId?: number | null;
+    productId?: number | null;
+    reference?: string | null;
+    description: string;
+    manufacturer?: string | null;
+    quantity: number;
+    orderIndex: number;
+  }) {
+    const { data, error } = await this.supabase
+      .from('SupplierOrderItems')
+      .insert([item])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async updateSupplierOrderItem(id: number, updates: {
+    reference?: string | null;
+    description?: string;
+    manufacturer?: string | null;
+    quantity?: number;
+    orderIndex?: number;
+  }) {
+    const { data, error } = await this.supabase
+      .from('SupplierOrderItems')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteSupplierOrderItem(id: number) {
+    const { error } = await this.supabase
+      .from('SupplierOrderItems')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  async replaceSupplierOrderItems(orderId: number, items: Array<{
+    itemTableRowId?: number | null;
+    productId?: number | null;
+    reference?: string | null;
+    description: string;
+    manufacturer?: string | null;
+    quantity: number;
+    orderIndex: number;
+  }>) {
+    // Delete existing items
+    const { error: deleteError } = await this.supabase
+      .from('SupplierOrderItems')
+      .delete()
+      .eq('orderId', orderId);
+
+    if (deleteError) throw deleteError;
+
+    // Insert new items
+    if (items.length > 0) {
+      const itemsPayload = items.map(item => ({
+        ...item,
+        orderId
+      }));
+
+      const { error: insertError } = await this.supabase
+        .from('SupplierOrderItems')
+        .insert(itemsPayload);
+
+      if (insertError) throw insertError;
+    }
+  }
 }
 

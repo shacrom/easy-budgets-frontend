@@ -9,6 +9,7 @@ export interface Product {
   basePrice: number;
   vatRate: number;
   category?: string;
+  supplierId?: number | null;
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -24,6 +25,7 @@ export interface CreateProductDto {
   basePrice: number;
   vatRate: number;
   category?: string;
+  supplierId?: number | null;
   active?: boolean;
 }
 
@@ -37,5 +39,6 @@ export interface UpdateProductDto {
   basePrice?: number;
   vatRate?: number;
   category?: string;
+  supplierId?: number | null;
   active?: boolean;
 }

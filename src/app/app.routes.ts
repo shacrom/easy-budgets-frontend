@@ -25,5 +25,21 @@ export const routes: Routes = [
   {
     path: 'clientes',
     loadComponent: () => import('./features/customers/components/customers-page.component').then(m => m.CustomersPageComponent)
+  },
+  {
+    path: 'supplier-orders',
+    loadComponent: () => import('./features/supplier-orders/components/supplier-orders-list.component').then(m => m.SupplierOrdersListComponent)
+  },
+  {
+    path: 'supplier-orders/:id',
+    loadComponent: () => import('./features/supplier-orders/components/supplier-order-editor.component').then(m => m.SupplierOrderEditorComponent)
+  },
+  {
+    path: 'suppliers',
+    loadComponent: () => import('./features/suppliers/components/suppliers-page.component').then(m => m.SuppliersPageComponent)
+  },
+  {
+    path: 'delivery-addresses',
+    loadComponent: () => import('./features/delivery-addresses/components/delivery-addresses-page.component').then(m => m.DeliveryAddressesPageComponent)
   }
 ];

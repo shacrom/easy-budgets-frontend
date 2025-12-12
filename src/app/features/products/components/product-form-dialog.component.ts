@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { Product, CreateProductDto } from '../../../models/product.model';
+import { Supplier } from '../../../models/supplier.model';
 import { SupabaseService } from '../../../services/supabase.service';
 
 /**
@@ -97,6 +98,17 @@ export interface ProductFormDialogResult {
             type="text"
             [value]="formData().category || ''"
             (input)="updateField('category', $event)">
+        </label>
+        <label class="form-field">
+          <span>Proveedor</span>
+          <select
+            [value]="formData().supplierId ?? ''"
+            (change)="updateSupplierField($event)">
+            <option value="">Sin proveedor</option>
+            @for (supplier of suppliers(); track supplier.id) {
+              <option [value]="supplier.id">{{ supplier.name }}</option>
+            }
+          </select>
         </label>
         <label class="form-field checkbox full">
           <span>Estado</span>
@@ -291,7 +303,7 @@ export interface ProductFormDialogResult {
   imports: [FormsModule, MatDialogModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProductFormDialogComponent {
+export class ProductFormDialogComponent implements OnInit {
   private readonly dialogRef = inject(MatDialogRef<ProductFormDialogComponent>);
   private readonly data = inject<ProductFormDialogData>(MAT_DIALOG_DATA);
   private readonly supabaseService = inject(SupabaseService);
@@ -305,6 +317,9 @@ export class ProductFormDialogComponent {
   protected readonly isLoading = signal(false);
   protected readonly errorMessage = signal('');
 
+  // Suppliers list
+  protected readonly suppliers = signal<Supplier[]>([]);
+
   // Track last gross price for VAT calculations
   private lastGrossPrice: number | null = null;
 
@@ -313,6 +328,29 @@ export class ProductFormDialogComponent {
     const data = this.formData();
     return this.calculateGrossPrice(data.basePrice, data.vatRate);
   });
+
+  ngOnInit(): void {
+    this.loadSuppliers();
+  }
+
+  private async loadSuppliers(): Promise<void> {
+    try {
+      const suppliers = await this.supabaseService.getSuppliers();
+      this.suppliers.set(suppliers);
+    } catch (error) {
+      console.error('Error loading suppliers:', error);
+    }
+  }
+
+  /**
+   * Update supplier field from select
+   */
+  protected updateSupplierField(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+    const supplierId = value ? Number(value) : null;
+    this.formData.update(data => ({ ...data, supplierId }));
+  }
 
   /**
    * Initialize form data with prefilled values or defaults
@@ -326,6 +364,7 @@ export class ProductFormDialogComponent {
       basePrice: prefill.basePrice ?? 0,
       vatRate: prefill.vatRate ?? 21, // Default VAT 21%
       category: prefill.category ?? '',
+      supplierId: (prefill as Product).supplierId ?? null,
       active: prefill.active ?? true
     };
   }

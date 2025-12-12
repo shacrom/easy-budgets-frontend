@@ -1,0 +1,23 @@
+@import "../../shared/styles/management-ui.css";
+
+.suppliers-page .table-panel {
+  overflow-x: auto;
+}
+
+.suppliers-page .management-table {
+  min-width: 700px;
+}
+
+.supplier-name {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.notes-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

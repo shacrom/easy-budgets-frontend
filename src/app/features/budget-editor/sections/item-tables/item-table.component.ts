@@ -42,6 +42,28 @@ export class ItemTableComponent {
   protected readonly hasUnsavedChanges = signal<boolean>(false);
   protected readonly isSaving = signal<boolean>(false);
 
+  // Selection mode for supplier orders
+  protected readonly selectionModeActive = signal<boolean>(false);
+  protected readonly selectedRowIds = signal<Set<number>>(new Set());
+
+  // Computed: number of selected rows
+  protected readonly selectedCount = computed(() => this.selectedRowIds().size);
+
+  // Computed: check if all rows are selected
+  protected readonly allRowsSelected = computed(() => {
+    const allRows = this.tables().flatMap(t => t.rows);
+    if (allRows.length === 0) return false;
+    return allRows.every(row => this.selectedRowIds().has(row.id));
+  });
+
+  // Computed: get selected rows with their data
+  protected readonly selectedRows = computed(() => {
+    const selected = this.selectedRowIds();
+    return this.tables()
+      .flatMap(t => t.rows)
+      .filter(row => selected.has(row.id));
+  });
+
   // Total calculated from all items
   protected readonly totalItems = computed(() => {
     return this.tables().reduce((sum, table) => sum + this.calculateTableTotal(table), 0);
@@ -52,6 +74,9 @@ export class ItemTableComponent {
 
   // Output: emits item tables when they change
   tablesChanged = output<ItemTable[]>();
+
+  // Output: emits when user wants to create a supplier order with selected rows
+  createOrderRequested = output<ItemRow[]>();
 
   // Backward compatibility: flattened items collection
   rowsChanged = output<ItemRow[]>();
@@ -421,5 +446,77 @@ export class ItemTableComponent {
     } finally {
       this.loadingProducts.set(false);
     }
+  }
+
+  // ============================================
+  // SELECTION MODE FOR SUPPLIER ORDERS
+  // ============================================
+
+  /**
+   * Toggles selection mode on/off
+   */
+  protected toggleSelectionMode(): void {
+    const isActive = !this.selectionModeActive();
+    this.selectionModeActive.set(isActive);
+    if (!isActive) {
+      // Clear selection when exiting selection mode
+      this.selectedRowIds.set(new Set());
+    }
+  }
+
+  /**
+   * Handles row selection change from item-row component
+   */
+  protected onRowSelectionChange(event: { rowId: number; selected: boolean }): void {
+    this.selectedRowIds.update(current => {
+      const newSet = new Set(current);
+      if (event.selected) {
+        newSet.add(event.rowId);
+      } else {
+        newSet.delete(event.rowId);
+      }
+      return newSet;
+    });
+  }
+
+  /**
+   * Selects or deselects all rows in all tables
+   */
+  protected toggleSelectAll(): void {
+    const allRows = this.tables().flatMap(t => t.rows);
+    const currentSelected = this.selectedRowIds();
+
+    if (currentSelected.size === allRows.length) {
+      // All selected, deselect all
+      this.selectedRowIds.set(new Set());
+    } else {
+      // Select all
+      this.selectedRowIds.set(new Set(allRows.map(r => r.id)));
+    }
+  }
+
+  /**
+   * Checks if a specific row is selected
+   */
+  protected isRowSelected(rowId: number): boolean {
+    return this.selectedRowIds().has(rowId);
+  }
+
+  /**
+   * Emits selected rows to create a supplier order
+   */
+  protected requestCreateOrder(): void {
+    const selected = this.selectedRows();
+    if (selected.length > 0) {
+      this.createOrderRequested.emit(selected);
+    }
+  }
+
+  /**
+   * Cancels selection mode and clears selection
+   */
+  protected cancelSelection(): void {
+    this.selectionModeActive.set(false);
+    this.selectedRowIds.set(new Set());
   }
 }

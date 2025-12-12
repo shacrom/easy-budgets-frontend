@@ -1,0 +1,244 @@
+<section class="management-page delivery-addresses-page">
+  <div class="actions-bar">
+    <div class="search-field">
+      <label for="address-search">Buscar</label>
+      <input
+        id="address-search"
+        type="text"
+        placeholder="Nombre, dirección, ciudad o contacto"
+        (input)="onSearch($event)"
+      >
+    </div>
+    <div class="actions-buttons">
+      <button
+        type="button"
+        class="btn ghost"
+        [disabled]="isLoading()"
+        (click)="loadAddresses()">
+        Actualizar
+      </button>
+      <button
+        type="button"
+        class="btn dark"
+        (click)="openCreateForm()">
+        Nueva Dirección
+      </button>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert error">{{ errorMessage() }}</div>
+  }
+
+  @if (successMessage()) {
+    <div class="alert success">{{ successMessage() }}</div>
+  }
+
+  <div class="management-layout">
+    <div class="table-panel">
+      <table class="management-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Dirección</th>
+            <th>Ciudad</th>
+            <th>C.P.</th>
+            <th>Contacto</th>
+            <th>Teléfono</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading()) {
+            <tr>
+              <td colspan="7" class="mono text-center">Cargando direcciones...</td>
+            </tr>
+          } @else if (filteredAddresses().length === 0) {
+            <tr>
+              <td colspan="7" class="mono text-center">No hay direcciones que coincidan con tu búsqueda.</td>
+            </tr>
+          } @else {
+            @for (address of paginatedAddresses(); track address.id) {
+              <tr [class.default-row]="address.isDefault">
+                <td>
+                  <div class="address-name">
+                    {{ address.name }}
+                    @if (address.isDefault) {
+                      <span class="default-badge">Predeterminada</span>
+                    }
+                  </div>
+                </td>
+                <td class="address-cell">{{ address.address }}</td>
+                <td>{{ address.city || '—' }}</td>
+                <td>{{ address.postalCode || '—' }}</td>
+                <td>{{ address.contactName || '—' }}</td>
+                <td>{{ address.contactPhone || '—' }}</td>
+                <td class="actions-cell">
+                  @if (!address.isDefault) {
+                    <button type="button" class="btn icon" title="Establecer como predeterminada" (click)="setAsDefault(address)">
+                      <span class="material-symbols-rounded" aria-hidden="true">star</span>
+                    </button>
+                  }
+                  <button type="button" class="btn icon" (click)="openEditForm(address)">
+                    <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+                  </button>
+                  <button type="button" class="btn icon danger" (click)="deleteAddress(address)">
+                    <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+
+      <div class="pagination-bar" aria-label="Paginación de direcciones">
+        <div class="pagination-info">{{ paginationLabel() }}</div>
+        <div class="pagination-controls">
+          <label class="pagination-size" for="addresses-page-size">
+            <span>Resultados por página</span>
+            <select
+              id="addresses-page-size"
+              (change)="onPageSizeChange($event)">
+              @for (option of pageSizeOptions; track option) {
+                <option [value]="option" [selected]="option === pageSize()">{{ option }}</option>
+              }
+            </select>
+          </label>
+
+          <div class="pagination-page">{{ pagePosition() }}</div>
+
+          <div class="pagination-buttons">
+            <button
+              type="button"
+              class="btn icon"
+              [disabled]="isOnFirstPage()"
+              (click)="goToFirstPage()">
+              <span class="material-symbols-rounded" aria-hidden="true">first_page</span>
+            </button>
+            <button
+              type="button"
+              class="btn icon"
+              [disabled]="isOnFirstPage()"
+              (click)="goToPreviousPage()">
+              <span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>
+            </button>
+            <button
+              type="button"
+              class="btn icon"
+              [disabled]="isOnLastPage()"
+              (click)="goToNextPage()">
+              <span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>
+            </button>
+            <button
+              type="button"
+              class="btn icon"
+              [disabled]="isOnLastPage()"
+              (click)="goToLastPage()">
+              <span class="material-symbols-rounded" aria-hidden="true">last_page</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (showForm()) {
+      <aside class="form-panel">
+        <div class="form-header">
+          <h2>{{ editingAddress() ? 'Editar Dirección' : 'Nueva Dirección' }}</h2>
+          <button type="button" class="btn icon" (click)="closeForm()">
+            <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          </button>
+        </div>
+
+        <form class="address-form" (ngSubmit)="saveAddress()">
+          <div class="form-group">
+            <label for="address-name">Nombre de la ubicación *</label>
+            <input
+              id="address-name"
+              type="text"
+              placeholder="Ej: Tienda Principal, Almacén, etc."
+              [value]="formData().name"
+              (input)="updateFormField('name', $any($event.target).value)"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="address-address">Dirección *</label>
+            <textarea
+              id="address-address"
+              rows="2"
+              placeholder="Calle, número, piso..."
+              [value]="formData().address"
+              (input)="updateFormField('address', $any($event.target).value)"
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="address-city">Ciudad</label>
+              <input
+                id="address-city"
+                type="text"
+                [value]="formData().city"
+                (input)="updateFormField('city', $any($event.target).value)"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="address-postal-code">Código Postal</label>
+              <input
+                id="address-postal-code"
+                type="text"
+                [value]="formData().postalCode"
+                (input)="updateFormField('postalCode', $any($event.target).value)"
+              >
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="address-contact-name">Persona de contacto</label>
+              <input
+                id="address-contact-name"
+                type="text"
+                [value]="formData().contactName"
+                (input)="updateFormField('contactName', $any($event.target).value)"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="address-contact-phone">Teléfono de contacto</label>
+              <input
+                id="address-contact-phone"
+                type="tel"
+                [value]="formData().contactPhone"
+                (input)="updateFormField('contactPhone', $any($event.target).value)"
+              >
+            </div>
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                [checked]="formData().isDefault"
+                (change)="updateFormField('isDefault', $any($event.target).checked)"
+              >
+              <span>Establecer como dirección predeterminada</span>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn ghost" (click)="closeForm()">Cancelar</button>
+            <button type="submit" class="btn dark" [disabled]="isLoading()">
+              {{ editingAddress() ? 'Guardar Cambios' : 'Crear Dirección' }}
+            </button>
+          </div>
+        </form>
+      </aside>
+    }
+  </div>
+</section>

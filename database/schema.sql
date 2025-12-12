@@ -133,13 +133,15 @@ CREATE TABLE "Products" (
   "manufacturer" character varying,
   "unitPrice" numeric NOT NULL CHECK ("unitPrice" >= 0::numeric),
   "category" character varying,
+  "supplierId" bigint,
   "imageUrl" text,
   "link" text,
   "isActive" boolean DEFAULT true,
   "vatRate" numeric NOT NULL DEFAULT 21,
   "createdAt" timestamp with time zone DEFAULT now(),
   "updatedAt" timestamp with time zone DEFAULT now(),
-  CONSTRAINT "Products_pkey" PRIMARY KEY ("id")
+  CONSTRAINT "Products_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "Products_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "Suppliers"("id") ON DELETE SET NULL
 );
 
 -- Tabla: BudgetItemTableRows (antes BudgetMaterialTableRows)
@@ -323,6 +325,124 @@ CREATE INDEX "EmailLogs_budgetId_createdAt_idx" ON "EmailLogs" ("budgetId", "cre
 CREATE INDEX "EmailLogs_budgetId_status_idx" ON "EmailLogs" ("budgetId", "status");
 CREATE INDEX "EmailLogs_recipientEmail_idx" ON "EmailLogs" ("recipientEmail");
 
+-- Tabla: Suppliers (Proveedores)
+CREATE TABLE "Suppliers" (
+  "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "name" character varying NOT NULL,
+  "contactName" character varying,
+  "email" character varying,
+  "phone" character varying,
+  "notes" text,
+  "createdAt" timestamp with time zone DEFAULT now(),
+  "updatedAt" timestamp with time zone DEFAULT now(),
+  CONSTRAINT "Suppliers_pkey" PRIMARY KEY ("id")
+);
+
+-- Tabla: DeliveryAddresses (Direcciones de entrega globales)
+CREATE TABLE "DeliveryAddresses" (
+  "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "name" character varying NOT NULL,
+  "address" text NOT NULL,
+  "city" character varying,
+  "province" character varying,
+  "postalCode" character varying,
+  "contactName" character varying,
+  "contactPhone" character varying,
+  "isDefault" boolean DEFAULT false,
+  "createdAt" timestamp with time zone DEFAULT now(),
+  "updatedAt" timestamp with time zone DEFAULT now(),
+  CONSTRAINT "DeliveryAddresses_pkey" PRIMARY KEY ("id")
+);
+
+-- Estados de un pedido a proveedor
+CREATE TYPE "SupplierOrderStatus" AS ENUM ('draft', 'sent', 'delivered');
+
+-- Tabla: SupplierOrders (Pedidos a proveedores)
+CREATE TABLE "SupplierOrders" (
+  "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "budgetId" bigint,
+  "supplierId" bigint,
+  "orderNumber" character varying NOT NULL UNIQUE,
+  "status" "SupplierOrderStatus" DEFAULT 'draft'::"SupplierOrderStatus",
+  "deliveryAddressId" bigint,
+  "customDeliveryAddress" text,
+  "deliveryDate" date,
+  "sentAt" timestamp with time zone,
+  "deliveredAt" timestamp with time zone,
+  "customerReference" character varying,
+  "notes" text,
+  "totalAmount" numeric,
+  "itemCount" integer,
+  "createdAt" timestamp with time zone DEFAULT now(),
+  "updatedAt" timestamp with time zone DEFAULT now(),
+  CONSTRAINT "SupplierOrders_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "SupplierOrders_budgetId_fkey" FOREIGN KEY ("budgetId") REFERENCES "Budgets"("id") ON DELETE SET NULL,
+  CONSTRAINT "SupplierOrders_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "Suppliers"("id") ON DELETE SET NULL,
+  CONSTRAINT "SupplierOrders_deliveryAddressId_fkey" FOREIGN KEY ("deliveryAddressId") REFERENCES "DeliveryAddresses"("id") ON DELETE SET NULL
+);
+
+-- Tabla: SupplierOrderItems (Ítems del pedido)
+CREATE TABLE "SupplierOrderItems" (
+  "id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  "orderId" bigint NOT NULL,
+  "itemTableRowId" bigint,
+  "productId" bigint,
+  "reference" character varying,
+  "concept" character varying NOT NULL DEFAULT ''::character varying,
+  "description" text,
+  "manufacturer" character varying,
+  "quantity" numeric NOT NULL DEFAULT 1,
+  "unit" character varying,
+  "unitPrice" numeric NOT NULL DEFAULT 0,
+  "totalPrice" numeric NOT NULL DEFAULT 0,
+  "orderIndex" integer NOT NULL DEFAULT 0,
+  "createdAt" timestamp with time zone DEFAULT now(),
+  CONSTRAINT "SupplierOrderItems_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "SupplierOrderItems_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "SupplierOrders"("id") ON DELETE CASCADE,
+  CONSTRAINT "SupplierOrderItems_itemTableRowId_fkey" FOREIGN KEY ("itemTableRowId") REFERENCES "BudgetItemTableRows"("id") ON DELETE SET NULL,
+  CONSTRAINT "SupplierOrderItems_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Products"("id") ON DELETE SET NULL
+);
+
+-- Añadir columna supplierId a Products (referencia a proveedor)
+-- ALTER TABLE "Products" ADD COLUMN "supplierId" bigint;
+-- ALTER TABLE "Products" ADD CONSTRAINT "Products_supplierId_fkey" 
+--   FOREIGN KEY ("supplierId") REFERENCES "Suppliers"("id") ON DELETE SET NULL;
+
+-- Añadir supplierOrderId a EmailLogs para registrar envíos de pedidos
+-- ALTER TABLE "EmailLogs" ADD COLUMN "supplierOrderId" bigint;
+-- ALTER TABLE "EmailLogs" ADD CONSTRAINT "EmailLogs_supplierOrderId_fkey" 
+--   FOREIGN KEY ("supplierOrderId") REFERENCES "SupplierOrders"("id") ON DELETE CASCADE;
+
+-- TRIGGERS para Supplier Orders
+-- =============================================================================
+
+CREATE TRIGGER "update_Suppliers_updatedAt"
+  BEFORE UPDATE ON "Suppliers"
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER "update_DeliveryAddresses_updatedAt"
+  BEFORE UPDATE ON "DeliveryAddresses"
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER "update_SupplierOrders_updatedAt"
+  BEFORE UPDATE ON "SupplierOrders"
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- INDEXES para Supplier Orders
+-- =============================================================================
+
+CREATE INDEX "Suppliers_name_idx" ON "Suppliers"("name");
+CREATE INDEX "DeliveryAddresses_isDefault_idx" ON "DeliveryAddresses"("isDefault");
+CREATE INDEX "SupplierOrders_budgetId_idx" ON "SupplierOrders"("budgetId");
+CREATE INDEX "SupplierOrders_supplierId_idx" ON "SupplierOrders"("supplierId");
+CREATE INDEX "SupplierOrders_status_idx" ON "SupplierOrders"("status");
+CREATE INDEX "SupplierOrderItems_orderId_idx" ON "SupplierOrderItems"("orderId");
+CREATE INDEX "Products_supplierId_idx" ON "Products"("supplierId");
+CREATE INDEX "EmailLogs_supplierOrderId_idx" ON "EmailLogs"("supplierOrderId");
+
 -- NOTES
 -- =============================================================================
 --
@@ -335,6 +455,7 @@ CREATE INDEX "EmailLogs_recipientEmail_idx" ON "EmailLogs" ("recipientEmail");
 -- - BudgetAdditionalLineType: 'adjustment', 'discount', 'surcharge', 'tax'
 -- - BudgetStatus: 'not_completed', 'completed', 'contract'
 -- - EmailStatus: 'pending', 'sent', 'failed'
+-- - SupplierOrderStatus: 'draft', 'sent', 'delivered'
 --
 -- SECTION TYPES:
 -- - compositeBlocks: Bloques compuestos con múltiples secciones de texto
@@ -357,15 +478,27 @@ CREATE INDEX "EmailLogs_recipientEmail_idx" ON "EmailLogs" ("recipientEmail");
 -- - ConditionTemplateSections → ConditionTemplates (many-to-one, CASCADE on delete)
 -- - CompositeBlockTemplateSections → CompositeBlockTemplates (many-to-one, CASCADE on delete)
 -- - EmailLogs → Budgets (many-to-one, optional, CASCADE on delete)
+-- - EmailLogs → SupplierOrders (many-to-one, optional, CASCADE on delete)
+-- - Suppliers (standalone)
+-- - DeliveryAddresses (standalone, global addresses)
+-- - SupplierOrders → Budgets (many-to-one, optional, SET NULL on delete)
+-- - SupplierOrders → Suppliers (many-to-one, optional, SET NULL on delete)
+-- - SupplierOrders → DeliveryAddresses (many-to-one, optional, SET NULL on delete)
+-- - SupplierOrderItems → SupplierOrders (many-to-one, CASCADE on delete)
+-- - SupplierOrderItems → BudgetItemTableRows (many-to-one, optional, SET NULL on delete)
+-- - SupplierOrderItems → Products (many-to-one, optional, SET NULL on delete)
+-- - Products → Suppliers (many-to-one, optional, SET NULL on delete)
 --
 -- AUTO-UPDATE TRIGGERS:
 -- - Customers, Budgets, Products, BudgetSimpleBlocks, BudgetCompositeBlocks,
---   BudgetCompositeBlockSections, CompositeBlockTemplates, CompositeBlockTemplateSections
+--   BudgetCompositeBlockSections, CompositeBlockTemplates, CompositeBlockTemplateSections,
+--   Suppliers, DeliveryAddresses, SupplierOrders
 --   all have triggers that auto-update "updatedAt" field on UPDATE
 --
 -- MIGRATION HISTORY:
 -- - 20251201220651: Initial schema
 -- - 20251209174703: Renamed TextBlocks to CompositeBlocks and Materials to Items
 -- - 20251210161248: Added EmailLogs table for email tracking
+-- - 20251212180000: Added Supplier Orders feature (Suppliers, DeliveryAddresses, SupplierOrders, SupplierOrderItems)
 --
 

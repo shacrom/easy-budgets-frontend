@@ -29,6 +29,15 @@ export class ItemRowComponent implements OnInit {
   showUnitPrice = input<boolean>(true);
   showTotalPrice = input<boolean>(true);
 
+  // Input: whether this row is selected for supplier order
+  isSelected = input<boolean>(false);
+
+  // Input: whether to show the selection checkbox column
+  showSelectionCheckbox = input<boolean>(false);
+
+  // Output: event when selection changes
+  selectionChanged = output<{ rowId: number; selected: boolean }>();
+
   // Output: event when user requests to delete item
   deleteRequested = output<number>();
 
@@ -297,5 +306,16 @@ export class ItemRowComponent implements OnInit {
     } catch (e) {
       // no-op
     }
+  }
+
+  /**
+   * Handles checkbox change for row selection
+   */
+  protected onSelectionChange(event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    this.selectionChanged.emit({
+      rowId: this.row().id,
+      selected: checkbox.checked
+    });
   }
 }

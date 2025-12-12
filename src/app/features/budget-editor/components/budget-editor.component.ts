@@ -24,6 +24,7 @@ import { SimpleBlockEditorComponent } from '../sections/simple-block/simple-bloc
 import { SimpleBlock } from '../../../models/simple-block.model';
 import { BudgetStatus } from '../../../models/budget.model';
 import { environment } from '../../../../environments/environment';
+import { SupplierSelectionDialogComponent, SupplierSelectionDialogData } from '../../supplier-orders/components/supplier-selection-dialog.component';
 
 @Component({
   selector: 'app-budget-editor',
@@ -1133,6 +1134,33 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
     });
   }
 
+  /**
+   * Opens the supplier selection dialog to create orders from selected item rows
+   */
+  onCreateOrderRequested(selectedRows: ItemRow[]): void {
+    const budgetId = this.currentBudgetId();
+    if (!budgetId) {
+      this.notification.showError('No se puede crear pedido sin un presupuesto válido');
+      return;
+    }
 
+    if (selectedRows.length === 0) {
+      this.notification.showError('No hay productos seleccionados para crear pedido');
+      return;
+    }
+
+    const dialogData: SupplierSelectionDialogData = {
+      selectedRows,
+      budgetId
+    };
+
+    this.dialog.open(SupplierSelectionDialogComponent, {
+      data: dialogData,
+      disableClose: true,
+      panelClass: 'supplier-selection-dialog-panel',
+      width: '700px',
+      maxHeight: '90vh'
+    });
+  }
 }
 

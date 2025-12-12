@@ -1,0 +1,192 @@
+<section class="management-page suppliers-page">
+  <div class="actions-bar">
+    <div class="search-field">
+      <label for="supplier-search">Buscar</label>
+      <input
+        id="supplier-search"
+        type="text"
+        placeholder="Nombre, email o teléfono"
+        (input)="onSearch($event)"
+      >
+    </div>
+    <div class="actions-buttons">
+      <button
+        type="button"
+        class="btn ghost"
+        [disabled]="isLoading()"
+        (click)="loadSuppliers()">
+        Actualizar
+      </button>
+      <button
+        type="button"
+        class="btn dark"
+        (click)="openCreateForm()">
+        Nuevo Proveedor
+      </button>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert error">{{ errorMessage() }}</div>
+  }
+
+  @if (successMessage()) {
+    <div class="alert success">{{ successMessage() }}</div>
+  }
+
+  <div class="management-layout">
+    <div class="table-panel">
+      <table class="management-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Notas</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading()) {
+            <tr>
+              <td colspan="5" class="mono text-center">Cargando proveedores...</td>
+            </tr>
+          } @else if (filteredSuppliers().length === 0) {
+            <tr>
+              <td colspan="5" class="mono text-center">No hay proveedores que coincidan con tu búsqueda.</td>
+            </tr>
+          } @else {
+            @for (supplier of paginatedSuppliers(); track supplier.id) {
+              <tr>
+                <td>
+                  <div class="supplier-name">{{ supplier.name }}</div>
+                </td>
+                <td>{{ supplier.email || '—' }}</td>
+                <td>{{ supplier.phone || '—' }}</td>
+                <td class="notes-cell">{{ supplier.notes || '—' }}</td>
+                <td class="actions-cell">
+                  <button type="button" class="btn icon" (click)="openEditForm(supplier)">
+                    <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+                  </button>
+                  <button type="button" class="btn icon danger" (click)="deleteSupplier(supplier)">
+                    <span class="material-symbols-rounded" aria-hidden="true">delete</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+
+      <div class="pagination-bar" aria-label="Paginación de proveedores">
+        <div class="pagination-info">{{ paginationLabel() }}</div>
+        <div class="pagination-controls">
+          <label class="pagination-size" for="suppliers-page-size">
+            <span>Resultados por página</span>
+            <select
+              id="suppliers-page-size"
+              (change)="onPageSizeChange($event)">
+              @for (option of pageSizeOptions; track option) {
+                <option [value]="option" [selected]="option === pageSize()">{{ option }}</option>
+              }
+            </select>
+          </label>
+
+          <div class="pagination-page">{{ pagePosition() }}</div>
+
+          <div class="pagination-buttons">
+            <button
+              type="button"
+              class="btn icon"
+              [disabled]="isOnFirstPage()"
+              (click)="goToFirstPage()">
+              <span class="material-symbols-rounded" aria-hidden="true">first_page</span>
+            </button>
+            <button
+              type="button"
+              class="btn icon"
+              [disabled]="isOnFirstPage()"
+              (click)="goToPreviousPage()">
+              <span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>
+            </button>
+            <button
+              type="button"
+              class="btn icon"
+              [disabled]="isOnLastPage()"
+              (click)="goToNextPage()">
+              <span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>
+            </button>
+            <button
+              type="button"
+              class="btn icon"
+              [disabled]="isOnLastPage()"
+              (click)="goToLastPage()">
+              <span class="material-symbols-rounded" aria-hidden="true">last_page</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (showForm()) {
+      <aside class="form-panel">
+        <div class="form-header">
+          <h2>{{ editingSupplier() ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2>
+          <button type="button" class="btn icon" (click)="closeForm()">
+            <span class="material-symbols-rounded" aria-hidden="true">close</span>
+          </button>
+        </div>
+
+        <form class="supplier-form" (ngSubmit)="saveSupplier()">
+          <div class="form-group">
+            <label for="supplier-name">Nombre *</label>
+            <input
+              id="supplier-name"
+              type="text"
+              [value]="formData().name"
+              (input)="updateFormField('name', $any($event.target).value)"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="supplier-email">Email</label>
+            <input
+              id="supplier-email"
+              type="email"
+              [value]="formData().email"
+              (input)="updateFormField('email', $any($event.target).value)"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="supplier-phone">Teléfono</label>
+            <input
+              id="supplier-phone"
+              type="tel"
+              [value]="formData().phone"
+              (input)="updateFormField('phone', $any($event.target).value)"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="supplier-notes">Notas</label>
+            <textarea
+              id="supplier-notes"
+              rows="3"
+              [value]="formData().notes"
+              (input)="updateFormField('notes', $any($event.target).value)"
+            ></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn ghost" (click)="closeForm()">Cancelar</button>
+            <button type="submit" class="btn dark" [disabled]="isLoading()">
+              {{ editingSupplier() ? 'Guardar Cambios' : 'Crear Proveedor' }}
+            </button>
+          </div>
+        </form>
+      </aside>
+    }
+  </div>
+</section>
