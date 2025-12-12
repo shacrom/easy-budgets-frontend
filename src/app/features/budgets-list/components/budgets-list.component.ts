@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../../services/supabase.service';
 import { BudgetStatus } from '../../../models/budget.model';
+import { DEFAULT_SECTION_ORDER } from '../../../models/budget-section.model';
 
 type SortField = 'createdAt' | 'updatedAt';
 
@@ -158,10 +159,13 @@ export class BudgetsListComponent implements OnInit {
         taxAmount: 0,
         total: 0,
         validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        sectionOrder: DEFAULT_SECTION_ORDER,
         showCompositeBlocks: false,
         showItemTables: false,
         showSimpleBlock: false,
-        showConditions: false
+        showConditions: false,
+        showSummary: false,
+        showSignature: false
       });
 
       await this.router.navigate(['/presupuestos', String(newBudget.id)]);

@@ -367,6 +367,7 @@ export class BudgetEditorComponent implements OnDestroy, AfterViewInit {
       this.showSummary.set(budget.showSummary ?? false);
       this.showSignature.set(budget.showSignature ?? false);
 
+      //TODO remove legacy section order handling
       if (budget.sectionOrder && budget.sectionOrder.length > 0) {
         // Migrate legacy keys using the centralized mapping
         const migratedOrder = migrateSectionOrder(budget.sectionOrder);
